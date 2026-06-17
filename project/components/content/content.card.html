@@ -1,0 +1,62 @@
+<!-- @dsCard group="Components" viewport="700x340" name="Content — Card, Badge, Tag, Stat, Divider" subtitle="Surfaces & labels" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); padding: 24px; font-family: var(--font-body); }
+  .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .chips { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; }
+  h3 { font-family: var(--font-heading); font-weight: 600; font-size: 20px; margin: 0 0 6px; color: var(--text-strong); letter-spacing: -0.01em; }
+  p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+  .stats { display: flex; gap: 36px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Card, Badge, Tag, StatBlock, Divider, Eyebrow } = window.MaklerContentDesignSystem_a211b6;
+    function Demo() {
+      return (
+        <div className="grid">
+          <Card interactive>
+            <Eyebrow>Objekt der Woche</Eyebrow>
+            <h3 style={{marginTop: '10px'}}>Landhaus am Waldrand</h3>
+            <p>Warmes Morgenlicht, Eichenboden, Blick ins Grüne — eingefangen in echtem Licht.</p>
+            <Divider ornament style={{margin: '18px 0'}} />
+            <div className="stats">
+              <StatBlock value="32" label="Aufnahmen" />
+              <StatBlock value="48h" label="Lieferung" />
+            </div>
+          </Card>
+          <div className="stack">
+            <div className="chips">
+              <Badge tone="sage">Foto</Badge>
+              <Badge tone="accent">Film</Badge>
+              <Badge tone="neutral">Drohne</Badge>
+              <Badge tone="success">Verfügbar</Badge>
+            </div>
+            <div className="chips">
+              <Tag selected>Alle</Tag>
+              <Tag onClick={()=>{}}>Innen</Tag>
+              <Tag onClick={()=>{}}>Außen</Tag>
+              <Tag onClick={()=>{}}>Luft</Tag>
+            </div>
+            <Card tone="sage" padding="md">
+              <Eyebrow color="onDark">Auf Salbei</Eyebrow>
+              <h3 style={{color: 'var(--color-on-primary)', marginTop: '8px'}}>Licht. Linie. Verkauft.</h3>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+  </script>
+</body>
+</html>

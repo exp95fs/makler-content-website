@@ -1,0 +1,31 @@
+<!-- @dsCard group="Components" viewport="700x300" name="MediaFrame" subtitle="Rounded photo frame with scrim caption" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); padding: 24px; font-family: var(--font-body); }
+  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { MediaFrame } = window.MaklerContentDesignSystem_a211b6;
+    function Demo() {
+      return (
+        <div className="grid">
+          <MediaFrame ratio="16 / 10" eyebrow="Referenz · Baden-Baden" caption="Wo Menschen ankommen." />
+          <MediaFrame ratio="3 / 4" placeholderLabel="Portrait-Foto" />
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+  </script>
+</body>
+</html>

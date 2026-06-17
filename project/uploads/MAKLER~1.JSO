@@ -1,0 +1,201 @@
+{
+  "$description": "Makler-Content — Design-System 'Erdig & Natürlich'. Kompatibel mit dem Figma-Plugin 'Tokens Studio' (Import: Plugin oeffnen > ... > Load from file/JSON). Auch als allgemeine Token-Referenz nutzbar.",
+  "global": {
+    "color": {
+      "primary": {
+        "value": "#565E45",
+        "type": "color",
+        "description": "Tiefes Salbei/Olive — Primaerfarbe: Header, Flaechen, Typo-Akzente"
+      },
+      "primaryDeep": {
+        "value": "#434A36",
+        "type": "color",
+        "description": "Abgedunkeltes Salbei — Hover/Pressed-Zustand der Primaerfarbe"
+      },
+      "secondary": {
+        "value": "#C7BCA9",
+        "type": "color",
+        "description": "Stein/Taupe — Sekundaer: Karten, ruhige Zwischenflaechen"
+      },
+      "background": {
+        "value": "#F3EEE5",
+        "type": "color",
+        "description": "Leinen — Haupt-Hintergrund der Seite"
+      },
+      "surface": {
+        "value": "#FBF8F1",
+        "type": "color",
+        "description": "Heller Karten-/Panel-Hintergrund auf dem Background"
+      },
+      "text": {
+        "value": "#2A2A22",
+        "type": "color",
+        "description": "Erdschwarz — Haupt-Textfarbe (Kontrast 12.5:1 auf Background)"
+      },
+      "textMuted": {
+        "value": "#5C5A4E",
+        "type": "color",
+        "description": "Gedaempfter Text — Sublines, Captions, Sekundaerinfos"
+      },
+      "accent": {
+        "value": "#BC6B49",
+        "type": "color",
+        "description": "Gedaempftes Terrakotta — Akzent: CTA, Buttons, Highlights, Links"
+      },
+      "accentDeep": {
+        "value": "#A4583A",
+        "type": "color",
+        "description": "Abgedunkeltes Terrakotta — Hover/Pressed des Akzents"
+      },
+      "border": {
+        "value": "#E0D8CA",
+        "type": "color",
+        "description": "Hairline — Trennlinien, Karten-Raender"
+      },
+      "onPrimary": {
+        "value": "#F3EEE5",
+        "type": "color",
+        "description": "Textfarbe auf Primaerflaechen"
+      },
+      "onAccent": {
+        "value": "#FBF8F1",
+        "type": "color",
+        "description": "Textfarbe auf Akzentflaechen (Buttons)"
+      }
+    },
+    "fontFamilies": {
+      "heading": {
+        "value": "Fraunces",
+        "type": "fontFamilies",
+        "description": "Headlines & Display — Google Fonts"
+      },
+      "body": {
+        "value": "Mulish",
+        "type": "fontFamilies",
+        "description": "Fliesstext, UI, Buttons — Google Fonts"
+      }
+    },
+    "fontWeights": {
+      "heading-regular": { "value": "400", "type": "fontWeights" },
+      "heading-semibold": { "value": "600", "type": "fontWeights" },
+      "body-light": { "value": "300", "type": "fontWeights" },
+      "body-regular": { "value": "400", "type": "fontWeights" },
+      "body-medium": { "value": "500", "type": "fontWeights" },
+      "body-bold": { "value": "700", "type": "fontWeights" }
+    },
+    "fontSizes": {
+      "display": { "value": "56", "type": "fontSizes", "description": "Hero-Headline" },
+      "h1": { "value": "40", "type": "fontSizes" },
+      "h2": { "value": "30", "type": "fontSizes" },
+      "h3": { "value": "22", "type": "fontSizes" },
+      "body-lg": { "value": "18", "type": "fontSizes", "description": "Subline/Lead" },
+      "body": { "value": "16", "type": "fontSizes" },
+      "small": { "value": "14", "type": "fontSizes" },
+      "caption": { "value": "12", "type": "fontSizes", "description": "Labels, Eyebrows (uppercase)" }
+    },
+    "lineHeights": {
+      "tight": { "value": "1.08", "type": "lineHeights", "description": "Headlines" },
+      "snug": { "value": "1.3", "type": "lineHeights" },
+      "normal": { "value": "1.65", "type": "lineHeights", "description": "Fliesstext" }
+    },
+    "letterSpacing": {
+      "heading": { "value": "-0.01em", "type": "letterSpacing" },
+      "normal": { "value": "0em", "type": "letterSpacing" },
+      "label": { "value": "0.18em", "type": "letterSpacing", "description": "Uppercase-Labels/Eyebrows" }
+    },
+    "typography": {
+      "display": {
+        "value": {
+          "fontFamily": "{fontFamilies.heading}",
+          "fontWeight": "{fontWeights.heading-semibold}",
+          "fontSize": "{fontSizes.display}",
+          "lineHeight": "{lineHeights.tight}",
+          "letterSpacing": "{letterSpacing.heading}"
+        },
+        "type": "typography",
+        "description": "Hero-Headline — Fraunces 600"
+      },
+      "h1": {
+        "value": {
+          "fontFamily": "{fontFamilies.heading}",
+          "fontWeight": "{fontWeights.heading-semibold}",
+          "fontSize": "{fontSizes.h1}",
+          "lineHeight": "{lineHeights.tight}",
+          "letterSpacing": "{letterSpacing.heading}"
+        },
+        "type": "typography"
+      },
+      "h2": {
+        "value": {
+          "fontFamily": "{fontFamilies.heading}",
+          "fontWeight": "{fontWeights.heading-semibold}",
+          "fontSize": "{fontSizes.h2}",
+          "lineHeight": "{lineHeights.snug}",
+          "letterSpacing": "{letterSpacing.heading}"
+        },
+        "type": "typography"
+      },
+      "h3": {
+        "value": {
+          "fontFamily": "{fontFamilies.heading}",
+          "fontWeight": "{fontWeights.heading-regular}",
+          "fontSize": "{fontSizes.h3}",
+          "lineHeight": "{lineHeights.snug}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography"
+      },
+      "lead": {
+        "value": {
+          "fontFamily": "{fontFamilies.body}",
+          "fontWeight": "{fontWeights.body-light}",
+          "fontSize": "{fontSizes.body-lg}",
+          "lineHeight": "{lineHeights.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Subline/Lead — Mulish 300"
+      },
+      "body": {
+        "value": {
+          "fontFamily": "{fontFamilies.body}",
+          "fontWeight": "{fontWeights.body-regular}",
+          "fontSize": "{fontSizes.body}",
+          "lineHeight": "{lineHeights.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography"
+      },
+      "label": {
+        "value": {
+          "fontFamily": "{fontFamilies.body}",
+          "fontWeight": "{fontWeights.body-medium}",
+          "fontSize": "{fontSizes.caption}",
+          "lineHeight": "{lineHeights.snug}",
+          "letterSpacing": "{letterSpacing.label}",
+          "textCase": "uppercase"
+        },
+        "type": "typography",
+        "description": "Eyebrows/Labels — Mulish 500, uppercase"
+      }
+    },
+    "radius": {
+      "sm": { "value": "8", "type": "borderRadius" },
+      "md": { "value": "13", "type": "borderRadius" },
+      "lg": { "value": "18", "type": "borderRadius" },
+      "pill": { "value": "100", "type": "borderRadius" }
+    },
+    "spacing": {
+      "xs": { "value": "4", "type": "spacing" },
+      "sm": { "value": "8", "type": "spacing" },
+      "md": { "value": "16", "type": "spacing" },
+      "lg": { "value": "24", "type": "spacing" },
+      "xl": { "value": "40", "type": "spacing" },
+      "2xl": { "value": "64", "type": "spacing" }
+    }
+  },
+  "$themes": [],
+  "$metadata": {
+    "tokenSetOrder": ["global"]
+  }
+}

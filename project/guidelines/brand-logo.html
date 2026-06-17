@@ -1,0 +1,30 @@
+<!-- @dsCard group="Brand" viewport="700x190" name="Logo — Wordmark & Mark" subtitle="Placeholder mark from brand tokens" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-body); padding: 24px; display: flex; gap: 26px; align-items: center; }
+  .lockup { display: flex; align-items: center; gap: 12px; }
+  .mark { width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--color-primary); color: var(--color-on-primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 600; font-size: 22px; }
+  .word { font-family: var(--font-heading); font-weight: 600; font-size: 22px; letter-spacing: var(--ls-heading); color: var(--text-strong); }
+  .word b { color: var(--color-accent); font-weight: 600; }
+  .onsage { background: var(--color-primary); border-radius: var(--radius-lg); padding: 18px 22px; }
+  .onsage .mark { background: var(--color-accent); color: var(--color-on-accent); }
+  .onsage .word { color: var(--color-on-primary); }
+  .note { margin-left: auto; font-size: 12px; color: var(--text-muted); max-width: 18ch; }
+</style>
+</head>
+<body>
+  <div class="lockup">
+    <span class="mark">M</span>
+    <span class="word">Makler<b>·</b>Content</span>
+  </div>
+  <div class="onsage lockup">
+    <span class="mark">M</span>
+    <span class="word">Makler·Content</span>
+  </div>
+  <div class="note">Placeholder — replace with final mark</div>
+</body>
+</html>

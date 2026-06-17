@@ -1,0 +1,35 @@
+<!-- @dsCard group="Components" viewport="700x280" name="Form Fields" subtitle="Input · Textarea · focus & error" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); padding: 26px; font-family: var(--font-body); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Input, Textarea } = window.MaklerContentDesignSystem_a211b6;
+    function Demo() {
+      const [v, setV] = React.useState('');
+      return (
+        <div className="grid">
+          <div style={{display:'flex', flexDirection:'column', gap:'16px'}}>
+            <Input label="Name" placeholder="Ihr Name" value={v} onChange={e=>setV(e.target.value)} />
+            <Input label="E-Mail" type="email" placeholder="name@beispiel.de" error="Bitte gültige Adresse angeben" />
+          </div>
+          <Textarea label="Ihr Objekt" rows={5} placeholder="Erzählen Sie kurz von der Immobilie …" hint="Lage, Größe, gewünschter Termin" />
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+  </script>
+</body>
+</html>

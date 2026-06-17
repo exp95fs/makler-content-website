@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makler-Content — Brand-Auswahl-Katalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Mulish:wght@300;400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Karla:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page-bg:#EEEAE3;
+    --ink:#1C1C1A;
+    --ink-soft:#5B5953;
+    --hair:#D8D2C7;
+    --card:#FBFAF7;
+    --shadow:0 1px 2px rgba(28,28,26,.04),0 18px 50px -28px rgba(28,28,26,.30);
+    --maxw:1140px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--page-bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    padding:96px 0 64px;
+    border-bottom:1px solid var(--hair);
+  }
+  .eyebrow{
+    font-size:.74rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:600;margin-bottom:26px;
+  }
+  .hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:clamp(2.6rem,6vw,4.6rem);
+    line-height:1.02;
+    letter-spacing:-.01em;
+    max-width:18ch;
+  }
+  .hero .lead{
+    margin-top:26px;max-width:60ch;font-size:1.07rem;color:var(--ink-soft);
+    font-weight:300;
+  }
+  .hero .how{
+    margin-top:34px;display:flex;gap:14px;flex-wrap:wrap;
+  }
+  .pill{
+    background:var(--card);border:1px solid var(--hair);border-radius:100px;
+    padding:9px 17px;font-size:.82rem;color:var(--ink-soft);font-weight:500;
+  }
+  .pill b{color:var(--ink);font-weight:600}
+
+  /* ---------- TOC ---------- */
+  nav.toc{
+    position:sticky;top:0;z-index:50;
+    background:rgba(238,234,227,.86);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--hair);
+  }
+  nav.toc .wrap{display:flex;gap:6px;align-items:center;padding:13px 28px;overflow-x:auto}
+  nav.toc a{
+    flex:none;text-decoration:none;color:var(--ink-soft);font-size:.8rem;font-weight:500;
+    padding:7px 13px;border-radius:8px;letter-spacing:.01em;white-space:nowrap;transition:.18s;
+  }
+  nav.toc a:hover{background:var(--card);color:var(--ink)}
+  nav.toc .tlabel{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#9A968C;margin-right:6px;flex:none}
+
+  /* ---------- SET CARD ---------- */
+  section.set{padding:74px 0 26px;border-bottom:1px solid var(--hair)}
+  .set-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:6px}
+  .set-num{
+    font-family:'Cormorant Garamond',serif;font-size:2.1rem;font-weight:600;
+    color:#A8A293;line-height:1;
+  }
+  .set-name{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:clamp(1.9rem,3.4vw,2.7rem);letter-spacing:-.01em;line-height:1.05;
+  }
+  .set-char{max-width:64ch;color:var(--ink-soft);margin-top:14px;font-size:1.04rem;font-weight:300}
+
+  .card{
+    background:var(--card);border:1px solid var(--hair);border-radius:18px;
+    box-shadow:var(--shadow);margin-top:34px;overflow:hidden;
+  }
+  .card-inner{padding:30px}
+  @media(min-width:880px){.card-inner{padding:40px}}
+
+  /* swatches */
+  .swatches{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:14px;
+  }
+  @media(max-width:720px){.swatches{grid-template-columns:repeat(2,1fr)}}
+  .swatch{
+    border:1px solid var(--hair);border-radius:13px;overflow:hidden;cursor:pointer;
+    background:#fff;transition:transform .16s ease, box-shadow .16s ease;position:relative;
+  }
+  .swatch:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(28,28,26,.45)}
+  .swatch .chip{height:118px;width:100%}
+  .swatch .meta{padding:12px 13px 14px}
+  .swatch .role{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+  .swatch .hex{font-size:.92rem;font-weight:600;margin-top:4px;font-family:'IBM Plex Sans',monospace;letter-spacing:.02em}
+  .swatch .copyhint{font-size:.66rem;color:#A8A293;margin-top:3px}
+  .swatch.copied .copyhint{color:#3A7D44;font-weight:600}
+
+  /* reasoning + tokens grid */
+  .grid2{display:grid;gap:30px;margin-top:34px}
+  @media(min-width:880px){.grid2{grid-template-columns:1.35fr 1fr;gap:42px}}
+  .block-label{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:14px}
+  .reasoning p{margin-bottom:13px;font-size:.97rem;color:#333128;font-weight:300}
+  .reasoning p strong{font-weight:600;color:var(--ink)}
+  .reasoning .accent-call{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:6px;border:1px solid rgba(0,0,0,.12)}
+
+  /* token block */
+  .tokens{background:#15140F;border-radius:14px;padding:22px 22px 8px;font-family:'IBM Plex Sans',monospace}
+  .tokens .tline{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .tokens .tline:last-child{border-bottom:none}
+  .tokens .tkey{color:#9C9A8F;font-size:.78rem;flex:1;letter-spacing:.02em}
+  .tokens .tval{color:#F3F0E9;font-size:.82rem;font-weight:500}
+  .tokens .tdot{width:16px;height:16px;border-radius:5px;flex:none;border:1px solid rgba(255,255,255,.15)}
+  .tokens-copy{
+    width:100%;margin-top:14px;margin-bottom:14px;background:rgba(255,255,255,.07);color:#F3F0E9;
+    border:1px solid rgba(255,255,255,.13);border-radius:9px;padding:11px;font-size:.8rem;font-weight:500;
+    cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.02em;transition:.18s;
+  }
+  .tokens-copy:hover{background:rgba(255,255,255,.13)}
+  .tokens-copy.done{background:#2F5A38;border-color:#3A7D44;color:#E7F3E9}
+
+  /* ---------- MOCKUP ---------- */
+  .mock-wrap{margin-top:38px}
+  .mock-frame{
+    border-radius:15px;overflow:hidden;border:1px solid var(--hair);
+    box-shadow:0 20px 50px -30px rgba(28,28,26,.5);
+  }
+  /* website header mockup */
+  .mw-top{display:flex;align-items:center;justify-content:space-between;padding:18px 26px}
+  .mw-logo{font-weight:600;letter-spacing:.02em;font-size:1.02rem;display:flex;align-items:center;gap:9px}
+  .mw-logo .mark{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+  .mw-nav{display:flex;gap:22px;font-size:.82rem;font-weight:500;opacity:.85}
+  @media(max-width:600px){.mw-nav{display:none}}
+  .mw-btn{padding:9px 18px;border-radius:8px;font-size:.8rem;font-weight:600}
+  .mw-hero{padding:52px 26px 58px;position:relative}
+  .mw-hero .kicker{font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;font-weight:600;margin-bottom:18px;opacity:.85}
+  .mw-hero h3{font-size:clamp(1.7rem,3.6vw,2.7rem);line-height:1.08;font-weight:600;max-width:16ch}
+  .mw-hero p{margin-top:16px;max-width:42ch;font-size:.96rem;font-weight:300;opacity:.9}
+  .mw-cta{margin-top:26px;display:inline-flex;gap:12px;flex-wrap:wrap}
+  .mw-cta .primary{padding:13px 24px;border-radius:9px;font-weight:600;font-size:.88rem}
+  .mw-cta .ghost{padding:13px 24px;border-radius:9px;font-weight:600;font-size:.88rem;border:1.5px solid}
+
+  /* secondary mock: business card + IG tile */
+  .mock-mini{display:grid;gap:18px;margin-top:18px}
+  @media(min-width:760px){.mock-mini{grid-template-columns:1.3fr 1fr}}
+  .biz{
+    border-radius:13px;padding:26px;min-height:172px;display:flex;flex-direction:column;justify-content:space-between;
+    border:1px solid var(--hair);box-shadow:0 14px 34px -24px rgba(28,28,26,.5);
+  }
+  .biz .bz-top{display:flex;align-items:center;gap:11px}
+  .biz .bz-mark{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem}
+  .biz .bz-name{font-weight:600;font-size:1.06rem;letter-spacing:.01em}
+  .biz .bz-role{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;opacity:.7;margin-top:2px}
+  .biz .bz-foot{font-size:.78rem;display:flex;flex-direction:column;gap:3px;opacity:.85}
+  .biz .bz-rule{height:2px;width:40px;border-radius:2px;margin:14px 0}
+  .ig{
+    border-radius:13px;padding:24px;min-height:172px;display:flex;flex-direction:column;justify-content:space-between;
+    border:1px solid var(--hair);box-shadow:0 14px 34px -24px rgba(28,28,26,.5);aspect-ratio:1/1;
+  }
+  .ig .ig-tag{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;opacity:.8}
+  .ig .ig-h{font-size:1.32rem;line-height:1.12;font-weight:600;margin-top:auto}
+  .ig .ig-dot{width:30px;height:4px;border-radius:3px;margin-top:14px}
+
+  /* ---------- FONT BLOCK ---------- */
+  .font-block{margin-top:40px;border-top:1px dashed var(--hair);padding-top:34px}
+  .font-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .font-tag{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+  .font-names{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 26px}
+  .font-name{
+    background:var(--page-bg);border:1px solid var(--hair);border-radius:8px;padding:8px 14px;
+    font-size:.82rem;font-weight:500;cursor:pointer;transition:.16s;display:flex;align-items:center;gap:8px;
+  }
+  .font-name:hover{background:#fff}
+  .font-name .tg{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#A8A293;font-weight:600}
+  .font-name.copied{border-color:#3A7D44;color:#2F5A38}
+  .type-preview{padding:34px 30px;border-radius:13px;border:1px solid var(--hair)}
+  .type-preview .tp-kicker{font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;font-weight:600;opacity:.75;margin-bottom:16px}
+  .type-preview .tp-h{line-height:1.04;letter-spacing:-.01em;margin-bottom:14px}
+  .type-preview .tp-sub{margin-bottom:20px;opacity:.92}
+  .type-preview .tp-body{max-width:62ch;font-size:1rem;line-height:1.7}
+  .font-why{margin-top:22px;font-size:.95rem;color:#333128;font-weight:300;max-width:74ch}
+  .font-why strong{font-weight:600;color:var(--ink)}
+
+  /* footer */
+  footer{padding:70px 0 90px;text-align:center}
+  footer .fnote{color:var(--ink-soft);max-width:58ch;margin:0 auto;font-weight:300;font-size:1rem}
+  footer h4{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:600;margin-bottom:18px}
+
+  /* toast */
+  #toast{
+    position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:#1C1C1A;color:#F3F0E9;padding:12px 22px;border-radius:100px;font-size:.85rem;font-weight:500;
+    opacity:0;pointer-events:none;transition:.25s ease;z-index:100;box-shadow:0 14px 40px -16px rgba(0,0,0,.6);
+    letter-spacing:.01em;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast b{font-family:'IBM Plex Sans',monospace;font-weight:600}
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <div class="wrap">
+    <span class="tlabel">Sets</span>
+    <a href="#set1">01 · Architektonisch-Premium</a>
+    <a href="#set2">02 · Hell &amp; Editorial</a>
+    <a href="#set3">03 · Erdig &amp; Natürlich</a>
+    <a href="#set4">04 · Tief &amp; Vertrauensvoll</a>
+    <a href="#set5">05 · Klar &amp; Modern</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Brand-Auswahl-Katalog · Schritt 1 von mehreren</div>
+    <h1>Makler-Content — fünf Markenwelten zum Durchscrollen.</h1>
+    <p class="lead">Immobilien-Foto- &amp; Videoproduktion für Makler, Bauträger und Immobilienunternehmen im DACH-Raum. Die Marke ist der Beweis des Handwerks — visuelles Können verkauft visuelles Können. Dieser Katalog zeigt fünf vollständige, in sich harmonische Farb- und Schriftwelten. Scroll durch, vergleiche, entscheide. Wie Farbmuster beim Wandfarben-Aussuchen, nur als fertige Sets.</p>
+    <div class="how">
+      <span class="pill">🎨 <b>5 Farbsets</b> · je 5 Töne mit Rollen</span>
+      <span class="pill">🔤 <b>5 Font-Kombis</b> · live gerendert</span>
+      <span class="pill">📋 Klick auf jeden Hex-Code = <b>kopiert</b></span>
+      <span class="pill">⬇ Token-Block für <b>Claude Design</b></span>
+    </div>
+  </div>
+</header>
+
+<main id="catalog"><!-- sets injected here --></main>
+
+<footer>
+  <div class="wrap">
+    <h4>Welches Set fühlt sich nach „Makler-Content" an?</h4>
+    <p class="fnote">Wähle <strong>ein Farbset + eine Font-Kombi</strong>. Im nächsten Schritt entwerfen wir daraus ein Logo — und daraus das finale Brandbook. Sag mir einfach die Nummer (z.&nbsp;B. „Set&nbsp;04, Font von Set&nbsp;01") und es geht weiter.</p>
+  </div>
+</footer>
+
+<div id="toast">Kopiert: <b id="toast-val"></b></div>
+
+<script>
+/* ============================ DATA ============================ */
+const SETS = [
+  {
+    id:"set1",
+    num:"01",
+    name:"Architektonisch-Premium",
+    char:"Anthrazit-Tiefe trifft warmes Sandlicht und einen Messing-Akzent. Das Set einer etablierten Architektur- oder Premium-Immobilienmarke: ruhig, wertig, leise selbstbewusst. Wirkt wie Sichtbeton im Abendlicht.",
+    colors:[
+      {role:"Primär",      hex:"#1E2A38", name:"Tiefnavy / Anthrazit"},
+      {role:"Sekundär",    hex:"#A6987F", name:"Warmes Greige"},
+      {role:"Hintergrund", hex:"#F4F0E8", name:"Sandweiß"},
+      {role:"Text",        hex:"#15191F", name:"Tintenschwarz"},
+      {role:"Akzent",      hex:"#B08D57", name:"Messing / Gold"}
+    ],
+    roleMap:{primary:"#1E2A38",secondary:"#A6987F",background:"#F4F0E8",surface:"#FBF9F4",text:"#15191F",accent:"#B08D57"},
+    reasoning:[
+      "Die <strong>Tiefnavy-Anthrazit-Basis</strong> trägt Autorität und Seriosität, ohne hart oder kalt zu wirken — sie liest sich edler als reines Schwarz und gibt Immobilienmotiven einen ruhigen Rahmen.",
+      "Das <strong>warme Greige</strong> ist der Brückenton: es nimmt der Tiefe die Strenge und sorgt für die wohnliche, gehobene Anmutung, die Makler-Zielkunden mit „Wertimmobilie\" verbinden.",
+      "Der Akzent ist <strong>Messing/Gold</strong> — gewählt, weil Gold im Immobilien-Premium für Wertigkeit, Handschlag-Vertrauen und Exklusivität steht, aber gedämpft genug bleibt, um nie kitschig zu kippen. <span class='accent-call' style='background:#B08D57'></span>Nur für Linien, Buttons, Mikro-Akzente.",
+      "<strong>Anwendung (60-30-10):</strong> 60&nbsp;% Sandweiß als Fläche/Hintergrund, 30&nbsp;% Anthrazit für Header, Footer &amp; Typo-Blöcke, 10&nbsp;% Messing für CTA, Trennlinien und Logo-Detail. Greige als Übergangs-/Flächenton bei Karten."
+    ],
+    fonts:{
+      head:{family:"Cormorant Garamond", weight:600, css:"'Cormorant Garamond', serif", size:"clamp(2rem,4.4vw,3.3rem)"},
+      body:{family:"Inter", weight:300, css:"'Inter', sans-serif"},
+      tagHead:"Headline / Display", tagBody:"Fließtext / UI",
+      kicker:"Premium Immobilien",
+      h:"Räume, die verkaufen, bevor das erste Wort fällt.",
+      sub:"Architektur-Fotografie &amp; Film für anspruchsvolle Objekte.",
+      body_txt:"Jedes Objekt erzählt eine Geschichte von Licht, Proportion und Material. Wir machen sie sichtbar — mit kontrollierter Bildsprache, die ein Inserat vom Angebot zur Begehrlichkeit hebt. Vom Einfamilienhaus bis zum Neubauprojekt: konsistent, planbar, premium.",
+      why:"<strong>Cormorant Garamond</strong> ist eine hoch-elegante Display-Serife mit feinen Strichkontrasten — sie verleiht Headlines eine architektonische, fast schon redaktionelle Noblesse, die perfekt zur Messing-Anthrazit-Welt passt. Dazu <strong>Inter</strong> als nüchterne, gut lesbare Grotesk im Fließtext: die Spannung aus klassischer Serife (Headline) und neutraler Grotesk (Text) ist der klassische Premium-Editorial-Move. Headline-Font groß und sparsam, Inter für alles Funktionale."
+    }
+  },
+  {
+    id:"set2",
+    num:"02",
+    name:"Hell & Editorial",
+    char:"Porzellan, viel Luft, tiefes Schwarz für den Text und ein dezent kühler Schieferton als Akzent. Das Set eines Hochglanz-Magazins: maximaler Weißraum, die Fotos atmen, die Marke tritt zurück und lässt das Objekt strahlen.",
+    colors:[
+      {role:"Primär",      hex:"#111315", name:"Tiefes Schwarz"},
+      {role:"Sekundär",    hex:"#D8DADD", name:"Hellgrau"},
+      {role:"Hintergrund", hex:"#FAFAF8", name:"Porzellan"},
+      {role:"Text",        hex:"#1A1C1E", name:"Anthrazit-Text"},
+      {role:"Akzent",      hex:"#4F6B7A", name:"Kühler Schiefer"}
+    ],
+    roleMap:{primary:"#111315",secondary:"#D8DADD",background:"#FAFAF8",surface:"#FFFFFF",text:"#1A1C1E",accent:"#4F6B7A"},
+    reasoning:[
+      "Dieses Set lebt von <strong>Reduktion</strong>: Porzellan-Weiß und tiefes Schwarz erzeugen einen kompromisslos klaren, redaktionellen Look — wie die Editorial-Seiten eines Architektur-Magazins. Die Marke macht sich bewusst leise, damit die Immobilien-Fotos den ganzen Raum bekommen.",
+      "Das <strong>Hellgrau</strong> strukturiert ohne Lärm: Trennlinien, Karten-Hintergründe, Bild-Rahmen. Es hält die Fläche ruhig und teuer.",
+      "Der Akzent ist ein <strong>kühler Schieferton</strong> — bewusst zurückhaltend statt knallig. <span class='accent-call' style='background:#4F6B7A'></span>Er gibt dem strengen Schwarz-Weiß einen Hauch von Kühle und Modernität (Links, kleine Labels, aktive Zustände), ohne die editoriale Ruhe zu brechen.",
+      "<strong>Anwendung (60-30-10):</strong> 60&nbsp;% Porzellan-Weiß, 30&nbsp;% Schwarz/Anthrazit für Typo &amp; Footer, 10&nbsp;% verteilt auf Hellgrau-Flächen und punktuell Schiefer-Akzent. Diszipliniert bleiben — die Leere ist Teil des Luxus."
+    ],
+    fonts:{
+      head:{family:"Playfair Display", weight:600, css:"'Playfair Display', serif", size:"clamp(2rem,4.6vw,3.4rem)"},
+      body:{family:"Source Sans 3", weight:300, css:"'Source Sans 3', sans-serif"},
+      tagHead:"Headline / Display", tagBody:"Fließtext / UI",
+      kicker:"Editorial Real Estate",
+      h:"Stillvolle Bilder. Klare Linien. Objekte, die wirken.",
+      sub:"Immobilien-Fotografie im redaktionellen Magazin-Stil.",
+      body_txt:"Weniger ist hier wirklich mehr. Großzügige Weißräume, präzise Kadrierung und ein ruhiges Schwarz-Weiß lassen jedes Detail eines Objekts zur Geltung kommen. Das Ergebnis sind Inserate, die zwischen tausend Angeboten herausstechen — weil sie nicht schreien, sondern überzeugen.",
+      why:"<strong>Playfair Display</strong> ist die Editorial-Serife schlechthin: hohe Strichkontraste, klassische Eleganz, sofort Magazin-Assoziation — ideal, um die ruhige Schwarz-Weiß-Welt mit Charakter aufzuladen. <strong>Source Sans 3</strong> daneben ist eine offene, hochlesbare humanistische Grotesk, die im Fließtext nüchtern und modern bleibt. Playfair nur für große Headlines, Source Sans für Subline, Text und Navigation."
+    }
+  },
+  {
+    id:"set3",
+    num:"03",
+    name:"Erdig & Natürlich",
+    char:"Salbei-Grün, Stein-Taupe und ein gedämpftes Terrakotta. Das wärmste, menschlichste Set: nachhaltig, wohnlich, bodenständig-gehoben. Spricht Bauträger und Makler an, die „Zuhause\" und nicht „Investment\" verkaufen.",
+    colors:[
+      {role:"Primär",      hex:"#565E45", name:"Tiefes Salbei / Olive"},
+      {role:"Sekundär",    hex:"#C7BCA9", name:"Stein / Taupe"},
+      {role:"Hintergrund", hex:"#F3EEE5", name:"Leinen"},
+      {role:"Text",        hex:"#2A2A22", name:"Erdschwarz"},
+      {role:"Akzent",      hex:"#BC6B49", name:"Gedämpftes Terrakotta"}
+    ],
+    roleMap:{primary:"#565E45",secondary:"#C7BCA9",background:"#F3EEE5",surface:"#FBF8F1",text:"#2A2A22",accent:"#BC6B49"},
+    reasoning:[
+      "Das <strong>tiefe Salbei-Olive</strong> trägt Ruhe, Natur und Beständigkeit — Werte, die heute mit hochwertigem, nachhaltigem Wohnen assoziiert werden. Es wirkt erwachsen und warm zugleich, nicht öko-verspielt.",
+      "Der <strong>Stein-Taupe-Ton</strong> erdet das Set und sorgt für die haptische, materialnahe Anmutung (Putz, Naturstein, Leinen). Perfekt für Karten- und Flächenhintergründe.",
+      "Der Akzent ist ein <strong>gedämpftes Terrakotta</strong> — die warme Gegenfarbe zum kühlen Grün. <span class='accent-call' style='background:#BC6B49'></span>Es bringt Lebendigkeit und einen einladenden, menschlichen Ton (CTA, Highlights), bleibt durch die Dämpfung aber elegant statt grell.",
+      "<strong>Anwendung (60-30-10):</strong> 60&nbsp;% Leinen-Hintergrund, 30&nbsp;% Salbei für Header, Flächen &amp; Typo-Akzente, 10&nbsp;% Terrakotta für Buttons und Highlights. Taupe als ruhiger Zwischenton für Karten."
+    ],
+    fonts:{
+      head:{family:"Fraunces", weight:600, css:"'Fraunces', serif", size:"clamp(2rem,4.4vw,3.3rem)"},
+      body:{family:"Mulish", weight:300, css:"'Mulish', sans-serif"},
+      tagHead:"Headline / Display", tagBody:"Fließtext / UI",
+      kicker:"Wohnen mit Charakter",
+      h:"Wo Menschen ankommen — eingefangen in echtem Licht.",
+      sub:"Foto &amp; Film für Objekte, die sich nach Zuhause anfühlen.",
+      body_txt:"Eine Immobilie ist mehr als Quadratmeter. Es ist das Morgenlicht in der Küche, die Textur des Holzbodens, der Blick in den Garten. Wir fotografieren diese Atmosphäre — warm, ehrlich, einladend — und machen aus einem Inserat ein Gefühl, das Interessenten zum Besichtigungstermin bewegt.",
+      why:"<strong>Fraunces</strong> ist eine moderne „old-style\"-Serife mit weichen, leicht organischen Formen — sie trägt genau die warme, handwerkliche Note, die dieses erdige Set braucht, ohne unseriös zu wirken. <strong>Mulish</strong> ist eine minimalistische, freundliche Grotesk mit runder Anmutung, die den Fließtext zugänglich und ruhig hält. Fraunces für Headlines mit Charakter, Mulish für alles Lesefreundliche."
+    }
+  },
+  {
+    id:"set4",
+    num:"04",
+    name:"Tief & Vertrauensvoll",
+    char:"Tannengrün-Petrol, eine ruhige Creme und ein Kupfer-Akzent. Das Set für Beständigkeit und Seriosität — wie eine etablierte Kanzlei oder ein traditionsreiches Immobilienhaus. Vermittelt Sicherheit und Substanz.",
+    colors:[
+      {role:"Primär",      hex:"#143C39", name:"Tannengrün / Petrol"},
+      {role:"Sekundär",    hex:"#2D5853", name:"Mittel-Petrol"},
+      {role:"Hintergrund", hex:"#F2ECDF", name:"Creme"},
+      {role:"Text",        hex:"#12201E", name:"Dunkelpetrol-Text"},
+      {role:"Akzent",      hex:"#B5734A", name:"Kupfer"}
+    ],
+    roleMap:{primary:"#143C39",secondary:"#2D5853",background:"#F2ECDF",surface:"#FBF7EE",text:"#12201E",accent:"#B5734A"},
+    reasoning:[
+      "Das <strong>tiefe Tannengrün-Petrol</strong> ist die Farbe von Vertrauen, Stabilität und gewachsenem Wert — psychologisch eng mit Verlässlichkeit und „Substanz\" verknüpft. Es wirkt seriöser und exklusiver als ein klassisches Marken-Blau.",
+      "Das <strong>mittlere Petrol</strong> erweitert die Primärfarbe in die Tiefe und erlaubt Abstufungen (Hover, zweite Flächen, Verläufe) innerhalb derselben vertrauensvollen Welt.",
+      "Der Akzent ist <strong>Kupfer</strong> — die warme, metallische Gegenfarbe zum kühlen Grün. <span class='accent-call' style='background:#B5734A'></span>Kupfer steht für Wertbeständigkeit und Handwerk und bringt edle Wärme in die ernste Palette (CTA, Linien, Logo-Detail), ohne ihre Würde zu untergraben.",
+      "<strong>Anwendung (60-30-10):</strong> 60&nbsp;% Creme als heller Träger, 30&nbsp;% Tannengrün für Header, Footer &amp; Vertrauensblöcke, 10&nbsp;% Kupfer für Akzente und Buttons. Mittel-Petrol für Sektionen mit Tiefe."
+    ],
+    fonts:{
+      head:{family:"Libre Baskerville", weight:700, css:"'Libre Baskerville', serif", size:"clamp(1.7rem,3.6vw,2.7rem)"},
+      body:{family:"Karla", weight:400, css:"'Karla', sans-serif"},
+      tagHead:"Headline / Display", tagBody:"Fließtext / UI",
+      kicker:"Substanz & Vertrauen",
+      h:"Werte, die Bestand haben — sichtbar gemacht.",
+      sub:"Verlässliche Immobilien-Produktion für anspruchsvolle Partner.",
+      body_txt:"Wer Immobilien vermittelt, verkauft Vertrauen. Unsere Bildsprache spiegelt genau das: solide, präzise, ohne Effekthascherei. Termintreue, gleichbleibende Qualität und ein durchdachter Look, der Ihr Haus als seriösen Partner positioniert — Aufnahme für Aufnahme, Objekt für Objekt.",
+      why:"<strong>Libre Baskerville</strong> ist eine bildschirmoptimierte Variante der klassischen Baskerville — eine der vertrauenswürdigsten Serifen überhaupt, traditionell mit Beständigkeit und Institution assoziiert. Genau die richtige Stimme für ein „seriös &amp; substanzvoll\"-Set. <strong>Karla</strong> als grotesker Gegenpart ist neutral-modern und hält den Fließtext frisch, damit es nie altbacken wirkt. Baskerville für Headlines, Karla für Text und UI."
+    }
+  },
+  {
+    id:"set5",
+    num:"05",
+    name:"Klar & Modern",
+    char:"Reines Schwarz-Weiß, ein kontrolliertes Kaltgrau und ein einziges, kräftiges Tiefblau als Signal. Das Set einer modernen, tech-affinen Marke: präzise, selbstbewusst, kompromisslos klar. Maximale Wiedererkennung durch einen Akzent.",
+    colors:[
+      {role:"Primär",      hex:"#0E0E10", name:"Schwarz"},
+      {role:"Sekundär",    hex:"#C9CDD2", name:"Kaltgrau"},
+      {role:"Hintergrund", hex:"#FFFFFF", name:"Reinweiß"},
+      {role:"Text",        hex:"#0E0E10", name:"Schwarz-Text"},
+      {role:"Akzent",      hex:"#1F44C8", name:"Tiefes Blau"}
+    ],
+    roleMap:{primary:"#0E0E10",secondary:"#C9CDD2",background:"#FFFFFF",surface:"#F6F7F9",text:"#0E0E10",accent:"#1F44C8"},
+    reasoning:[
+      "Reduziertes <strong>Schwarz-Weiß</strong> ist die selbstbewussteste Basis überhaupt: keine Beliebigkeit, kein Versteck. Sie wirkt modern, tech-nah und kompromisslos — und stellt das Foto- bzw. Videomaterial unmissverständlich in den Mittelpunkt.",
+      "Das <strong>Kaltgrau</strong> liefert die nötigen Zwischentöne für UI, Linien und Flächen, ohne die strenge Klarheit aufzuweichen.",
+      "Der Akzent ist ein <strong>kontrolliertes, tiefes Blau</strong> — bewusst die einzige Farbe im System. <span class='accent-call' style='background:#1F44C8'></span>Genau ein kräftiger Ton sorgt für maximale Wiedererkennung und Signalwirkung (CTA, aktive Links, Marken-Detail); tief statt grell gewählt, damit er kompetent und nicht verspielt wirkt.",
+      "<strong>Anwendung (60-30-10):</strong> 60&nbsp;% Weiß, 30&nbsp;% Schwarz für Typo, Header &amp; Footer, 10&nbsp;% — sehr diszipliniert — Tiefblau als einziges Farbsignal. Kaltgrau ausschließlich für UI-Struktur."
+    ],
+    fonts:{
+      head:{family:"Space Grotesk", weight:600, css:"'Space Grotesk', sans-serif", size:"clamp(1.9rem,4.2vw,3.2rem)"},
+      body:{family:"IBM Plex Sans", weight:300, css:"'IBM Plex Sans', sans-serif"},
+      tagHead:"Headline / Display", tagBody:"Fließtext / UI",
+      kicker:"Modern Real Estate Media",
+      h:"Präzise Bilder. Klare Marke. Messbarer Vorsprung.",
+      sub:"Foto- &amp; Videoproduktion für die digitale Vermarktung.",
+      body_txt:"Immobilien werden heute online entschieden — im Scroll, in Sekunden. Unsere Produktion ist darauf gebaut: scharfe, konsistente Bildwelten und Bewegtbild, das im Feed funktioniert. Effizient produziert, sauber geliefert, optimiert für die Plattformen, auf denen Ihre Käufer wirklich suchen.",
+      why:"<strong>Space Grotesk</strong> ist eine moderne, leicht technische Grotesk mit markanten Details — sie gibt der Marke einen präzisen, zeitgenössischen Charakter, der zur klaren Schwarz-Weiß-Blau-Welt passt. <strong>IBM Plex Sans</strong> im Fließtext ist neutral, exzellent lesbar und ebenfalls technisch geerdet — ein stimmiges Grotesk-Duo statt Serifen-Kontrast. Space Grotesk für Headlines &amp; Marke, IBM Plex für Text und Interface."
+    }
+  }
+];
+
+/* ============================ HELPERS ============================ */
+// readable text color on a given bg hex
+function readableOn(hex){
+  const c = hex.replace('#','');
+  const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+  const lum=(0.299*r+0.587*g+0.114*b);
+  return lum>150 ? '#15171A' : '#FBFAF7';
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+
+/* ============================ RENDER ============================ */
+const root = document.getElementById('catalog');
+
+SETS.forEach(set=>{
+  const rm = set.roleMap;
+  const sec = document.createElement('section');
+  sec.className='set';
+  sec.id=set.id;
+
+  // swatches
+  const swHtml = set.colors.map(col=>`
+    <div class="swatch" data-hex="${col.hex}" title="Klicken zum Kopieren">
+      <div class="chip" style="background:${col.hex}"></div>
+      <div class="meta">
+        <div class="role">${col.role}</div>
+        <div class="hex">${col.hex}</div>
+        <div class="copyhint">${col.name} · kopieren</div>
+      </div>
+    </div>`).join('');
+
+  // tokens
+  const tokenRows = [
+    ['Primary',rm.primary],['Secondary',rm.secondary],['Background',rm.background],
+    ['Surface',rm.surface],['Text',rm.text],['Accent',rm.accent]
+  ];
+  const tokHtml = tokenRows.map(([k,v])=>`
+    <div class="tline">
+      <span class="tdot" style="background:${v}"></span>
+      <span class="tkey">${k}</span>
+      <span class="tval">${v}</span>
+    </div>`).join('');
+  const tokenString = tokenRows.map(([k,v])=>`${k}: ${v}`).join('\n');
+
+  // reasoning
+  const reaHtml = set.reasoning.map(p=>`<p>${p}</p>`).join('');
+
+  // mockup colors
+  const f = set.fonts;
+  const headCss = f.head.css, bodyCss = f.body.css;
+  const onPrimary = readableOn(rm.primary);
+  const onAccent  = readableOn(rm.accent);
+  const onBg      = readableOn(rm.background);
+  const onSecondary = readableOn(rm.secondary);
+
+  // website header mockup
+  const webMock = `
+   <div class="mock-frame" style="background:${rm.background};color:${onBg};font-family:${bodyCss}">
+     <div class="mw-top" style="border-bottom:1px solid ${rm.secondary}55">
+       <div class="mw-logo" style="font-family:${headCss};color:${rm.text}">
+         <span class="mark" style="background:${rm.primary};color:${onPrimary}">M</span>Makler-Content
+       </div>
+       <div class="mw-nav" style="color:${rm.text}">
+         <span>Leistungen</span><span>Referenzen</span><span>Ablauf</span><span>Kontakt</span>
+       </div>
+       <div class="mw-btn" style="background:${rm.accent};color:${onAccent}">Termin anfragen</div>
+     </div>
+     <div class="mw-hero">
+       <div class="kicker" style="color:${rm.accent}">${f.kicker}</div>
+       <h3 style="font-family:${headCss};color:${rm.text}">${f.h}</h3>
+       <p style="color:${rm.text}">${f.sub} Konsistente Bildsprache, planbare Lieferung, ein Look, der Ihr Objekt heraushebt.</p>
+       <div class="mw-cta">
+         <span class="primary" style="background:${rm.primary};color:${onPrimary}">Portfolio ansehen</span>
+         <span class="ghost" style="border-color:${rm.accent};color:${rm.accent}">Preise &amp; Pakete</span>
+       </div>
+     </div>
+   </div>`;
+
+  // business card + IG tile
+  const miniMock = `
+   <div class="mock-mini">
+     <div class="biz" style="background:${rm.primary};color:${onPrimary};font-family:${bodyCss}">
+       <div class="bz-top">
+         <span class="bz-mark" style="background:${rm.accent};color:${onAccent};font-family:${headCss}">M</span>
+         <div>
+           <div class="bz-name" style="font-family:${headCss}">Makler-Content</div>
+           <div class="bz-role">Immobilien · Foto &amp; Film</div>
+         </div>
+       </div>
+       <div class="bz-rule" style="background:${rm.accent}"></div>
+       <div class="bz-foot">
+         <span>hallo@makler-content.de</span>
+         <span>Raum Baden-Baden · DACH</span>
+       </div>
+     </div>
+     <div class="ig" style="background:${rm.secondary};color:${onSecondary};font-family:${bodyCss}">
+       <div class="ig-tag" style="color:${rm.primary}">Objekt der Woche</div>
+       <div class="ig-h" style="font-family:${headCss};color:${rm.text}">Licht. Linie.<br>Verkauft.</div>
+       <div class="ig-dot" style="background:${rm.accent}"></div>
+     </div>
+   </div>`;
+
+  // font preview block
+  const fontBlock = `
+   <div class="font-block">
+     <div class="font-head">
+       <span class="font-tag">Schrift-Kombination</span>
+     </div>
+     <div class="font-names">
+       <span class="font-name" data-font="${f.head.family}"><span class="tg">Headline</span> ${f.head.family}</span>
+       <span class="font-name" data-font="${f.body.family}"><span class="tg">Fließtext</span> ${f.body.family}</span>
+     </div>
+     <div class="type-preview" style="background:${rm.surface};color:${rm.text}">
+       <div class="tp-kicker" style="color:${rm.accent}">${f.kicker}</div>
+       <div class="tp-h" style="font-family:${headCss};font-weight:${f.head.weight};font-size:${f.head.size};color:${rm.text}">${f.h}</div>
+       <div class="tp-sub" style="font-family:${bodyCss};font-weight:500;font-size:1.1rem;color:${rm.primary}">${f.sub}</div>
+       <div class="tp-body" style="font-family:${bodyCss};font-weight:${f.body.weight};color:${rm.text}">${f.body_txt}</div>
+     </div>
+     <div class="font-why">${f.why}</div>
+   </div>`;
+
+  sec.innerHTML = `
+    <div class="wrap">
+      <div class="set-head">
+        <span class="set-num">${set.num}</span>
+        <h2 class="set-name">${set.name}</h2>
+      </div>
+      <p class="set-char">${set.char}</p>
+
+      <div class="card">
+        <div class="card-inner">
+          <div class="swatches">${swHtml}</div>
+
+          <div class="grid2">
+            <div class="reasoning">
+              <div class="block-label">Stimmung · Akzent · Anwendung</div>
+              ${reaHtml}
+            </div>
+            <div>
+              <div class="block-label">Design-Tokens · für Claude Design</div>
+              <div class="tokens">
+                ${tokHtml}
+                <button class="tokens-copy" data-tokens="${esc(tokenString).replace(/\n/g,'&#10;')}">⧉ Alle Tokens kopieren</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-wrap">
+            <div class="block-label">In Anwendung · Website-Header, Visitenkarte &amp; Instagram-Tile</div>
+            ${webMock}
+            ${miniMock}
+          </div>
+
+          ${fontBlock}
+        </div>
+      </div>
+    </div>`;
+  root.appendChild(sec);
+});
+
+/* ============================ INTERACTION ============================ */
+const toast = document.getElementById('toast');
+const toastVal = document.getElementById('toast-val');
+let toastTimer;
+function showToast(val){
+  toastVal.textContent = val;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove('show'),1600);
+}
+function copyText(txt){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(txt);
+  }
+  const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(ta);
+  return Promise.resolve();
+}
+
+// swatch copy
+document.querySelectorAll('.swatch').forEach(sw=>{
+  sw.addEventListener('click',()=>{
+    const hex=sw.dataset.hex;
+    copyText(hex).then(()=>{
+      showToast(hex);
+      sw.classList.add('copied');
+      const hint=sw.querySelector('.copyhint');
+      const prev=hint.textContent;
+      hint.textContent='✓ kopiert!';
+      setTimeout(()=>{sw.classList.remove('copied');hint.textContent=prev;},1500);
+    });
+  });
+});
+
+// token block copy
+document.querySelectorAll('.tokens-copy').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const txt=btn.dataset.tokens.replace(/&#10;/g,'\n').replace(/&amp;/g,'&');
+    copyText(txt).then(()=>{
+      showToast('Design-Tokens');
+      btn.classList.add('done');
+      const prev=btn.textContent;
+      btn.textContent='✓ Tokens kopiert';
+      setTimeout(()=>{btn.classList.remove('done');btn.textContent=prev;},1600);
+    });
+  });
+});
+
+// font name copy
+document.querySelectorAll('.font-name').forEach(fn=>{
+  fn.addEventListener('click',()=>{
+    const name=fn.dataset.font;
+    copyText(name).then(()=>{
+      showToast(name);
+      fn.classList.add('copied');
+      setTimeout(()=>fn.classList.remove('copied'),1500);
+    });
+  });
+});
+
+// active TOC highlight
+const tocLinks=[...document.querySelectorAll('nav.toc a')];
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      tocLinks.forEach(l=>l.style.background='');
+      const active=tocLinks.find(l=>l.getAttribute('href')==='#'+e.target.id);
+      if(active){active.style.background='var(--card)';active.style.color='var(--ink)';}
+    }
+  });
+},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('section.set').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

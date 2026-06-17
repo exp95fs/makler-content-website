@@ -1,0 +1,30 @@
+<!-- @dsCard group="Type" viewport="700x230" name="Type Scale" subtitle="Display → Caption" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg-page); font-family: var(--font-body); padding: 22px 24px; color: var(--text-strong); }
+  .row { display: flex; align-items: baseline; gap: 16px; padding: 5px 0; border-bottom: 1px solid var(--border-hair); }
+  .row:last-child { border-bottom: none; }
+  .label { width: 92px; flex: none; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+  .spec { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); flex: none; }
+  .heading { font-family: var(--font-heading); letter-spacing: var(--ls-heading); }
+  .d { font-size: 30px; font-weight: 600; }
+  .h1 { font-size: 25px; font-weight: 600; }
+  .h2 { font-size: 21px; font-weight: 600; }
+  .h3 { font-size: 18px; font-weight: 400; }
+  .lead { font-size: 17px; font-weight: 300; }
+  .body { font-size: 15px; font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="row"><span class="label">Display</span><span class="heading d">Zuhause</span><span class="spec">Fraunces 600 · 56</span></div>
+  <div class="row"><span class="label">H1</span><span class="heading h1">Zuhause</span><span class="spec">Fraunces 600 · 40</span></div>
+  <div class="row"><span class="label">H2</span><span class="heading h2">Zuhause</span><span class="spec">Fraunces 600 · 30</span></div>
+  <div class="row"><span class="label">H3</span><span class="heading h3">Zuhause</span><span class="spec">Fraunces 400 · 22</span></div>
+  <div class="row"><span class="label">Lead</span><span class="lead">Zuhause finden</span><span class="spec">Mulish 300 · 18</span></div>
+  <div class="row"><span class="label">Body</span><span class="body">Zuhause finden</span><span class="spec">Mulish 400 · 16</span></div>
+</body>
+</html>

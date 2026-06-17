@@ -1,0 +1,80 @@
+<!-- @dsCard group="Website" viewport="1280x820" name="Marketing Website" subtitle="Makler-Content — hero, services, portfolio, process, contact" -->
+<!-- @startingPoint section="Website" subtitle="Full Makler-Content marketing site" viewport="1280x900" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makler-Content — Immobilien Foto &amp; Film</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+
+  /* Responsive collapses */
+  .mc-nav-mobile { display: none; }
+  @media (max-width: 860px) {
+    .mc-nav-desktop { display: none !important; }
+    .mc-nav-mobile { display: flex !important; }
+    .mc-hero-grid { grid-template-columns: 1fr !important; }
+    .mc-quote-grid { grid-template-columns: 1fr !important; }
+    .mc-contact-grid { grid-template-columns: 1fr !important; }
+    .mc-footer-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+  @media (max-width: 520px) {
+    .mc-form-row { grid-template-columns: 1fr !important; }
+    .mc-footer-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+
+  <script type="text/babel" src="ui.jsx"></script>
+  <script type="text/babel" src="Header.jsx"></script>
+  <script type="text/babel" src="Hero.jsx"></script>
+  <script type="text/babel" src="Services.jsx"></script>
+  <script type="text/babel" src="Portfolio.jsx"></script>
+  <script type="text/babel" src="Process.jsx"></script>
+  <script type="text/babel" src="Contact.jsx"></script>
+  <script type="text/babel" src="Footer.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      const { Header, Hero, Services, Portfolio, Process, Contact, Footer } = window;
+      const onNav = (id) => {
+        const el = document.getElementById(id);
+        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' });
+      };
+      return (
+        <React.Fragment>
+          <Header onNav={onNav} />
+          <main>
+            <Hero onNav={onNav} />
+            <Services />
+            <Portfolio />
+            <Process />
+            <Contact />
+          </main>
+          <Footer onNav={onNav} />
+        </React.Fragment>
+      );
+    }
+
+    function mount() {
+      const need = ['Header','Hero','Services','Portfolio','Process','Contact','Footer','Icon','SectionHead','MaklerContentDesignSystem_a211b6'];
+      if (need.some(k => !window[k])) { setTimeout(mount, 30); return; }
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+      if (window.lucide) window.lucide.createIcons();
+    }
+    mount();
+  </script>
+</body>
+</html>

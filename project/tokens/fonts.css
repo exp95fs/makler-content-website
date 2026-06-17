@@ -1,0 +1,7 @@
+/* ===================================================================
+   Makler-Content — Webfonts
+   Fraunces (Display/Headline) + Mulish (Body/UI), both via Google Fonts.
+   The brand spec ships both as Google Fonts; this keeps fidelity exact.
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Mulish:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');

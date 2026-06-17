@@ -1,0 +1,81 @@
+<!-- @dsCard group="Website" viewport="1280x860" name="One-Pager · Makler-Akquise" subtitle="Foto/Video-Landingpage — Gratis-Pilot CTA, Markenbildung" -->
+<!-- @startingPoint section="Website" subtitle="Makler-Content one-pager — full acquisition landing page" viewport="1280x900" -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto &amp; Video für Makler — mehr Anfragen, schnellere Vermittlung | Raum Bühl · Baden-Baden · Rastatt</title>
+<meta name="description" content="Professionelle Foto- und konzipierte Videoproduktion für Maklerbüros im Raum Bühl, Baden-Baden, Rastatt. Mehr Anfragen, schnellere Vermittlung, sichtbare Marke. Für Verkauf & Vermietung. Jetzt Gratis-Pilot anfragen.">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
+
+  @media (max-width: 860px) {
+    .mc-hero-grid { grid-template-columns: 1fr !important; }
+    .mc-hero-grid > figure { order: -1; }
+    .mc-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 28px !important; }
+    .mc-about-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 460px) {
+    .mc-stats { grid-template-columns: 1fr !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../../_ds_bundle.js"></script>
+
+  <script type="text/babel" src="ui.jsx"></script>
+  <script type="text/babel" src="NavHero.jsx"></script>
+  <script type="text/babel" src="Value.jsx"></script>
+  <script type="text/babel" src="Branding.jsx"></script>
+  <script type="text/babel" src="Flow.jsx"></script>
+  <script type="text/babel" src="FaqContact.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function App() {
+      const w = window;
+      const onNav = (id) => {
+        const el = document.getElementById(id);
+        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth' });
+      };
+      return (
+        <React.Fragment>
+          <w.Nav onNav={onNav} />
+          <main>
+            <w.Hero onNav={onNav} />
+            <w.StatBar />
+            <w.Benefits />
+            <w.Segments />
+            <w.Branding onNav={onNav} />
+            <w.Usp />
+            <w.Process />
+            <w.Portfolio />
+            <w.Offer onNav={onNav} />
+            <w.About />
+            <w.Faq />
+            <w.ContactForm />
+          </main>
+          <w.SiteFooter onNav={onNav} />
+        </React.Fragment>
+      );
+    }
+
+    function mount() {
+      const need = ['Nav','Hero','StatBar','Benefits','Segments','Branding','Usp','Process','Portfolio','Offer','About','Faq','ContactForm','SiteFooter','Icon','Container','Section','SectionHead','MaklerContentDesignSystem_a211b6'];
+      if (need.some(k => !window[k])) { setTimeout(mount, 30); return; }
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+      if (window.lucide) window.lucide.createIcons();
+    }
+    mount();
+  </script>
+</body>
+</html>

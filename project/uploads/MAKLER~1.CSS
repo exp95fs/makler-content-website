@@ -1,0 +1,109 @@
+/* ===================================================================
+   Makler-Content — Design-System "Erdig & Natürlich"
+   CSS Custom Properties. In jedes Projekt einbindbar.
+   Fonts: Google Fonts (Fraunces + Mulish) — Import-Zeile siehe unten.
+   =================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Mulish:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* ---------- Farben ---------- */
+  --color-primary:       #565E45; /* Tiefes Salbei/Olive */
+  --color-primary-deep:  #434A36; /* Hover/Pressed */
+  --color-secondary:     #C7BCA9; /* Stein/Taupe */
+  --color-background:     #F3EEE5; /* Leinen */
+  --color-surface:        #FBF8F1; /* Karten/Panels */
+  --color-text:           #2A2A22; /* Erdschwarz */
+  --color-text-muted:     #5C5A4E; /* Sublines/Captions */
+  --color-accent:         #BC6B49; /* Terrakotta */
+  --color-accent-deep:    #A4583A; /* Hover/Pressed */
+  --color-border:         #E0D8CA; /* Hairlines */
+  --color-on-primary:     #F3EEE5; /* Text auf Primär */
+  --color-on-accent:      #FBF8F1; /* Text auf Akzent */
+
+  /* ---------- Typografie ---------- */
+  --font-heading: 'Fraunces', serif;
+  --font-body:    'Mulish', sans-serif;
+
+  --fw-heading:        600;
+  --fw-heading-reg:    400;
+  --fw-body-light:     300;
+  --fw-body:           400;
+  --fw-body-medium:    500;
+  --fw-body-bold:      700;
+
+  --fs-display: 3.5rem;   /* 56px */
+  --fs-h1:      2.5rem;   /* 40px */
+  --fs-h2:      1.875rem; /* 30px */
+  --fs-h3:      1.375rem; /* 22px */
+  --fs-lead:    1.125rem; /* 18px */
+  --fs-body:    1rem;     /* 16px */
+  --fs-small:   0.875rem; /* 14px */
+  --fs-caption: 0.75rem;  /* 12px */
+
+  --lh-tight:  1.08;
+  --lh-snug:   1.3;
+  --lh-normal: 1.65;
+
+  --ls-heading: -0.01em;
+  --ls-label:   0.18em;
+
+  /* ---------- Radius & Spacing ---------- */
+  --radius-sm: 8px;
+  --radius-md: 13px;
+  --radius-lg: 18px;
+  --radius-pill: 100px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+}
+
+/* ---------- Beispiel-Basisstile (optional, als Startpunkt) ---------- */
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: var(--fw-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+}
+h1, h2, h3 {
+  font-family: var(--font-heading);
+  font-weight: var(--fw-heading);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-heading);
+  color: var(--color-text);
+}
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); font-weight: var(--fw-heading-reg); }
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-weight: var(--fw-body-medium);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-body);
+  font-weight: var(--fw-body-bold);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+}
+.btn-primary:hover { background: var(--color-accent-deep); }
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
