@@ -1391,7 +1391,7 @@ function ContactForm() {
       lineHeight: 1.5
     }
   }, "Ihre Angaben werden ausschlie\xDFlich zur Kontaktaufnahme genutzt. Mehr dazu in der", ' ', /*#__PURE__*/React.createElement("a", {
-    href: "datenschutz.html",
+    href: "/ui_kits/onepager/datenschutz.html",
     style: {
       color: 'var(--text-muted)',
       textDecoration: 'underline'
@@ -1475,13 +1475,13 @@ function SiteFooter({
       marginTop: '4px'
     }
   }, /*#__PURE__*/React.createElement("a", {
-    href: "impressum.html",
+    href: "/ui_kits/onepager/impressum.html",
     style: {
       color: 'var(--color-secondary)',
       textDecoration: 'none'
     }
   }, "Impressum"), /*#__PURE__*/React.createElement("a", {
-    href: "datenschutz.html",
+    href: "/ui_kits/onepager/datenschutz.html",
     style: {
       color: 'var(--color-secondary)',
       textDecoration: 'none'

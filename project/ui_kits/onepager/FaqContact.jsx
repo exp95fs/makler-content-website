@@ -146,7 +146,7 @@ function ContactForm() {
               )}
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.5 }}>
                 Ihre Angaben werden ausschließlich zur Kontaktaufnahme genutzt. Mehr dazu in der{' '}
-                <a href="datenschutz.html" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Datenschutzerklärung</a>.
+                <a href="/ui_kits/onepager/datenschutz.html" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Datenschutzerklärung</a>.
               </p>
             </form>
           )}
@@ -182,8 +182,8 @@ function SiteFooter({ onNav }) {
               <a href="tel:+4915904692843" style={{ color: 'inherit', textDecoration: 'none' }}>0159 0469 2843</a>
             </div>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
-              <a href="impressum.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Impressum</a>
-              <a href="datenschutz.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Datenschutz</a>
+              <a href="/ui_kits/onepager/impressum.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Impressum</a>
+              <a href="/ui_kits/onepager/datenschutz.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Datenschutz</a>
             </div>
           </div>
         </div>
