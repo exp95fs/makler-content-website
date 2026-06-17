@@ -6,8 +6,11 @@ to the „Erdig & Natürlich" design system (linen / sage / terracotta, Fraunces
 Mulish). Built from the DS primitives (`window.MaklerContentDesignSystem_a211b6`).
 
 ## Run
-Open `index.html` — loads React + Babel + Lucide + `_ds_bundle.js`, then mounts
-the sections below.
+Open `index.html` — loads React + ReactDOM (production UMD) + Lucide from CDN,
+the shared design-system bundle (`../../_ds_bundle.js`), and this kit's own
+precompiled `onepager.bundle.js`, then mounts the sections below. There is no
+in-browser JSX transpilation (no Babel CDN script) — the JSX sources are
+compiled ahead of time, see "Build" below.
 
 ## Sections (in order)
 | File | Sections |
@@ -18,6 +21,22 @@ the sections below.
 | `Branding.jsx` | **Personal Branding / Markenbildung** (NEW, sage band), USP |
 | `Flow.jsx` | Process (4 steps), Portfolio, Pilot offer, About (Fabian) |
 | `FaqContact.jsx` | FAQ accordion, Contact form, Footer |
+
+## Build
+`onepager.bundle.js` is generated from the six `.jsx` files above (concatenated
+in the table order, plus the `App`/mount glue) via `@babel/preset-react`
+(classic runtime, JSX → `React.createElement`). Whenever a `.jsx` file in this
+directory changes, recompile:
+
+```sh
+npx babel ui.jsx NavHero.jsx Value.jsx Branding.jsx Flow.jsx FaqContact.jsx \
+  --presets=@babel/preset-react --no-babelrc -o /tmp/x.js   # then append the
+  # App()/mount glue from index.html's old inline script and concatenate —
+  # see git history of this commit for the exact build script used.
+```
+The shared design-system primitives (`Logo`, `Button`, `Card`, `MediaFrame`,
+`Eyebrow`, etc.) are not part of this bundle — they ship in the project-root
+`_ds_bundle.js`, already plain JS, and are loaded separately.
 
 ## Key adaptations & decisions
 - **CTA is portfolio-building**, as requested — the free "Gratis-Pilot" (3 places)

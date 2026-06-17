@@ -5,8 +5,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Foto &amp; Video für Makler — mehr Anfragen, schnellere Vermittlung | Raum Bühl · Baden-Baden · Rastatt</title>
-<meta name="description" content="Professionelle Foto- und konzipierte Videoproduktion für Maklerbüros im Raum Bühl, Baden-Baden, Rastatt. Mehr Anfragen, schnellere Vermittlung, sichtbare Marke. Für Verkauf & Vermietung. Jetzt Gratis-Pilot anfragen.">
+<title>Foto &amp; Video für Makler — mehr Anfragen, schnellere Vermittlung | Raum Bühl · Mittelbaden · Ortenau</title>
+<meta name="description" content="Professionelle Foto- und konzipierte Videoproduktion für Maklerbüros im Raum Bühl, Mittelbaden, Ortenau. Mehr Anfragen, schnellere Vermittlung, sichtbare Marke. Für Verkauf & Vermietung. Jetzt Gratis-Pilot anfragen.">
 <link rel="stylesheet" href="../../styles.css">
 <style>
   * { box-sizing: border-box; }
@@ -14,8 +14,6 @@
   body { margin: 0; background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); -webkit-font-smoothing: antialiased; }
 
   @media (max-width: 860px) {
-    .mc-hero-grid { grid-template-columns: 1fr !important; }
-    .mc-hero-grid > figure { order: -1; }
     .mc-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 28px !important; }
     .mc-about-grid { grid-template-columns: 1fr !important; }
   }
@@ -25,57 +23,25 @@
 </style>
 </head>
 <body>
+  <!-- Static fallback form so Netlify's deploy-time scanner detects this form;
+       the real, JS-rendered form below submits to it (see FaqContact.jsx ContactForm). -->
+  <form name="kontakt" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="kontakt" />
+    <input type="text" name="bot-field" />
+    <input type="text" name="name" />
+    <input type="email" name="email" />
+    <textarea name="nachricht"></textarea>
+  </form>
+
   <div id="root"></div>
 
-  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="../../vendor/react.production.min.js"></script>
+  <script src="../../vendor/react-dom.production.min.js"></script>
+  <script src="../../vendor/lucide.min.js"></script>
   <script src="../../_ds_bundle.js"></script>
 
-  <script type="text/babel" src="ui.jsx"></script>
-  <script type="text/babel" src="NavHero.jsx"></script>
-  <script type="text/babel" src="Value.jsx"></script>
-  <script type="text/babel" src="Branding.jsx"></script>
-  <script type="text/babel" src="Flow.jsx"></script>
-  <script type="text/babel" src="FaqContact.jsx"></script>
-
-  <script type="text/babel" data-presets="react">
-    function App() {
-      const w = window;
-      const onNav = (id) => {
-        const el = document.getElementById(id);
-        if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: 'smooth' });
-      };
-      return (
-        <React.Fragment>
-          <w.Nav onNav={onNav} />
-          <main>
-            <w.Hero onNav={onNav} />
-            <w.StatBar />
-            <w.Benefits />
-            <w.Segments />
-            <w.Branding onNav={onNav} />
-            <w.Usp />
-            <w.Process />
-            <w.Portfolio />
-            <w.Offer onNav={onNav} />
-            <w.About />
-            <w.Faq />
-            <w.ContactForm />
-          </main>
-          <w.SiteFooter onNav={onNav} />
-        </React.Fragment>
-      );
-    }
-
-    function mount() {
-      const need = ['Nav','Hero','StatBar','Benefits','Segments','Branding','Usp','Process','Portfolio','Offer','About','Faq','ContactForm','SiteFooter','Icon','Container','Section','SectionHead','MaklerContentDesignSystem_a211b6'];
-      if (need.some(k => !window[k])) { setTimeout(mount, 30); return; }
-      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-      if (window.lucide) window.lucide.createIcons();
-    }
-    mount();
-  </script>
+  <!-- Precompiled from ui.jsx, NavHero.jsx, Value.jsx, Branding.jsx, Flow.jsx, FaqContact.jsx
+       (Babel preset-react, build-time — no in-browser JSX transpilation). -->
+  <script src="onepager.bundle.js"></script>
 </body>
 </html>

@@ -3,10 +3,10 @@
 function Process() {
   const { Container, SectionHead } = window;
   const steps = [
-    { n: '01', title: 'Kurzes Briefing', text: '10 Minuten am Telefon — Objekt, Ziel (Verkauf/Vermietung), Termin.' },
+    { n: '01', title: 'Kurzes Briefing', text: '10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.' },
     { n: '02', title: 'Ein Termin vor Ort', text: 'Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein.' },
-    { n: '03', title: 'Konzipierter Schnitt', text: 'Geschnitten nach Konzept, nicht nach Schema — inklusive vertikalem Reel.' },
-    { n: '04', title: 'Lieferung in 48 h', text: 'Fotos + Objektvideo + Reel, sofort einsatzbereit für Portale und Kanäle.' },
+    { n: '03', title: 'Konzipierter Schnitt', text: 'Geschnitten nach Konzept, nicht nach Schema.' },
+    { n: '04', title: 'Schnelle Lieferung', text: 'Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.' },
   ];
   return (
     <Section bg="surface" divider>
@@ -54,7 +54,7 @@ function Portfolio() {
         <SectionHead
           eyebrow="Arbeitsproben"
           title="Die ersten Referenzobjekte entstehen gerade."
-          lead="Ich baue mein regionales Portfolio auf. Wenn Sie ein passendes Objekt haben — zum Verkauf oder zur Vermietung — kann Ihr Objekt eines davon sein. Kostenlos. Wie das funktioniert, lesen Sie gleich."
+          lead="Wir bauen unser regionales Portfolio auf. Wenn Sie ein passendes Objekt haben — zum Verkauf oder zur Vermietung — kann Ihr Objekt eines davon sein. Kostenlos. Wie das funktioniert, lesen Sie gleich."
         />
         <div style={{
           display: 'grid', gap: '18px', marginTop: 'clamp(28px, 4vw, 40px)',
@@ -73,9 +73,9 @@ function Offer({ onNav }) {
   const { Button } = window.MaklerContentDesignSystem_a211b6;
   const { Icon, Container } = window;
   const list = [
-    { b: 'Was Sie bekommen:', t: ' komplette Produktion — konzipiertes Objektvideo (60–90 s) + vertikales Reel + bearbeitete Objektfotos. Für Verkauf oder Vermietung.' },
-    { b: 'Was ich dafür möchte:', t: ' Ihr Einverständnis, das Ergebnis als Referenz zeigen zu dürfen — und ehrliches Feedback.' },
-    { b: 'Was nicht dahintersteckt:', t: ' kein Abo, keine versteckten Kosten, keine Verpflichtung. Gefällt es Ihnen, sprechen wir über die nächsten Objekte. Wenn nicht, behalten Sie den Content trotzdem.' },
+    { b: 'Was Sie bekommen:', t: ' komplette Produktion, konzipiertes Objektvideo (60–90 s) + vertikales Reel + bearbeitete Objektfotos. Für Verkauf oder Vermietung.' },
+    { b: 'Was wir dafür möchten:', t: ' Ihr Einverständnis, das Ergebnis als Referenz zeigen zu dürfen.' },
+    { b: 'Was nicht dahintersteckt:', t: ' kein Abo, keine versteckten Kosten, keine Verpflichtung.' },
   ];
   return (
     <Section bg="page">
@@ -105,7 +105,7 @@ function Offer({ onNav }) {
             fontFamily: 'var(--font-body)', fontSize: '15.5px', lineHeight: 'var(--lh-normal)',
             color: 'var(--text-muted)', margin: '16px auto 0', maxWidth: '60ch',
           }}>
-            Ich bin neu am Markt im Raum Bühl / Baden-Baden und baue mein Referenz-Portfolio auf.
+            Ich bin neu am Markt im Raum Bühl / Mittelbaden und baue mein Referenz-Portfolio auf.
             Statt Versprechen zu machen, zeige ich Ihnen lieber das Ergebnis — an einem Ihrer Objekte.
           </p>
           <div style={{
@@ -157,7 +157,7 @@ function About() {
           {/* PLATZHALTER: professionelles Porträtfoto */}
           <MediaFrame ratio="1 / 1" radius="lg" placeholderLabel="Porträtfoto · Platzhalter" />
           <div>
-            <Eyebrow>Wer das macht</Eyebrow>
+            <Eyebrow>Dein Content-Partner</Eyebrow>
             {/* PLATZHALTER: Name — „[Nachname]" später ersetzen */}
             <h2 style={{
               fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
@@ -180,7 +180,7 @@ function About() {
               color: 'var(--text-muted)', margin: '14px 0 0',
             }}>
               Heißt für Sie: Content mit Plan — abgestimmt auf Ihr Ziel, ob Verkauf, Vermietung oder der
-              Aufbau Ihrer Marke. Ansässig im Raum Bühl / Baden-Baden, mit kurzen Wegen zu Ihren Objekten.
+              Aufbau Ihrer Marke. Ansässig im Raum Bühl / Mittelbaden, mit kurzen Wegen zu Ihren Objekten.
             </p>
           </div>
         </div>

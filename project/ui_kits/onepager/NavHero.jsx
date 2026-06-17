@@ -30,24 +30,20 @@ function Nav({ onNav }) {
 
 /* ---------------- Hero ---------------- */
 function Hero({ onNav }) {
-  const { Button, MediaFrame, Eyebrow } = window.MaklerContentDesignSystem_a211b6;
+  const { Button, Eyebrow } = window.MaklerContentDesignSystem_a211b6;
   const { Icon, Container } = window;
   return (
     <section id="top" style={{ background: 'var(--bg-page)' }}>
       <Container style={{ padding: 'clamp(44px, 6vw, 80px) var(--container-pad) clamp(40px, 5vw, 64px)' }}>
-        <div style={{
-          display: 'grid', gap: 'clamp(32px, 5vw, 56px)', alignItems: 'center',
-          gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr)',
-        }} className="mc-hero-grid">
-          <div>
-            <Eyebrow>Foto &amp; Video für Makler · Raum Bühl · Baden-Baden · Rastatt</Eyebrow>
+        <div style={{ maxWidth: '68ch' }}>
+            <Eyebrow>Foto &amp; Video für Makler · Raum Bühl · Mittelbaden · Ortenau</Eyebrow>
             <h1 style={{
               fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
               fontSize: 'clamp(2.3rem, 4.8vw, 3.5rem)', lineHeight: 1.06,
               letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
               margin: '18px 0 0', textWrap: 'balance',
             }}>
-              Content, der Ihre Objekte heraushebt — und Ihr{' '}
+              Content, der Ihre Objekte heraushebt - und Ihr{' '}
               <span style={{ color: 'var(--color-accent)' }}>Maklerbüro</span>.
             </h1>
             <p style={{
@@ -71,18 +67,8 @@ function Hero({ onNav }) {
               fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)',
               margin: '20px 0 0', lineHeight: 1.6,
             }}>
-              Für <strong style={{ color: 'var(--text-strong)', fontWeight: 'var(--fw-body-bold)' }}>Verkauf &amp; Vermietung</strong>
-              {' '}· ein Termin, fertige Foto- und Video-Assets · Lieferung in{' '}
-              <strong style={{ color: 'var(--text-strong)', fontWeight: 'var(--fw-body-bold)' }}>48 Stunden</strong>
+              Für Verkauf &amp; Vermietung · Foto, Video, Drohne und 360° · schnelle Lieferung nach Paketumfang.
             </p>
-          </div>
-
-          <MediaFrame
-            ratio="4 / 5"
-            eyebrow="Platzhalter · Showreel"
-            caption="Hier läuft bald Ihr Objektvideo."
-            placeholderLabel="Hero · Objektvideo"
-          />
         </div>
       </Container>
     </section>

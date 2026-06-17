@@ -5,16 +5,16 @@ function Branding({ onNav }) {
   const { Icon, Container } = window;
 
   const pillars = [
-    { icon: 'layers', title: 'Konsistente Bildsprache', text: 'Eine durchgängige Handschrift über alle Objekte hinweg — Ihr Büro wird auf den ersten Blick wiedererkannt.' },
+    { icon: 'layers', title: 'Konsistente Bildsprache', text: 'Eine durchgängige Handschrift über alle Objekte hinweg. Ihr Büro wird auf den ersten Blick wiedererkannt.' },
     { icon: 'megaphone', title: 'Sie als Gesicht der Region', text: 'Makler-Reels, Porträt- und Experten-Content, der Vertrauen aufbaut, bevor das erste Gespräch beginnt.' },
-    { icon: 'badge-check', title: 'Strategie statt Einzelclips', text: 'Ein roter Faden für Portale, Social Media und Website — geplant, nicht zufällig.' },
+    { icon: 'badge-check', title: 'Strategie statt Einzelclips', text: 'Ein roter Faden für Portale, Social Media und Website. Strategisch geplant, nicht zufällig zusammengestellt.' },
   ];
 
   return (
     <Section bg="sage">
       <Container>
         <div style={{ maxWidth: '60ch' }}>
-          <Eyebrow color="onDark">Ausbaustufe · Markenbildung</Eyebrow>
+          <Eyebrow color="onDark">Markenbildung</Eyebrow>
           <h2 style={{
             fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
             fontSize: 'clamp(1.7rem, 3.2vw, 2.3rem)', lineHeight: 1.14,
@@ -86,17 +86,17 @@ function Branding({ onNav }) {
 function Usp() {
   const { Container, SectionHead } = window;
   const usps = [
-    { n: '1', title: 'Alles aus einer Hand', text: 'Strategie, Konzept, Dreh, Schnitt und Feinschliff — alles aus einer Hand. Ein Ansprechpartner statt vieler Schnittstellen: keine Overhead-Kosten, keine Reibungsverluste.' },
-    { n: '2', title: 'Bewusst auf wenige Kunden begrenzt', text: 'Wir arbeiten gezielt mit wenigen Kunden gleichzeitig. So bleiben die Wege kurz und die Lieferung schnell — jedes Objekt bekommt die volle Aufmerksamkeit.' },
-    { n: '3', title: 'Konsistenter, hochwertiger Look', text: 'Eine durchgängige Bildsprache, die die Wertigkeit Ihres Maklerbüros unterstreicht — Objekt für Objekt wiedererkennbar.' },
-    { n: '4', title: 'Gedacht aus Sicht der Zielgruppe', text: 'Wir denken aus der Perspektive Ihrer Käufer und Mieter — und rücken genau das in den Fokus, was für diese Zielgruppe wirklich zählt. So spricht jedes Bild die richtigen Menschen an.' },
+    { n: '1', title: 'Alles aus einer Hand', text: 'Strategie, Konzept, Dreh, Schnitt und Feinschliff. alles aus einer Hand. Ein Ansprechpartner statt vieler Schnittstellen: keine Overhead-Kosten, keine Reibungsverluste.' },
+    { n: '2', title: 'Bewusst auf wenige Kunden begrenzt', text: 'Wir arbeiten gezielt mit wenigen Kunden gleichzeitig. So bleiben die Wege kurz und die Lieferung schnell. Jedes Objekt bekommt die volle Aufmerksamkeit.' },
+    { n: '3', title: 'Konsistenter, hochwertiger Look', text: 'Eine durchgängige Bildsprache, die die Wertigkeit Ihres Maklerbüros unterstreicht. Objekt für Objekt wiedererkennbar.' },
+    { n: '4', title: 'Gedacht aus Sicht der Zielgruppe', text: 'Wir denken aus der Perspektive Ihrer Käufer und Mieter und rücken genau das in den Fokus, was für diese Zielgruppe wirklich zählt. So spricht jedes Bild die richtigen Menschen an.' },
   ];
   return (
     <Section bg="page">
       <Container>
         <SectionHead
           eyebrow="Was uns von anderen Anbietern unterscheidet"
-          title={'Alles aus einer Hand — gedacht aus Sicht Ihrer Zielgruppe.'}
+          title={'Alles aus einer Hand. Gedacht aus Sicht Ihrer Zielgruppe.'}
         />
         <div style={{
           display: 'grid', gap: '20px', marginTop: 'clamp(32px, 4vw, 46px)',
@@ -132,8 +132,8 @@ function Usp() {
         }}>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text-body)', margin: 0 }}>
             <strong style={{ color: 'var(--color-accent-deep)', fontWeight: 'var(--fw-body-bold)' }}>Die Chance:</strong>{' '}
-            Nur rund 9 % der Makler produzieren objektspezifische Videos — regional noch weniger.
-            Wer jetzt auf konzipiertes Bewegtbild setzt, hebt sich ab, solange es kaum jemand tut.
+            Nur rund 9 % der Makler produzieren objektspezifische Videos - in unserer Region noch weniger.
+            Wer jetzt in gutes Bewegtbild investiert, hebt sich sichtbar vom Markt ab.
           </p>
         </div>
       </Container>

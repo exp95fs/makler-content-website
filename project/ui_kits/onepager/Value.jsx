@@ -5,10 +5,10 @@ function Benefits() {
   const { Icon, Container, SectionHead } = window;
   const items = [
     { icon: 'trending-up', title: 'Objekte heben sich ab', text: 'Im Portal entscheidet das erste Bild. Profi-Fotos bringen spürbar mehr Aufmerksamkeit.', kpi: '+61 % mehr Aufrufe' },
-    { icon: 'eye', title: 'Bleiben im Kopf', text: 'Video vermittelt Raumgefühl, Licht und Laufwege. Interessenten erinnern sich an Ihr Objekt — nicht an das nächste in der Liste.' },
-    { icon: 'timer', title: 'Schneller vermittelt', text: 'Bessere Darstellung verkürzt die Zeit am Markt — bei Fotos wie bei Video.', kpi: 'bis zu ~32 % schneller' },
+    { icon: 'eye', title: 'Bleiben im Kopf', text: 'Video vermittelt Raumgefühl, Licht und Laufwege. Interessenten erinnern sich an Ihr Objekt, nicht an das nächste in der Liste.' },
+    { icon: 'timer', title: 'Schneller vermittelt', text: 'Bessere Darstellung verkürzt die Zeit am Markt nachweislich, bei Fotos wie bei Video.', kpi: 'bis zu ~32 % schneller' },
     { icon: 'target', title: 'Qualifiziertere Anfragen', text: 'Wer das Objekt im Video gesehen hat, meldet sich gezielter. Weniger Besichtigungstourismus, weniger vergeudete Termine.' },
-    { icon: 'building-2', title: 'Repräsentiert Ihr Büro', text: 'Konsistenter, hochwertiger Content zeigt Ihren Qualitätsanspruch — bei Eigentümern wie bei Käufern.' },
+    { icon: 'building-2', title: 'Repräsentiert Ihr Büro', text: 'Konsistenter, hochwertiger Content zeigt Ihren Qualitätsanspruch. Bei Eigentümern wie bei Käufern.' },
     { icon: 'sparkles', title: 'Baut Ihre Marke', text: 'Reels und Maklerpräsenz arbeiten auch für Sie, nicht nur fürs Objekt.', kpi: '71 % wählen Makler mit starker Online-Präsenz' },
   ];
   return (
@@ -17,7 +17,7 @@ function Benefits() {
         <SectionHead
           eyebrow="Warum hochwertiger Content"
           title="Sechs Gründe, warum sich der Invest in guten Content rechnet."
-          lead="Hochwertige Fotos und Videos sind kein Schmuck fürs Inserat — sie sind ein messbarer Hebel auf Anfragen, Vermittlungsdauer und das Bild, das Ihr Büro abgibt."
+          lead="Hochwertige Fotos und Videos sind kein Schmuck fürs Inserat. Sie sind ein messbarer Hebel auf Anfragen, Vermittlungsdauer und das Bild, das Ihr Büro abgibt."
         />
         <div style={{
           display: 'grid', gap: '20px', marginTop: 'clamp(32px, 4vw, 46px)',
@@ -90,7 +90,7 @@ function Segments() {
       <Container>
         <SectionHead
           eyebrow="Für welches Ziel?"
-          title="Ob Verkauf oder Vermietung — der richtige Content für Ihr Objekt."
+          title="Ob Verkauf oder Vermietung: Der richtige Content für Ihr Objekt."
         />
         <div style={{
           display: 'grid', gap: '20px', marginTop: 'clamp(28px, 4vw, 40px)',

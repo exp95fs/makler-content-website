@@ -3,9 +3,9 @@
 function Faq() {
   const { Container, SectionHead, Icon } = window;
   const items = [
-    { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten — der Content amortisiert sich meist über ein einziges Objekt.' },
-    { q: 'Machen Sie auch Vermietung und Ferienwohnungen?', a: 'Ja. Neben Verkaufsobjekten produziere ich gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking) — dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
-    { q: 'Warum gratis — wo ist der Haken?', a: 'Keiner. Ich baue mein Portfolio auf und brauche dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, ich bekomme eine Referenz. Fairer Tausch.' },
+    { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten. Der Content amortisiert sich meist über ein einziges Objekt.' },
+    { q: 'Erstellen Sie auch Content für Objekte zur Vermietung?', a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking). Dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
+    { q: 'Warum gratis, wo ist der Haken?', a: 'Keiner. Ich baue mein Portfolio auf und brauche dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, ich bekomme eine Referenz. Fairer Tausch.' },
     { q: 'Was kostet es danach?', a: 'Nichts, solange Sie nichts weiter beauftragen. Möchten Sie weitere Objekte, liegt eine Einzelproduktion bei 320–1.590 € je nach Umfang; für regelmäßigen Objektfluss gibt es planbare Monatspakete. Völlig unverbindlich.' },
     { q: 'Wie viel Zeit kostet mich das?', a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest mache ich.' },
     { q: 'Wem gehören die Aufnahmen?', a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Ich darf das Ergebnis als Arbeitsprobe zeigen.' },
@@ -58,17 +58,32 @@ function Faq() {
   );
 }
 
+function encodeFormData(data) {
+  return Object.keys(data)
+    .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+    .join('&');
+}
+
 function ContactForm() {
   const { Input, Textarea, Button, Eyebrow } = window.MaklerContentDesignSystem_a211b6;
   const { Icon, Container } = window;
   const [sent, setSent] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState(false);
+  const [submitting, setSubmitting] = React.useState(false);
 
-  const selectStyle = {
-    fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body)', fontSize: '15px',
-    color: 'var(--text-body)', background: 'var(--surface-card)',
-    border: '1px solid var(--border-hair)', borderRadius: 'var(--radius-sm)',
-    padding: '12px 14px', outline: 'none', width: '100%', appearance: 'none',
-    cursor: 'pointer',
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitError(false);
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: encodeFormData(data),
+    })
+      .then((res) => { if (!res.ok) throw new Error('submit failed'); setSent(true); })
+      .catch(() => setSubmitError(true))
+      .finally(() => setSubmitting(false));
   };
 
   return (
@@ -114,25 +129,24 @@ function ContactForm() {
               <Button variant="ghost" size="md" onClick={() => setSent(false)}>Weitere Anfrage</Button>
             </div>
           ) : (
-            <form onSubmit={(e) => { e.preventDefault(); setSent(true); }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <Input label="Ihr Name" placeholder="Vor- und Nachname" required />
-              <Input label="Maklerbüro" placeholder="Name Ihres Büros" required />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                <label htmlFor="mc-ziel" style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '13px', color: 'var(--text-strong)' }}>Ziel</label>
-                <select id="mc-ziel" style={selectStyle}>
-                  <option>Verkauf</option>
-                  <option>Vermietung</option>
-                  <option>Ferienwohnung / Kurzzeit</option>
-                  <option>Noch offen</option>
-                </select>
-              </div>
-              <Input label="E-Mail oder Telefon" placeholder="So erreiche ich Sie" required />
-              <Textarea label="Objekt / Nachricht (optional)" rows={3} placeholder="Kurz zum Objekt, das Sie im Kopf haben" />
-              <Button type="submit" variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} style={{ width: '100%' }}>
-                Gratis-Pilot anfragen
+            <form name="kontakt" onSubmit={handleSubmit} data-netlify-honeypot="bot-field" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input type="hidden" name="form-name" value="kontakt" />
+              <input type="text" name="bot-field" tabIndex="-1" autoComplete="off" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }} aria-hidden="true" />
+              <Input label="Ihr Name" name="name" placeholder="Vor- und Nachname" required />
+              <Input label="E-Mail" name="email" type="email" placeholder="ihre@email.de" required />
+              <Textarea label="Nachricht" name="nachricht" rows={4} placeholder="Kurz zu Ihrem Objekt und Anliegen" required />
+              <Button type="submit" variant="primary" size="lg" disabled={submitting} iconRight={<Icon name="arrow-right" size={18} />} style={{ width: '100%' }}>
+                {submitting ? 'Wird gesendet …' : 'Gratis-Pilot anfragen'}
               </Button>
+              {submitError && (
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--status-danger)', textAlign: 'center', margin: 0 }}>
+                  Da ist leider etwas schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie direkt an{' '}
+                  <a href="mailto:fabian.schneebiegl@gmail.com" style={{ color: 'var(--status-danger)' }}>fabian.schneebiegl@gmail.com</a>.
+                </p>
+              )}
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.5 }}>
-                Ihre Angaben werden ausschließlich zur Kontaktaufnahme genutzt. [Platzhalter: Datenschutz-Hinweis]
+                Ihre Angaben werden ausschließlich zur Kontaktaufnahme genutzt. Mehr dazu in der{' '}
+                <a href="datenschutz.html" style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}>Datenschutzerklärung</a>.
               </p>
             </form>
           )}
@@ -156,18 +170,20 @@ function SiteFooter({ onNav }) {
               fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)', fontSize: '14.5px',
               lineHeight: 'var(--lh-normal)', color: 'var(--color-secondary)', margin: '16px 0 0',
             }}>
-              {/* PLATZHALTER: Name */}
-              Fabian [Nachname] · Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
-              Raum Bühl · Baden-Baden · Rastatt
+              Fabian Schneebiegl · Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
+              Raum Bühl · Mittelbaden · Ortenau
             </p>
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 2 }}>
-            {/* PLATZHALTER: Kontaktdaten */}
-            <div style={{ opacity: 0.86 }}>[Platzhalter: E-Mail]</div>
-            <div style={{ opacity: 0.86 }}>[Platzhalter: Telefon]</div>
+            <div style={{ opacity: 0.86 }}>
+              <a href="mailto:fabian.schneebiegl@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>fabian.schneebiegl@gmail.com</a>
+            </div>
+            <div style={{ opacity: 0.86 }}>
+              <a href="tel:+4915904692843" style={{ color: 'inherit', textDecoration: 'none' }}>0159 0469 2843</a>
+            </div>
             <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
-              <a href="#top" onClick={(e) => { e.preventDefault(); onNav('top'); }} style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Impressum</a>
-              <a href="#top" onClick={(e) => { e.preventDefault(); onNav('top'); }} style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Datenschutz</a>
+              <a href="impressum.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Impressum</a>
+              <a href="datenschutz.html" style={{ color: 'var(--color-secondary)', textDecoration: 'none' }}>Datenschutz</a>
             </div>
           </div>
         </div>
