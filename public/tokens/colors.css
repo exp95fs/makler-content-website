@@ -1,0 +1,53 @@
+/* ===================================================================
+   Makler-Content — Colors  ·  "Erdig & Natürlich"
+   Warm, earthy, grounded-premium. Sells "Zuhause", not "Investment".
+   60-30-10: 60% Leinen (linen) · 30% Salbei (sage) · 10% Terrakotta.
+   =================================================================== */
+
+:root {
+  /* ---------- Base palette (raw brand colors) ---------- */
+  --color-primary:       #565E45; /* Tiefes Salbei / Olive — sage */
+  --color-primary-deep:  #434A36; /* Hover / pressed sage */
+  --color-secondary:     #C7BCA9; /* Stein / Taupe — calm card tone */
+  --color-background:    #F3EEE5; /* Leinen — page background */
+  --color-surface:       #FBF8F1; /* Karten / Panels */
+  --color-text:          #2A2A22; /* Erdschwarz — 12.5:1 on bg */
+  --color-text-muted:    #5C5A4E; /* Sublines, captions */
+  --color-accent:        #BC6B49; /* Gedämpftes Terrakotta — CTA */
+  --color-accent-deep:   #A4583A; /* Hover / pressed terracotta */
+  --color-border:        #E0D8CA; /* Hairlines, card edges */
+  --color-on-primary:    #F3EEE5; /* Text on sage surfaces */
+  --color-on-accent:     #FBF8F1; /* Text on terracotta */
+
+  /* ---------- Derived tints (built from the base, no new hues) ---------- */
+  --color-primary-tint:   #EAE9E0; /* faint sage wash for fills */
+  --color-accent-tint:    #F0E2D9; /* faint terracotta wash */
+  --color-surface-sunk:   #EFE9DD; /* recessed surface / track */
+  --color-overlay:        rgba(42, 42, 34, 0.46); /* scrim on imagery */
+
+  /* ---------- Semantic aliases (use these in product code) ---------- */
+  --bg-page:        var(--color-background);
+  --surface-card:   var(--color-surface);
+  --surface-raised: var(--color-secondary);
+  --surface-sunk:   var(--color-surface-sunk);
+
+  --text-strong:    var(--color-text);
+  --text-body:      var(--color-text);
+  --text-muted:     var(--color-text-muted);
+  --text-on-dark:   var(--color-on-primary);
+
+  --border-hair:    var(--color-border);
+  --border-strong:  var(--color-secondary);
+
+  --action-primary:        var(--color-accent);
+  --action-primary-hover:  var(--color-accent-deep);
+  --action-secondary:      var(--color-primary);
+  --action-secondary-hover:var(--color-primary-deep);
+  --focus-ring:            var(--color-accent);
+
+  /* ---------- Status (kept within the earthy family) ---------- */
+  --status-success: #5C7048; /* mossy green */
+  --status-warning: #C08A3E; /* ochre */
+  --status-danger:  #A4583A; /* terracotta-deep doubles as error */
+  --status-info:    #566D72; /* muted slate-teal */
+}

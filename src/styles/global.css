@@ -1,0 +1,20 @@
+@import './tokens/index.css';
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 860px) {
+  .mc-nav-mobile { display: none; }
+  .mc-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 28px !important; }
+  .mc-about-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 460px) {
+  .mc-stats { grid-template-columns: 1fr !important; }
+}
