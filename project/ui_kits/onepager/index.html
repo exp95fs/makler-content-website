@@ -20,6 +20,28 @@
   @media (max-width: 460px) {
     .mc-stats { grid-template-columns: 1fr !important; }
   }
+
+  #root { display: none; }
+  #mc-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-page); padding: 24px;
+  }
+  #mc-gate form {
+    display: flex; flex-direction: column; gap: 12px;
+    max-width: 320px; width: 100%; text-align: center;
+  }
+  #mc-gate input {
+    font-family: var(--font-body); font-size: 16px; padding: 12px 14px;
+    border: 1px solid var(--border-hair); border-radius: var(--radius-md);
+    text-align: center;
+  }
+  #mc-gate button {
+    font-family: var(--font-body); font-weight: var(--fw-body-bold); font-size: 15px;
+    padding: 12px 14px; border: none; border-radius: var(--radius-md);
+    background: var(--color-accent); color: #fff; cursor: pointer;
+  }
+  #mc-gate p { font-family: var(--font-body); font-size: 13px; color: var(--text-muted); margin: 0; }
 </style>
 </head>
 <body>
@@ -33,7 +55,39 @@
     <textarea name="nachricht"></textarea>
   </form>
 
+  <div id="mc-gate">
+    <form id="mc-gate-form">
+      <p>Diese Seite ist noch in Vorbereitung.<br>Bitte Zugangscode eingeben.</p>
+      <input type="password" id="mc-gate-input" placeholder="Zugangscode" autocomplete="off" autofocus>
+      <button type="submit">Weiter</button>
+      <p id="mc-gate-error" style="color: var(--status-danger); display: none;">Code ist leider falsch.</p>
+    </form>
+  </div>
+
   <div id="root"></div>
+
+  <script>
+    (function () {
+      var CODE = 'pilot2026';
+      var gate = document.getElementById('mc-gate');
+      var root = document.getElementById('root');
+      if (sessionStorage.getItem('mc_unlocked') === '1') {
+        gate.style.display = 'none';
+        root.style.display = 'block';
+      }
+      document.getElementById('mc-gate-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var val = document.getElementById('mc-gate-input').value.trim().toLowerCase();
+        if (val === CODE) {
+          sessionStorage.setItem('mc_unlocked', '1');
+          gate.style.display = 'none';
+          root.style.display = 'block';
+        } else {
+          document.getElementById('mc-gate-error').style.display = 'block';
+        }
+      });
+    })();
+  </script>
 
   <script src="/vendor/react.production.min.js"></script>
   <script src="/vendor/react-dom.production.min.js"></script>

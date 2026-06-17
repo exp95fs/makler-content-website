@@ -1063,7 +1063,7 @@ function About() {
     ratio: "1 / 1",
     radius: "lg",
     placeholderLabel: "Portr\xE4tfoto \xB7 Platzhalter"
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Dein Content-Partner"), /*#__PURE__*/React.createElement("h2", {
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Eyebrow, null, "Wer das macht"), /*#__PURE__*/React.createElement("h2", {
     style: {
       fontFamily: 'var(--font-heading)',
       fontWeight: 'var(--fw-heading)',
@@ -1074,7 +1074,7 @@ function About() {
       margin: '14px 0 0',
       textWrap: 'balance'
     }
-  }, "Fabian [Nachname] \u2014 Foto, Video & strategischer Blick in einer Person."), /*#__PURE__*/React.createElement("p", {
+  }, "Fabian \u2014 Foto, Video und strategischer Blick f\xFCr Immobilienmarken."), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: 'var(--font-body)',
       fontWeight: 'var(--fw-body-light)',
@@ -1083,7 +1083,16 @@ function About() {
       color: 'var(--text-body)',
       margin: '18px 0 0'
     }
-  }, "Ich verbinde zwei Dinge, die selten zusammenkommen: jahrelange Leidenschaft f\xFCr Foto und Video \u2014 und einen Hintergrund in E-Commerce, Marketing und strategischer Content-Planung."), /*#__PURE__*/React.createElement("p", {
+  }, "Ich komme aus der professionellen Foto- und Videoproduktion und habe \xFCber viele Jahre visuelle Projekte f\xFCr namhafte Unternehmen umgesetzt. Dabei ging es nie nur um sch\xF6ne Bilder, sondern immer um die Frage: Welche Botschaft soll ankommen und wie muss sie aussehen, damit sie bei der richtigen Zielgruppe wirkt?"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontFamily: 'var(--font-body)',
+      fontWeight: 'var(--fw-body-light)',
+      fontSize: 'var(--fs-lead)',
+      lineHeight: 'var(--lh-normal)',
+      color: 'var(--text-body)',
+      margin: '14px 0 0'
+    }
+  }, "Genau diesen Anspruch \xFCbertrage ich auf Immobilien. Ich produziere Fotos, Videos und Markencontent, die Objekte hochwertig zeigen, Maklerb\xFCros professionell positionieren und aus einem einzelnen Auftrag ein stimmiges Gesamtbild machen."), /*#__PURE__*/React.createElement("p", {
     style: {
       fontFamily: 'var(--font-body)',
       fontSize: '15px',
@@ -1091,7 +1100,7 @@ function About() {
       color: 'var(--text-muted)',
       margin: '14px 0 0'
     }
-  }, "Hei\xDFt f\xFCr Sie: Content mit Plan \u2014 abgestimmt auf Ihr Ziel, ob Verkauf, Vermietung oder der Aufbau Ihrer Marke. Ans\xE4ssig im Raum B\xFChl / Mittelbaden, mit kurzen Wegen zu Ihren Objekten.")))));
+  }, "Ans\xE4ssig in B\xFChl, unterwegs in Mittelbaden und der Ortenau.")))));
 }
 Object.assign(window, {
   Process,

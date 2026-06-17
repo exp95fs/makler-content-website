@@ -157,30 +157,39 @@ function About() {
           {/* PLATZHALTER: professionelles Porträtfoto */}
           <MediaFrame ratio="1 / 1" radius="lg" placeholderLabel="Porträtfoto · Platzhalter" />
           <div>
-            <Eyebrow>Dein Content-Partner</Eyebrow>
-            {/* PLATZHALTER: Name — „[Nachname]" später ersetzen */}
+            <Eyebrow>Wer das macht</Eyebrow>
             <h2 style={{
               fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
               fontSize: 'clamp(1.6rem, 3vw, 2.1rem)', lineHeight: 1.16,
               letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
               margin: '14px 0 0', textWrap: 'balance',
             }}>
-              Fabian [Nachname] — Foto, Video &amp; strategischer Blick in einer Person.
+              Fabian — Foto, Video und strategischer Blick für Immobilienmarken.
             </h2>
             <p style={{
               fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)',
               fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-normal)',
               color: 'var(--text-body)', margin: '18px 0 0',
             }}>
-              Ich verbinde zwei Dinge, die selten zusammenkommen: jahrelange Leidenschaft für Foto und
-              Video — und einen Hintergrund in E-Commerce, Marketing und strategischer Content-Planung.
+              Ich komme aus der professionellen Foto- und Videoproduktion und habe über viele Jahre
+              visuelle Projekte für namhafte Unternehmen umgesetzt. Dabei ging es nie nur um schöne Bilder,
+              sondern immer um die Frage: Welche Botschaft soll ankommen und wie muss sie aussehen, damit
+              sie bei der richtigen Zielgruppe wirkt?
+            </p>
+            <p style={{
+              fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)',
+              fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-normal)',
+              color: 'var(--text-body)', margin: '14px 0 0',
+            }}>
+              Genau diesen Anspruch übertrage ich auf Immobilien. Ich produziere Fotos, Videos und
+              Markencontent, die Objekte hochwertig zeigen, Maklerbüros professionell positionieren und aus
+              einem einzelnen Auftrag ein stimmiges Gesamtbild machen.
             </p>
             <p style={{
               fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 'var(--lh-normal)',
               color: 'var(--text-muted)', margin: '14px 0 0',
             }}>
-              Heißt für Sie: Content mit Plan — abgestimmt auf Ihr Ziel, ob Verkauf, Vermietung oder der
-              Aufbau Ihrer Marke. Ansässig im Raum Bühl / Mittelbaden, mit kurzen Wegen zu Ihren Objekten.
+              Ansässig in Bühl, unterwegs in Mittelbaden und der Ortenau.
             </p>
           </div>
         </div>
