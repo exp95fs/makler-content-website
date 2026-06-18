@@ -2,6 +2,7 @@ import { MediaFrame } from '../components/ds/MediaFrame.jsx';
 import { Eyebrow } from '../components/ds/Eyebrow.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
+import { InstagramIcon } from '../components/ui/InstagramIcon.jsx';
 import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
 
 export function Process() {
@@ -65,6 +66,19 @@ export function Portfolio() {
             <MediaFrame key={s} ratio="16 / 10" radius="lg" placeholderLabel={s} />
           ))}
         </div>
+        <a
+          href="https://www.instagram.com/quadratblick_de"
+          target="_blank"
+          rel="noopener"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: '9px', marginTop: '24px',
+            fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '14px',
+            color: 'var(--color-accent-deep)', textDecoration: 'none',
+          }}
+        >
+          <InstagramIcon size={18} />
+          <span>Mehr Arbeitsproben auf Instagram</span>
+        </a>
       </Container>
     </Section>
   );
@@ -98,21 +112,21 @@ export function Offer({ onNav }) {
             letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
             margin: 0, textWrap: 'balance',
           }}>
-            Eine ehrliche Sache: Ich suche 3 Objekte für mein Portfolio.
+            Eine ehrliche Sache: Wir suchen 3 Objekte für unser Portfolio.
           </h2>
           <p style={{
             fontFamily: 'var(--font-body)', fontSize: '15.5px', lineHeight: 'var(--lh-normal)',
             color: 'var(--text-muted)', margin: '16px auto 0', maxWidth: '60ch',
           }}>
-            Ich bin neu am Markt im Raum Bühl / Mittelbaden und baue mein Referenz-Portfolio auf.
-            Statt Versprechen zu machen, zeige ich Ihnen lieber das Ergebnis — an einem Ihrer Objekte.
+            Wir sind neu am Markt im Raum Bühl / Mittelbaden und bauen unser Referenz-Portfolio auf.
+            Statt Versprechen zu machen, zeigen wir Ihnen lieber das Ergebnis — an einem Ihrer Objekte.
           </p>
           <div style={{
             margin: '24px 0', display: 'inline-flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
             justifyContent: 'center',
             fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-muted)',
           }}>
-            <span>Regulärer Wert: <span style={{ textDecoration: 'line-through' }}>840 €</span></span>
+            <span>Regulärer Wert: <span style={{ textDecoration: 'line-through' }}>1.590 €</span></span>
             <Icon name="arrow-right" size={16} color="var(--text-muted)" />
             <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '26px', color: 'var(--status-success)' }}>0 €</span>
             <span>für die ersten 3 Pilot-Objekte</span>
@@ -131,7 +145,7 @@ export function Offer({ onNav }) {
           </div>
           <div style={{ marginTop: '28px' }}>
             <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav('anfrage')}>
-              Pilotplatz sichern (3 frei)
+              Pilotplatz sichern
             </Button>
           </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', margin: '18px 0 0' }}>

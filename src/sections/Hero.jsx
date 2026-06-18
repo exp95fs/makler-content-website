@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/ds/Button.jsx';
 import { Eyebrow } from '../components/ds/Eyebrow.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
@@ -47,12 +48,55 @@ export function Hero({ onNav }) {
   );
 }
 
+function Stat({ count, prefix = '', suffix = '', label }) {
+  const [value, setValue] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting || started) return;
+        setStarted(true);
+        observer.unobserve(el);
+        const duration = 1200;
+        const start = performance.now();
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setValue(Math.round(count * eased));
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.4 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [count, started]);
+
+  return (
+    <div ref={ref}>
+      <div style={{
+        fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
+        fontSize: 'clamp(1.8rem, 3.6vw, 2.6rem)', lineHeight: 1,
+        letterSpacing: 'var(--ls-heading)', color: 'var(--color-accent)',
+      }}>{prefix}{value}{suffix}</div>
+      <div style={{
+        fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.45,
+        color: 'var(--text-muted)', margin: '10px auto 0', maxWidth: '22ch',
+      }}>{label}</div>
+    </div>
+  );
+}
+
 export function StatBar() {
   const stats = [
-    { big: '+403 %', lbl: 'mehr Anfragen mit Video' },
-    { big: '~32 %', lbl: 'schnellere Vermittlung mit Profi-Fotos' },
-    { big: '73 %', lbl: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
-    { big: 'nur 9 %', lbl: 'der Makler machen objektspezifische Videos' },
+    { count: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen mit Video' },
+    { count: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
+    { count: 73, suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
+    { count: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
   ];
   return (
     <section style={{
@@ -65,17 +109,7 @@ export function StatBar() {
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', textAlign: 'center',
         }} className="mc-stats">
           {stats.map((s) => (
-            <div key={s.lbl}>
-              <div style={{
-                fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-                fontSize: 'clamp(1.8rem, 3.6vw, 2.6rem)', lineHeight: 1,
-                letterSpacing: 'var(--ls-heading)', color: 'var(--color-accent)',
-              }}>{s.big}</div>
-              <div style={{
-                fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.45,
-                color: 'var(--text-muted)', margin: '10px auto 0', maxWidth: '22ch',
-              }}>{s.lbl}</div>
-            </div>
+            <Stat key={s.label} count={s.count} prefix={s.prefix} suffix={s.suffix} label={s.label} />
           ))}
         </div>
         <p style={{

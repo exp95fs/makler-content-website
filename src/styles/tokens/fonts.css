@@ -1,4 +1,5 @@
 /* Self-hosted webfonts (Fraunces, Mulish, IBM Plex Mono) — latin + latin-ext subsets only. Generated from @fontsource packages. */
+/* TODO: General Sans (heading font used in the v6 design concept) should be self-hosted here once woff2 files are available — add @font-face blocks below mirroring the Fraunces/Mulish/IBM Plex Mono pattern above. Until then, --font-heading keeps its existing Fraunces/Mulish fallback stack (see typography.css), with no CDN dependency in production. */
 
 @font-face {
   font-family: 'Fraunces';

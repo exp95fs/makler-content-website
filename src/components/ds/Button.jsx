@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Button — Makler-Content primary action.
+ * Button — Quadratblick primary action.
  * Variants: primary (terracotta), secondary (sage), ghost (terracotta outline), link.
  */
 export function Button({

@@ -6,16 +6,17 @@ import { Eyebrow } from '../components/ds/Eyebrow.jsx';
 import { Logo } from '../components/ds/Logo.jsx';
 import { Divider } from '../components/ds/Divider.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
+import { InstagramIcon } from '../components/ui/InstagramIcon.jsx';
 import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
 
 export function Faq() {
   const items = [
     { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten. Der Content amortisiert sich meist über ein einziges Objekt.' },
     { q: 'Erstellen Sie auch Content für Objekte zur Vermietung?', a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking). Dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
-    { q: 'Warum gratis, wo ist der Haken?', a: 'Keiner. Ich baue mein Portfolio auf und brauche dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, ich bekomme eine Referenz. Fairer Tausch.' },
+    { q: 'Warum gratis, wo ist der Haken?', a: 'Es gibt keinen. Wir bauen unser Portfolio auf und brauchen dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, wir bekommen eine Referenz. Fairer Tausch.' },
     { q: 'Was kostet es danach?', a: 'Nichts, solange Sie nichts weiter beauftragen. Möchten Sie weitere Objekte, liegt eine Einzelproduktion bei 320–1.590 € je nach Umfang; für regelmäßigen Objektfluss gibt es planbare Monatspakete. Völlig unverbindlich.' },
-    { q: 'Wie viel Zeit kostet mich das?', a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest mache ich.' },
-    { q: 'Wem gehören die Aufnahmen?', a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Ich darf das Ergebnis als Arbeitsprobe zeigen.' },
+    { q: 'Wie viel Zeit kostet mich das?', a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.' },
+    { q: 'Wem gehören die Aufnahmen?', a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Wir dürfen das Ergebnis als Arbeitsprobe zeigen.' },
   ];
   const [open, setOpen] = useState(0);
   return (
@@ -108,7 +109,7 @@ export function ContactForm() {
             fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)', fontSize: 'var(--fs-lead)',
             lineHeight: 'var(--lh-normal)', color: 'var(--text-muted)', margin: '14px auto 0',
           }}>
-            Kurz Ihre Eckdaten — ich melde mich innerhalb von 24 Stunden mit einem Terminvorschlag.
+            Kurz Ihre Eckdaten — wir melden uns innerhalb von 24 Stunden mit einem Terminvorschlag.
           </p>
         </div>
 
@@ -126,10 +127,10 @@ export function ContactForm() {
                 background: 'var(--color-primary-tint)', color: 'var(--color-primary)',
               }}><Icon name="check" size={28} color="var(--color-primary)" /></span>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '23px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)', margin: 0 }}>
-                Danke — ich melde mich.
+                Danke — wir melden uns.
               </h3>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 'var(--lh-normal)', color: 'var(--text-muted)', margin: 0, maxWidth: '44ch' }}>
-                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von mir — mit einem Terminvorschlag für Ihr Pilot-Objekt.
+                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns — mit einem Terminvorschlag für Ihr Pilot-Objekt.
               </p>
               <Button variant="ghost" size="md" onClick={() => setSent(false)}>Weitere Anfrage</Button>
             </div>
@@ -146,7 +147,7 @@ export function ContactForm() {
               {submitError && (
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--status-danger)', textAlign: 'center', margin: 0 }}>
                   Da ist leider etwas schiefgelaufen. Bitte versuchen Sie es erneut oder schreiben Sie direkt an{' '}
-                  <a href="mailto:fabian.schneebiegl@gmail.com" style={{ color: 'var(--status-danger)' }}>fabian.schneebiegl@gmail.com</a>.
+                  <a href="mailto:info@quadratblick.de" style={{ color: 'var(--status-danger)' }}>info@quadratblick.de</a>.
                 </p>
               )}
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', textAlign: 'center', margin: '4px 0 0', lineHeight: 1.5 }}>
@@ -167,19 +168,32 @@ export function SiteFooter() {
       <Container style={{ padding: 'clamp(44px, 6vw, 64px) var(--container-pad) 32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
           <div style={{ maxWidth: '42ch' }}>
-            {/* PLATZHALTER: Logo / Markenname */}
             <Logo size="md" onDark />
             <p style={{
               fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)', fontSize: '14.5px',
               lineHeight: 'var(--lh-normal)', color: 'var(--color-secondary)', margin: '16px 0 0',
             }}>
-              Fabian Schneebiegl · Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
+              Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
               Raum Bühl · Mittelbaden · Ortenau
             </p>
+            <a
+              href="https://www.instagram.com/quadratblick_de"
+              target="_blank"
+              rel="noopener"
+              aria-label="Instagram"
+              style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: '36px', height: '36px', borderRadius: '50%',
+                background: 'rgba(243,238,229,0.12)', color: 'var(--color-on-primary)',
+                marginTop: '18px', textDecoration: 'none',
+              }}
+            >
+              <InstagramIcon size={20} />
+            </a>
           </div>
           <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-on-primary)', lineHeight: 2 }}>
             <div style={{ opacity: 0.86 }}>
-              <a href="mailto:fabian.schneebiegl@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>fabian.schneebiegl@gmail.com</a>
+              <a href="mailto:info@quadratblick.de" style={{ color: 'inherit', textDecoration: 'none' }}>info@quadratblick.de</a>
             </div>
             <div style={{ opacity: 0.86 }}>
               <a href="tel:+4915904692843" style={{ color: 'inherit', textDecoration: 'none' }}>0159 0469 2843</a>
@@ -192,7 +206,7 @@ export function SiteFooter() {
         </div>
         <Divider style={{ background: 'rgba(243,238,229,0.16)', margin: '28px 0 0' }} />
         <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-secondary)', margin: '20px 0 0' }}>
-          © 2026 · Markenname &amp; Logo sind Platzhalter und werden später ersetzt.
+          © 2026 · Quadratblick
         </p>
       </Container>
     </footer>

@@ -11,7 +11,7 @@ body {
 }
 
 @media (max-width: 860px) {
-  .mc-nav-mobile { display: none; }
+  .mc-nav-links { display: none !important; }
   .mc-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 28px !important; }
   .mc-about-grid { grid-template-columns: 1fr !important; }
 }
