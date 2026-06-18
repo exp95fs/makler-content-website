@@ -72,15 +72,10 @@ h1,h2,h3{font-family:var(--font-heading); font-weight:var(--fw-heading); letter-
 .btn-sm{padding:9px 16px; font-size:13px; gap:7px;}
 .btn-lg{padding:16px 32px; font-size:16px; gap:10px;}
 
-/* ---------- Logo placeholder (Quadratblick) — single-color monochrome mark + word ---------- */
-.qb-logo{display:inline-flex; align-items:center; gap:11px; color:var(--text-strong, var(--color-text));}
-.qb-logo .mark{width:30px; height:30px; flex:none; position:relative;}
-.qb-logo .mark::before{content:''; position:absolute; inset:0; border:2px solid currentColor; border-radius:6px;}
-.qb-logo .mark::after{content:''; position:absolute; right:-1px; bottom:-1px; width:9px; height:9px; background:currentColor; border-radius:2px;}
-.qb-logo .word{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:18px; letter-spacing:-0.01em; color:currentColor; white-space:nowrap;}
-.qb-logo.on-dark{color:var(--color-on-primary);}
-.qb-logo.lg .mark{width:44px; height:44px;}
-.qb-logo.lg .word{font-size:22px;}
+/* ---------- Logo (Quadratblick) — real brand asset, swapped per background ---------- */
+.qb-logo{display:inline-flex; align-items:center;}
+.qb-logo img{height:30px; width:auto; display:block;}
+.qb-logo.lg img{height:42px;}
 
 /* ---------- Header / sticky nav with section menu ---------- */
 header.site{position:sticky; top:0; z-index:100; background:rgba(243,238,229,.82); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-bottom:1px solid var(--color-border);}
@@ -104,8 +99,8 @@ section{padding:clamp(56px,8vw,96px) 0;}
 .section-head.center{text-align:center; margin:0 auto;}
 .section-head.center h2, .section-head.center p{margin-left:auto; margin-right:auto;}
 
-/* ---------- Hero (full container width, left-aligned) ---------- */
-.hero-inner{max-width:none;}
+/* ---------- Hero (section centered, text block left-aligned within) ---------- */
+.hero-inner{max-width:860px; margin:0 auto;}
 .hero-inner h1{font-size:clamp(2.3rem,4.8vw,3.5rem); margin-top:18px; max-width:32ch;}
 .hero-inner h1 span{color:var(--color-accent);}
 .hero-inner p.lead{font-size:18px; margin-top:22px; max-width:58ch;}
@@ -182,6 +177,8 @@ section{padding:clamp(56px,8vw,96px) 0;}
 /* ---------- Portfolio (V1 plain placeholders) ---------- */
 .portfolio-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:18px; margin-top:clamp(28px,4vw,40px);}
 .portfolio-item{aspect-ratio:16/10; border-radius:var(--radius-lg); background:var(--color-secondary); display:flex; align-items:center; justify-content:center; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:12px; letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--color-primary); opacity:.55; box-shadow:var(--shadow-lg);}
+.portfolio-instagram{display:inline-flex; align-items:center; gap:9px; margin-top:24px; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:14px; color:var(--color-accent-deep); transition:color var(--dur-fast) var(--ease-soft);}
+.portfolio-instagram:hover{color:var(--color-accent);}
 
 /* ---------- Offer ---------- */
 .offer-card{max-width:680px; margin:0 auto; text-align:center; background:var(--color-surface); border:1.5px solid var(--color-accent); border-radius:var(--radius-xl); padding:clamp(22px,3vw,32px); box-shadow:var(--shadow-lg);}
@@ -228,6 +225,8 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
 .footer-contact a{opacity:.86;}
 .footer-legal{display:flex; gap:16px; margin-top:4px;}
 .footer-legal a{color:var(--color-secondary);}
+.footer-social{display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:rgba(243,238,229,.12); color:var(--color-on-primary); margin-top:18px; transition:background var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);}
+.footer-social:hover{background:var(--color-accent); transform:translateY(-2px);}
 .footer-divider{height:1px; background:rgba(243,238,229,.16); margin:28px 0 0;}
 .footer-bottom{font-family:var(--font-body); font-size:13px; color:var(--color-secondary); margin-top:20px;}
 
@@ -248,8 +247,7 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
   <div class="container">
     <nav class="bar">
       <a href="#top" class="qb-logo">
-        <span class="mark"></span>
-        <span class="word">Quadratblick</span>
+        <img src="assets/logo/quadratblick-logo-gruen.png" alt="Quadratblick">
       </a>
       <div class="nav-links">
         <a href="#leistungen">Leistungen</a>
@@ -412,6 +410,7 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
       <div class="portfolio-item">Referenzobjekt 2 · Vermietung</div>
       <div class="portfolio-item">Referenzobjekt 3 · Video + Bildstrecke</div>
     </div>
+    <a href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener" class="portfolio-instagram"><i data-lucide="instagram" style="width:18px;height:18px;"></i><span>Mehr Arbeitsproben auf Instagram</span></a>
   </div>
 </section>
 
@@ -490,11 +489,11 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
   <div class="container">
     <div class="footer-top">
       <div class="footer-brand">
-        <a href="#top" class="qb-logo on-dark">
-          <span class="mark"></span>
-          <span class="word">Quadratblick</span>
+        <a href="#top" class="qb-logo">
+          <img src="assets/logo/quadratblick-logo-weiss.png" alt="Quadratblick">
         </a>
-        <p>Fabian Schneebiegl · Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung · Raum Bühl · Mittelbaden · Ortenau</p>
+        <p>Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung · Raum Bühl · Mittelbaden · Ortenau</p>
+        <a href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener" class="footer-social" aria-label="Instagram"><i data-lucide="instagram" style="width:20px;height:20px;"></i></a>
       </div>
       <div class="footer-contact">
         <div><a href="mailto:info@quadratblick.de">info@quadratblick.de</a></div>
