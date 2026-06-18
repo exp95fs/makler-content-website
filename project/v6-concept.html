@@ -72,14 +72,14 @@ h1,h2,h3{font-family:var(--font-heading); font-weight:var(--fw-heading); letter-
 .btn-sm{padding:9px 16px; font-size:13px; gap:7px;}
 .btn-lg{padding:16px 32px; font-size:16px; gap:10px;}
 
-/* ---------- Logo placeholder (Quadratblick) ---------- */
-.qb-logo{display:inline-flex; align-items:center; gap:11px;}
-.qb-logo .mark{width:34px; height:34px; flex:none; border-radius:var(--radius-sm); background:var(--color-primary); position:relative;}
-.qb-logo .mark::before{content:''; position:absolute; inset:8px; border:2px solid var(--color-on-primary); border-radius:3px;}
-.qb-logo .mark::after{content:''; position:absolute; right:7px; bottom:7px; width:7px; height:7px; background:var(--color-accent); border-radius:1.5px;}
-.qb-logo .word{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:18px; letter-spacing:-0.01em; color:var(--color-text); white-space:nowrap;}
-.qb-logo.on-dark .word{color:var(--color-on-primary);}
-.qb-logo.lg .mark{width:48px; height:48px;}
+/* ---------- Logo placeholder (Quadratblick) — single-color monochrome mark + word ---------- */
+.qb-logo{display:inline-flex; align-items:center; gap:11px; color:var(--text-strong, var(--color-text));}
+.qb-logo .mark{width:30px; height:30px; flex:none; position:relative;}
+.qb-logo .mark::before{content:''; position:absolute; inset:0; border:2px solid currentColor; border-radius:6px;}
+.qb-logo .mark::after{content:''; position:absolute; right:-1px; bottom:-1px; width:9px; height:9px; background:currentColor; border-radius:2px;}
+.qb-logo .word{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:18px; letter-spacing:-0.01em; color:currentColor; white-space:nowrap;}
+.qb-logo.on-dark{color:var(--color-on-primary);}
+.qb-logo.lg .mark{width:44px; height:44px;}
 .qb-logo.lg .word{font-size:22px;}
 
 /* ---------- Header / sticky nav with section menu ---------- */
@@ -98,16 +98,17 @@ section{padding:clamp(56px,8vw,96px) 0;}
 .divider{border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border);}
 
 .section-head{max-width:54ch;}
+.section-head.wide{max-width:none;}
 .section-head h2{font-size:clamp(1.7rem,3.2vw,2.3rem); margin-top:14px;}
 .section-head p{font-size:18px; margin-top:16px; max-width:54ch;}
 .section-head.center{text-align:center; margin:0 auto;}
 .section-head.center h2, .section-head.center p{margin-left:auto; margin-right:auto;}
 
-/* ---------- Hero ---------- */
-.hero-inner{max-width:68ch;}
-.hero-inner h1{font-size:clamp(2.3rem,4.8vw,3.5rem); margin-top:18px; text-wrap:balance;}
+/* ---------- Hero (full container width, left-aligned) ---------- */
+.hero-inner{max-width:none;}
+.hero-inner h1{font-size:clamp(2.3rem,4.8vw,3.5rem); margin-top:18px; max-width:32ch;}
 .hero-inner h1 span{color:var(--color-accent);}
-.hero-inner p.lead{font-size:18px; margin-top:22px; max-width:52ch;}
+.hero-inner p.lead{font-size:18px; margin-top:22px; max-width:58ch;}
 .hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:30px;}
 .hero-note{font-size:14px; color:var(--color-text-muted); margin-top:20px; line-height:1.6;}
 
@@ -121,7 +122,8 @@ section{padding:clamp(56px,8vw,96px) 0;}
 .benefits-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:20px; margin-top:clamp(32px,4vw,46px);}
 .benefit-card{background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:32px; box-shadow:var(--shadow-md); transition:transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);}
 .benefit-card:hover{transform:translateY(-3px); box-shadow:var(--shadow-lg);}
-.benefit-icon{width:46px; height:46px; border-radius:var(--radius-md); background:var(--color-primary-tint); color:var(--color-primary); display:flex; align-items:center; justify-content:center;}
+.benefit-icon{width:46px; height:46px; border-radius:var(--radius-md); background:var(--color-primary-tint); color:var(--color-primary); display:flex; align-items:center; justify-content:center; transition:transform var(--dur-slow) var(--ease-soft), background var(--dur-slow) var(--ease-soft), color var(--dur-slow) var(--ease-soft);}
+.benefit-card:hover .benefit-icon{transform:rotate(-7deg) scale(1.08); background:var(--color-accent); color:var(--color-on-accent);}
 .benefit-card h3{font-size:19px; margin:18px 0 8px;}
 .benefit-card p{font-size:14.5px; color:var(--color-text-muted); line-height:var(--lh-normal);}
 .benefit-kpi{display:inline-block; margin-top:12px; font-weight:var(--fw-body-bold); font-size:13px; color:var(--color-accent-deep);}
@@ -144,7 +146,8 @@ section{padding:clamp(56px,8vw,96px) 0;}
 .pillars-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(248px,1fr)); gap:18px; margin-top:clamp(32px,4vw,46px);}
 .pillar{background:rgba(243,238,229,.07); border:1px solid rgba(243,238,229,.16); border-radius:var(--radius-lg); padding:26px; transition:transform var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);}
 .pillar:hover{transform:translateY(-3px); background:rgba(243,238,229,.12); border-color:rgba(243,238,229,.32);}
-.pillar-icon{width:44px; height:44px; border-radius:var(--radius-md); background:var(--color-accent); color:var(--color-on-accent); display:flex; align-items:center; justify-content:center;}
+.pillar-icon{width:44px; height:44px; border-radius:var(--radius-md); background:var(--color-accent); color:var(--color-on-accent); display:flex; align-items:center; justify-content:center; transition:transform var(--dur-slow) var(--ease-soft), background var(--dur-slow) var(--ease-soft);}
+.pillar:hover .pillar-icon{transform:rotate(-7deg) scale(1.08); background:var(--color-on-primary); color:var(--color-primary);}
 .pillar h3{color:var(--color-on-primary); font-size:18px; margin:16px 0 8px;}
 .pillar p{color:var(--color-secondary); font-size:14px; line-height:var(--lh-normal);}
 .branding-cta{display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-top:clamp(28px,4vw,40px);}
@@ -154,24 +157,34 @@ section{padding:clamp(56px,8vw,96px) 0;}
 .usp-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(238px,1fr)); gap:20px; margin-top:clamp(32px,4vw,46px);}
 .usp-card{background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:28px; box-shadow:var(--shadow-sm); transition:transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);}
 .usp-card:hover{transform:translateY(-3px); box-shadow:var(--shadow-lg);}
-.usp-num{width:40px; height:40px; border-radius:var(--radius-md); background:var(--color-accent-tint); color:var(--color-accent-deep); display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:18px;}
+.usp-num{width:40px; height:40px; border-radius:var(--radius-md); background:var(--color-accent-tint); color:var(--color-accent-deep); display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:18px; transition:transform var(--dur-slow) var(--ease-soft), background var(--dur-slow) var(--ease-soft), color var(--dur-slow) var(--ease-soft);}
+.usp-card:hover .usp-num{transform:rotate(-7deg) scale(1.08); background:var(--color-accent); color:var(--color-on-accent);}
 .usp-card h3{font-size:19px; margin:16px 0 8px;}
 .usp-card p{font-size:14.5px; color:var(--color-text-muted); line-height:var(--lh-normal);}
 .usp-callout{margin-top:26px; background:var(--color-accent-tint); border:1px solid var(--color-accent); border-radius:var(--radius-md); padding:18px 22px; font-size:14.5px; line-height:1.6; color:var(--color-text);}
 .usp-callout b{color:var(--color-accent-deep);}
 
-/* ---------- Process ---------- */
-.process-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:20px; margin-top:clamp(32px,4vw,46px);}
-.process-step .n{font-family:var(--font-heading); font-size:34px; color:var(--color-accent); font-weight:var(--fw-heading); line-height:1;}
-.process-step h3{font-size:18px; margin:14px 0 8px;}
-.process-step p{font-size:14px; color:var(--color-text-muted); line-height:var(--lh-normal);}
+/* ---------- Process (timeline) ---------- */
+.timeline{position:relative; margin-top:clamp(40px,5vw,56px); display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+.timeline::before{content:''; position:absolute; top:21px; left:0; right:0; height:2px; background:var(--color-border);}
+.timeline-step{position:relative; padding-top:60px;}
+.timeline-step .n{position:absolute; top:0; left:0; width:44px; height:44px; border-radius:50%; background:var(--color-surface); border:2px solid var(--color-accent); color:var(--color-accent); display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:16px; transition:transform var(--dur-slow) var(--ease-soft), background var(--dur-slow) var(--ease-soft), color var(--dur-slow) var(--ease-soft);}
+.timeline-step:hover .n{transform:scale(1.1); background:var(--color-accent); color:var(--color-on-accent);}
+.timeline-step h3{font-size:18px; margin:0 0 8px;}
+.timeline-step p{font-size:14px; color:var(--color-text-muted); line-height:var(--lh-normal);}
+@media (max-width: 980px){
+  .timeline{grid-template-columns:1fr; gap:32px;}
+  .timeline::before{top:0; bottom:0; left:21px; right:auto; width:2px; height:auto;}
+  .timeline-step{padding-top:0; padding-left:60px;}
+  .timeline-step .n{top:0; left:0;}
+}
 
 /* ---------- Portfolio (V1 plain placeholders) ---------- */
 .portfolio-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:18px; margin-top:clamp(28px,4vw,40px);}
 .portfolio-item{aspect-ratio:16/10; border-radius:var(--radius-lg); background:var(--color-secondary); display:flex; align-items:center; justify-content:center; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:12px; letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--color-primary); opacity:.55; box-shadow:var(--shadow-lg);}
 
 /* ---------- Offer ---------- */
-.offer-card{max-width:780px; margin:0 auto; text-align:center; background:var(--color-surface); border:1.5px solid var(--color-accent); border-radius:var(--radius-xl); padding:clamp(32px,5vw,56px); box-shadow:var(--shadow-lg);}
+.offer-card{max-width:680px; margin:0 auto; text-align:center; background:var(--color-surface); border:1.5px solid var(--color-accent); border-radius:var(--radius-xl); padding:clamp(22px,3vw,32px); box-shadow:var(--shadow-lg);}
 .offer-pill{display:inline-block; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:13px; letter-spacing:.04em; color:var(--color-accent-deep); background:var(--color-accent-tint); border:1px solid var(--color-accent); padding:7px 16px; border-radius:var(--radius-pill); margin-bottom:14px;}
 .offer-card h2{font-size:clamp(1.6rem,3vw,2.1rem);}
 .offer-price{display:inline-flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin:24px 0; font-size:15px; color:var(--color-text-muted);}
@@ -270,10 +283,10 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
 <section class="bg-surface divider">
   <div class="container">
     <div class="stats-grid">
-      <div class="stat"><div class="num">+403 %</div><p>mehr Anfragen mit Video</p></div>
-      <div class="stat"><div class="num">~32 %</div><p>schnellere Vermittlung mit Profi-Fotos</p></div>
-      <div class="stat"><div class="num">73 %</div><p>der Verkäufer bevorzugen Makler, die Video nutzen</p></div>
-      <div class="stat"><div class="num">nur 9 %</div><p>der Makler machen objektspezifische Videos</p></div>
+      <div class="stat"><div class="num" data-count="403" data-prefix="+" data-suffix=" %">0</div><p>mehr Anfragen mit Video</p></div>
+      <div class="stat"><div class="num" data-count="32" data-prefix="~" data-suffix=" %">0</div><p>schnellere Vermittlung mit Profi-Fotos</p></div>
+      <div class="stat"><div class="num" data-count="73" data-suffix=" %">0</div><p>der Verkäufer bevorzugen Makler, die Video nutzen</p></div>
+      <div class="stat"><div class="num" data-count="9" data-prefix="nur " data-suffix=" %">0</div><p>der Makler machen objektspezifische Videos</p></div>
     </div>
     <p class="stats-source">Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international) — die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.</p>
   </div>
@@ -282,9 +295,9 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
 <!-- ============ BENEFITS (hover already existed in production) ============ -->
 <section id="leistungen" class="bg-page">
   <div class="container">
-    <div class="section-head">
+    <div class="section-head wide">
       <span class="eyebrow">Warum hochwertiger Content</span>
-      <h2>Sechs Gründe, warum sich der Invest in guten Content rechnet.</h2>
+      <h2>Sechs Gründe,<br>warum sich der Invest in guten Content rechnet.</h2>
       <p class="lead">Hochwertige Fotos und Videos sind kein Schmuck fürs Inserat. Sie sind ein messbarer Hebel auf Anfragen, Vermittlungsdauer und das Bild, das Ihr Büro abgibt.</p>
     </div>
     <div class="benefits-grid">
@@ -303,7 +316,7 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
   <div class="container">
     <div class="section-head">
       <span class="eyebrow">Für welches Ziel?</span>
-      <h2>Ob Verkauf oder Vermietung: Der richtige Content für Ihr Objekt.</h2>
+      <h2>Ob Verkauf oder Vermietung:<br>Der richtige Content für Ihr Objekt.</h2>
     </div>
     <div class="segments-grid">
       <div class="segment-card">
@@ -377,11 +390,11 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
       <span class="eyebrow">So läuft's ab</span>
       <h2>In vier Schritten zum fertigen Objekt-Content.</h2>
     </div>
-    <div class="process-grid">
-      <div class="process-step"><div class="n">01</div><h3>Kurzes Briefing</h3><p>10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.</p></div>
-      <div class="process-step"><div class="n">02</div><h3>Ein Termin vor Ort</h3><p>Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein.</p></div>
-      <div class="process-step"><div class="n">03</div><h3>Konzipierter Schnitt</h3><p>Geschnitten nach Konzept, nicht nach Schema.</p></div>
-      <div class="process-step"><div class="n">04</div><h3>Schnelle Lieferung</h3><p>Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.</p></div>
+    <div class="timeline">
+      <div class="timeline-step"><div class="n">01</div><h3>Kurzes Briefing</h3><p>10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.</p></div>
+      <div class="timeline-step"><div class="n">02</div><h3>Ein Termin vor Ort</h3><p>Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein.</p></div>
+      <div class="timeline-step"><div class="n">03</div><h3>Konzipierter Schnitt</h3><p>Geschnitten nach Konzept, nicht nach Schema.</p></div>
+      <div class="timeline-step"><div class="n">04</div><h3>Schnelle Lieferung</h3><p>Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.</p></div>
     </div>
   </div>
 </section>
@@ -409,13 +422,13 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
       <span class="offer-pill">Nur 3 Pilotplätze in der Region</span>
       <h2>Eine ehrliche Sache: Ich suche 3 Objekte für mein Portfolio.</h2>
       <p class="lead" style="margin-top:16px; font-size:15.5px; max-width:60ch; margin-left:auto; margin-right:auto;">Ich bin neu am Markt im Raum Bühl / Mittelbaden und baue mein Referenz-Portfolio auf. Statt Versprechen zu machen, zeige ich Ihnen lieber das Ergebnis — an einem Ihrer Objekte.</p>
-      <div class="offer-price"><span class="old">Regulärer Wert: 840 €</span><i data-lucide="arrow-right" style="width:16px;height:16px;"></i><span class="new">0 €</span><span>für die ersten 3 Pilot-Objekte</span></div>
+      <div class="offer-price"><span class="old">Regulärer Wert: 1.590 €</span><i data-lucide="arrow-right" style="width:16px;height:16px;"></i><span class="new">0 €</span><span>für die ersten 3 Pilot-Objekte</span></div>
       <div class="offer-list">
         <div><i data-lucide="check" style="width:18px;height:18px;"></i><span><b>Was Sie bekommen:</b> komplette Produktion, konzipiertes Objektvideo (60–90 s) + vertikales Reel + bearbeitete Objektfotos. Für Verkauf oder Vermietung.</span></div>
         <div><i data-lucide="check" style="width:18px;height:18px;"></i><span><b>Was wir dafür möchten:</b> Ihr Einverständnis, das Ergebnis als Referenz zeigen zu dürfen.</span></div>
         <div><i data-lucide="check" style="width:18px;height:18px;"></i><span><b>Was nicht dahintersteckt:</b> kein Abo, keine versteckten Kosten, keine Verpflichtung.</span></div>
       </div>
-      <div style="margin-top:28px;"><a href="#anfrage" class="btn btn-primary btn-lg">Pilotplatz sichern (3 frei) <i data-lucide="arrow-right" style="width:18px;height:18px;"></i></a></div>
+      <div style="margin-top:28px;"><a href="#anfrage" class="btn btn-primary btn-lg">Pilotplatz sichern <i data-lucide="arrow-right" style="width:18px;height:18px;"></i></a></div>
       <p style="font-size:13px; color:var(--color-text-muted); margin-top:18px;">Bewusst begrenzt — damit jedes Objekt die volle Aufmerksamkeit bekommt.</p>
     </div>
   </div>
@@ -505,6 +518,29 @@ footer.site{background:var(--color-primary); color:var(--color-on-primary); padd
       if (!isOpen) { item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; }
     });
   });
+
+  const counters = document.querySelectorAll('.num[data-count]');
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      counterObserver.unobserve(el);
+      const target = parseFloat(el.dataset.count);
+      const prefix = el.dataset.prefix || '';
+      const suffix = el.dataset.suffix || '';
+      const duration = 1200;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = Math.round(target * eased);
+        el.textContent = prefix + value + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, { threshold: 0.4 });
+  counters.forEach(el => counterObserver.observe(el));
 </script>
 </body>
 </html>
