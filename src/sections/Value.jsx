@@ -27,10 +27,11 @@ export function Benefits() {
         }}>
           {items.map((it) => (
             <Card key={it.title} interactive padding="lg">
-              <span style={{
+              <span className="mc-card-icon" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '46px', height: '46px', borderRadius: 'var(--radius-md)',
                 background: 'var(--color-primary-tint)', color: 'var(--color-primary)',
+                transition: 'transform var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard)',
               }}>
                 <Icon name={it.icon} size={22} />
               </span>
@@ -96,7 +97,7 @@ export function Segments() {
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
         }}>
           {segs.map((s) => (
-            <Card key={s.tag} padding="lg" style={{ borderColor: 'var(--border-hair)' }}>
+            <Card key={s.tag} interactive padding="lg" style={{ borderColor: 'var(--border-hair)' }}>
               <Badge tone={s.tagTone}>{s.tag}</Badge>
               <h3 style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',

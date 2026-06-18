@@ -22,11 +22,14 @@ export function Card({
 
   const [hover, setHover] = React.useState(false);
 
+  const { className = '', ...restProps } = rest;
+
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      className={[interactive && hover ? 'mc-card-hover' : '', className].filter(Boolean).join(' ')}
       style={{
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-hair)',
@@ -38,7 +41,7 @@ export function Card({
         ...tones[tone],
         ...style,
       }}
-      {...rest}
+      {...restProps}
     >
       {children}
     </div>

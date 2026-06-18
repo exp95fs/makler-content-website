@@ -181,11 +181,13 @@ export function SiteFooter() {
               target="_blank"
               rel="noopener"
               aria-label="Instagram"
+              className="mc-footer-social"
               style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '36px', height: '36px', borderRadius: '50%',
                 background: 'rgba(243,238,229,0.12)', color: 'var(--color-on-primary)',
                 marginTop: '18px', textDecoration: 'none',
+                transition: 'background var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard)',
               }}
             >
               <InstagramIcon size={20} />

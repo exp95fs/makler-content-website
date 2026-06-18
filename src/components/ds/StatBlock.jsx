@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * StatBlock — a single Fraunces figure with a Mulish label. Used in proof bands.
+ * StatBlock — a single heading-font figure with a Mulish label. Used in proof bands.
  */
 export function StatBlock({ value, label, tone = 'default', style = {}, ...rest }) {
   const color = tone === 'onDark' ? 'var(--color-on-primary)' : 'var(--text-strong)';

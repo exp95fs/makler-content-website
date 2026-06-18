@@ -1,19 +1,19 @@
 /* ===================================================================
    Quadratblick — Typography
-   Display/Headline: Fraunces (400/500/600) — soft old-style serif.
+   Display/Headline: Plus Jakarta Sans (500/600/700) — geometric, rounded-terminal sans, matching the logo wordmark.
    Body/UI: Mulish (300/400/500/700) — friendly minimalist grotesque.
-   Headlines only ever use Fraunces; everything functional uses Mulish.
+   Headlines only ever use Plus Jakarta Sans; everything functional uses Mulish.
    =================================================================== */
 
 :root {
   /* ---------- Families ---------- */
-  --font-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-heading: 'Plus Jakarta Sans', 'Mulish', -apple-system, sans-serif;
   --font-body:    'Mulish', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
 
   /* ---------- Weights ---------- */
-  --fw-heading:      600; /* @kind font */ /* Fraunces semibold — display, h1, h2 */
-  --fw-heading-reg:  400; /* @kind font */ /* Fraunces regular — h3, quieter heads */
+  --fw-heading:      600; /* @kind font */ /* Plus Jakarta Sans semibold — display, h1, h2 */
+  --fw-heading-reg:  500; /* @kind font */ /* Plus Jakarta Sans medium — h3, quieter heads */
   --fw-body-light:   300; /* @kind font */ /* Mulish light — leads, sublines */
   --fw-body:         400; /* @kind font */ /* Mulish regular — body */
   --fw-body-medium:  500; /* @kind font */ /* Mulish medium — labels, nav */
@@ -35,7 +35,7 @@
   --lh-normal: 1.65; /* @kind font */ /* body copy */
 
   /* ---------- Letter spacing ---------- */
-  --ls-heading: -0.01em; /* @kind font */ /* slight negative on Fraunces */
+  --ls-heading: -0.01em; /* @kind font */ /* slight negative on Plus Jakarta Sans */
   --ls-normal:  0em;     /* @kind font */
   --ls-label:   0.18em;  /* @kind font */ /* uppercase eyebrows / labels */
 }

@@ -37,7 +37,8 @@ export function Nav({ onNav }) {
               key={link.id}
               href={`#${link.id}`}
               onClick={(e) => { e.preventDefault(); onNav(link.id); }}
-              style={{ color: 'var(--text-strong)', textDecoration: 'none', padding: '4px 0' }}
+              className="mc-nav-link"
+              style={{ color: 'var(--text-strong)', textDecoration: 'none', padding: '4px 0', position: 'relative' }}
             >
               {link.label}
             </a>

@@ -39,15 +39,17 @@ export function Branding({ onNav }) {
           gridTemplateColumns: 'repeat(auto-fit, minmax(248px, 1fr))',
         }}>
           {pillars.map((p) => (
-            <div key={p.title} style={{
+            <div key={p.title} className="mc-pillar" style={{
               background: 'rgba(243,238,229,0.07)',
               border: '1px solid rgba(243,238,229,0.16)',
               borderRadius: 'var(--radius-lg)', padding: '26px',
+              transition: 'transform var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard)',
             }}>
-              <span style={{
+              <span className="mc-pillar-icon" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '44px', height: '44px', borderRadius: 'var(--radius-md)',
                 background: 'var(--color-accent)', color: 'var(--color-on-accent)',
+                transition: 'transform var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard)',
               }}>
                 <Icon name={p.icon} size={21} />
               </span>
@@ -102,15 +104,17 @@ export function Usp() {
           gridTemplateColumns: 'repeat(auto-fit, minmax(238px, 1fr))',
         }}>
           {usps.map((u) => (
-            <div key={u.n} style={{
+            <div key={u.n} className="mc-usp" style={{
               background: 'var(--surface-card)', border: '1px solid var(--border-hair)',
               borderRadius: 'var(--radius-lg)', padding: '28px', boxShadow: 'var(--shadow-sm)',
+              transition: 'transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard)',
             }}>
-              <span style={{
+              <span className="mc-usp-num" style={{
                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                 width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
                 background: 'var(--color-accent-tint)', color: 'var(--color-accent-deep)',
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '18px',
+                transition: 'transform var(--dur-base) var(--ease-standard), background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard)',
               }}>{u.n}</span>
               <h3 style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',

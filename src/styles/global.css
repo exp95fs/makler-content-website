@@ -18,3 +18,59 @@ body {
 @media (max-width: 460px) {
   .mc-stats { grid-template-columns: 1fr !important; }
 }
+
+/* ---------- Hover effects (ported from V6 concept) ---------- */
+.mc-card-hover .mc-card-icon {
+  transform: rotate(-7deg) scale(1.08);
+  background: var(--color-accent) !important;
+  color: var(--color-on-accent) !important;
+}
+
+.mc-pillar:hover {
+  transform: translateY(-3px);
+  background: rgba(243,238,229,0.12) !important;
+  border-color: rgba(243,238,229,0.32) !important;
+}
+.mc-pillar:hover .mc-pillar-icon {
+  transform: rotate(-7deg) scale(1.08);
+  background: var(--color-on-primary) !important;
+  color: var(--color-primary) !important;
+}
+
+.mc-usp:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.mc-usp:hover .mc-usp-num {
+  transform: rotate(-7deg) scale(1.08);
+  background: var(--color-accent) !important;
+  color: var(--color-on-accent) !important;
+}
+
+.mc-timeline-step:hover .mc-timeline-n {
+  transform: scale(1.1);
+  color: var(--color-accent-deep);
+}
+
+.mc-portfolio-instagram:hover {
+  color: var(--color-accent) !important;
+}
+
+.mc-footer-social:hover {
+  background: var(--color-accent) !important;
+  transform: translateY(-2px);
+}
+
+.mc-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: var(--color-accent);
+  transition: width var(--dur-base) var(--ease-standard);
+}
+.mc-nav-link:hover::after {
+  width: 100%;
+}

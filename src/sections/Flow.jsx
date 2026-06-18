@@ -21,11 +21,13 @@ export function Process() {
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         }}>
           {steps.map((s) => (
-            <div key={s.n}>
-              <span style={{
+            <div key={s.n} className="mc-timeline-step">
+              <span className="mc-timeline-n" style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
                 fontSize: '34px', color: 'var(--color-accent)', lineHeight: 1,
                 letterSpacing: 'var(--ls-heading)',
+                display: 'inline-block',
+                transition: 'transform var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard)',
               }}>{s.n}</span>
               <h3 style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
@@ -70,10 +72,12 @@ export function Portfolio() {
           href="https://www.instagram.com/quadratblick_de"
           target="_blank"
           rel="noopener"
+          className="mc-portfolio-instagram"
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '9px', marginTop: '24px',
             fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '14px',
             color: 'var(--color-accent-deep)', textDecoration: 'none',
+            transition: 'color var(--dur-base) var(--ease-standard)',
           }}
         >
           <InstagramIcon size={18} />
