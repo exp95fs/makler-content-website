@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto &amp; Video für Makler — V4 Konzept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Mulish:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-primary:#565E45; --color-primary-deep:#434A36; --color-secondary:#C7BCA9;
+  --color-background:#F3EEE5; --color-surface:#FBF8F1; --color-text:#2A2A22; --color-text-muted:#5C5A4E;
+  --color-accent:#BC6B49; --color-accent-deep:#A4583A; --color-border:#E0D8CA;
+  --color-on-primary:#F3EEE5; --color-on-accent:#FBF8F1;
+  --color-primary-tint:#EAE9E0; --color-accent-tint:#F0E2D9; --color-surface-sunk:#EFE9DD;
+  --status-success:#5C7048;
+  --font-heading:'Fraunces', Georgia, serif; --font-body:'Mulish', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0; padding:0; box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body); background:var(--color-background); color:var(--color-text); -webkit-font-smoothing:antialiased;}
+a{color:inherit; text-decoration:none;}
+.container{max-width:1180px; margin:0 auto; padding:0 28px;}
+.eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--color-accent); font-weight:500; display:inline-flex; align-items:center; gap:10px;}
+.eyebrow::before{content:''; width:16px; height:1px; background:var(--color-accent);}
+.eyebrow.on-dark{color:#E2BFA9;}
+h1,h2,h3{font-family:var(--font-heading); font-weight:600; letter-spacing:-0.01em; color:var(--color-text); line-height:1.12;}
+.lead{font-weight:300; color:var(--color-text-muted); line-height:1.65;}
+
+.reveal{opacity:0; transform:translateY(22px); transition:opacity .7s var(--ease), transform .7s var(--ease);}
+.reveal.in{opacity:1; transform:translateY(0);}
+.reveal-stagger > *{opacity:0; transform:translateY(18px); transition:opacity .6s var(--ease), transform .6s var(--ease);}
+.reveal-stagger.in > *{opacity:1; transform:translateY(0);}
+.reveal-stagger.in > *:nth-child(1){transition-delay:.05s;}
+.reveal-stagger.in > *:nth-child(2){transition-delay:.12s;}
+.reveal-stagger.in > *:nth-child(3){transition-delay:.19s;}
+.reveal-stagger.in > *:nth-child(4){transition-delay:.26s;}
+.reveal-stagger.in > *:nth-child(5){transition-delay:.33s;}
+.reveal-stagger.in > *:nth-child(6){transition-delay:.4s;}
+
+.btn{display:inline-flex; align-items:center; gap:10px; font-weight:700; font-size:14.5px; padding:14px 28px; border-radius:999px; cursor:pointer; border:1px solid transparent; transition:transform .3s var(--ease), box-shadow .3s var(--ease);}
+.btn-primary{background:var(--color-accent); color:var(--color-on-accent); box-shadow:0 8px 22px -8px rgba(188,107,73,.5);}
+.btn-primary:hover{transform:translateY(-2px); box-shadow:0 14px 28px -8px rgba(188,107,73,.6);}
+.btn-ghost{border-color:var(--color-border); color:var(--color-text); background:transparent;}
+.btn-ghost:hover{border-color:var(--color-primary); background:var(--color-primary-tint);}
+.btn-sm{padding:10px 20px; font-size:13.5px;}
+
+/* ---------- NAV ---------- */
+header.site{position:sticky; top:0; z-index:100; background:rgba(243,238,229,.86); backdrop-filter:blur(14px); border-bottom:1px solid var(--color-border);}
+nav.bar{display:flex; align-items:center; justify-content:space-between; padding:14px 0; gap:20px;}
+.logo{display:flex; align-items:center; gap:8px; font-family:var(--font-heading); font-weight:600; font-size:19px;}
+.logo .mark{width:28px; height:28px; border-radius:7px; background:var(--color-primary); color:var(--color-on-primary); display:flex; align-items:center; justify-content:center; font-size:14px;}
+.nav-links{display:flex; gap:26px; font-size:13.5px; font-weight:500;}
+.nav-links a{position:relative; padding:4px 0; color:var(--color-text);}
+.nav-links a::after{content:''; position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--color-accent); transition:width .3s var(--ease);}
+.nav-links a:hover::after{width:100%;}
+
+/* ---------- HERO (full width) ---------- */
+.hero{padding:clamp(56px,7vw,88px) 0 clamp(48px,6vw,68px); text-align:center; position:relative; overflow:hidden;}
+.hero::before{content:''; position:absolute; top:-260px; left:50%; width:1000px; height:1000px; transform:translateX(-50%); background:radial-gradient(circle, var(--color-accent-tint), transparent 65%); opacity:.6; pointer-events:none;}
+.hero-inner{position:relative; z-index:1; max-width:800px; margin:0 auto;}
+.hero h1{font-size:clamp(2.3rem,4.6vw,3.6rem); margin-top:20px; text-wrap:balance;}
+.hero h1 span{color:var(--color-accent);}
+.hero p.lead{font-size:clamp(1.05rem,1.5vw,1.2rem); max-width:62ch; margin:22px auto 0;}
+.hero-actions{display:flex; gap:14px; justify-content:center; margin-top:32px; flex-wrap:wrap;}
+.hero-note{font-size:14px; color:var(--color-text-muted); margin-top:22px;}
+
+/* ---------- STATS (redesigned) ---------- */
+.stats{padding:0 0 12px;}
+.stats-panel{
+  background:var(--color-surface); border:1px solid var(--color-border); border-radius:24px;
+  padding:clamp(36px,5vw,52px) clamp(24px,4vw,48px); position:relative; overflow:hidden;
+  box-shadow:0 30px 60px -40px rgba(42,42,34,.18);
+}
+.stats-panel::before{content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--color-accent), var(--color-primary));}
+.stats-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:0;}
+.stat{text-align:center; padding:8px 18px; position:relative;}
+.stat:not(:last-child)::after{content:''; position:absolute; right:0; top:10%; bottom:10%; width:1px; background:var(--color-border);}
+.stat-icon{
+  width:40px; height:40px; border-radius:50%; background:var(--color-accent-tint); color:var(--color-accent-deep);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:16px; font-family:var(--font-mono);
+}
+.stat .num{font-family:var(--font-heading); font-size:clamp(1.9rem,3.6vw,2.7rem); color:var(--color-accent); font-weight:600;}
+.stat p{margin-top:8px; font-size:13.5px; color:var(--color-text-muted); max-width:21ch; margin-left:auto; margin-right:auto; line-height:1.45;}
+.stats-source{font-size:12.5px; color:var(--color-text-muted); opacity:.85; text-align:center; margin-top:24px; max-width:78ch; margin-left:auto; margin-right:auto; line-height:1.55;}
+
+/* ---------- GENERIC SECTION ---------- */
+section{padding:clamp(72px,9vw,116px) 0;}
+.section-head{max-width:680px; margin:0 auto 44px;}
+.section-head.center{text-align:center;}
+.section-head h2{font-size:clamp(1.7rem,3vw,2.3rem); margin-top:14px;}
+.section-head p{font-size:16px; margin-top:14px;}
+
+/* ---------- BENEFITS (6 reasons, compromise animation) ---------- */
+.benefits-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+.benefit-card{
+  background:var(--color-surface); border:1px solid var(--color-border); border-radius:16px; padding:28px;
+  transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+.benefit-card:hover{transform:translateY(-5px); box-shadow:0 24px 44px -28px rgba(42,42,34,.22); border-color:var(--color-accent);}
+.benefit-icon{
+  width:46px; height:46px; border-radius:12px; background:var(--color-primary-tint); color:var(--color-primary);
+  display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:16px;
+  transition:transform .4s var(--ease), background .4s var(--ease), color .4s var(--ease);
+}
+.benefit-card:hover .benefit-icon{transform:rotate(-6deg) scale(1.07); background:var(--color-accent); color:var(--color-on-accent);}
+.benefit-card h3{font-size:18px; margin-bottom:8px;}
+.benefit-card p{font-size:14.5px; color:var(--color-text-muted); line-height:1.6;}
+.benefit-kpi{display:inline-block; margin-top:10px; font-weight:700; font-size:12.5px; color:var(--color-accent-deep);}
+
+/* ---------- SEGMENTS (Verkaufen / Vermieten — now with hover) ---------- */
+.segments-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+.segment-card{
+  background:var(--color-surface); border:1px solid var(--color-border); border-radius:20px; padding:30px;
+  transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
+}
+.segment-card:hover{transform:translateY(-6px); box-shadow:0 30px 56px -30px rgba(42,42,34,.25); border-color:var(--color-accent);}
+.tag{display:inline-block; font-size:12.5px; font-weight:700; padding:6px 14px; border-radius:999px; background:var(--color-accent-tint); color:var(--color-accent-deep);}
+.tag.sage{background:var(--color-primary-tint); color:var(--color-primary-deep);}
+.segment-card h3{font-size:20px; margin:14px 0 8px;}
+.segment-card p{font-size:14.5px; color:var(--color-text-muted); line-height:1.6;}
+.segment-card ul{list-style:none; margin-top:14px; display:grid; gap:9px;}
+.segment-card li{display:flex; gap:9px; font-size:14px; align-items:flex-start;}
+.segment-card li::before{content:'→'; color:var(--color-accent); flex:none;}
+.segment-media{
+  margin-top:16px; aspect-ratio:16/9; border-radius:12px; background:var(--color-secondary);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px;
+  letter-spacing:.1em; color:var(--color-text-muted); overflow:hidden; position:relative;
+}
+.segment-card:hover .segment-media{transform:scale(1.015);}
+.segment-media{transition:transform .4s var(--ease);}
+
+/* ---------- BRANDING (sage block) ---------- */
+.branding{background:var(--color-primary); color:var(--color-on-primary); border-radius:28px; padding:clamp(48px,6vw,72px) clamp(28px,5vw,56px);}
+.branding h2{color:var(--color-on-primary); font-size:clamp(1.7rem,3vw,2.2rem); margin-top:14px; max-width:42ch;}
+.branding > .container > p, .branding-lead{color:var(--color-secondary); font-weight:300; line-height:1.65; max-width:58ch; margin-top:16px; font-size:17px;}
+.pillars-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:40px;}
+.pillar{
+  background:rgba(243,238,229,.07); border:1px solid rgba(243,238,229,.16); border-radius:16px; padding:24px;
+  transition:transform .4s var(--ease), background .4s var(--ease), border-color .4s var(--ease);
+}
+.pillar:hover{transform:translateY(-5px); background:rgba(243,238,229,.12); border-color:rgba(243,238,229,.32);}
+.pillar-icon{
+  width:42px; height:42px; border-radius:11px; background:var(--color-accent); color:var(--color-on-accent);
+  display:flex; align-items:center; justify-content:center; font-size:18px; transition:transform .4s var(--ease);
+}
+.pillar:hover .pillar-icon{transform:rotate(8deg) scale(1.06);}
+.pillar h3{color:var(--color-on-primary); font-size:17px; margin:14px 0 6px;}
+.pillar p{color:var(--color-secondary); font-size:13.5px; line-height:1.55;}
+.branding-cta{display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-top:36px;}
+.branding-cta p{color:var(--color-on-primary); font-weight:500; font-size:15px; max-width:42ch; line-height:1.55;}
+
+/* ---------- USP (Alles aus einer Hand) ---------- */
+.usp-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+.usp-card{
+  background:var(--color-surface); border:1px solid var(--color-border); border-radius:16px; padding:24px;
+  box-shadow:0 6px 18px -12px rgba(42,42,34,.12); transition:transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+.usp-card:hover{transform:translateY(-5px); box-shadow:0 26px 46px -26px rgba(42,42,34,.22); border-color:var(--color-accent);}
+.usp-num{
+  width:38px; height:38px; border-radius:11px; background:var(--color-accent-tint); color:var(--color-accent-deep);
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:600; font-size:17px;
+  transition:transform .4s var(--ease);
+}
+.usp-card:hover .usp-num{transform:scale(1.08);}
+.usp-card h3{font-size:18px; margin:14px 0 6px;}
+.usp-card p{font-size:14px; color:var(--color-text-muted); line-height:1.55;}
+.usp-callout{margin-top:22px; background:var(--color-accent-tint); border:1px solid var(--color-accent); border-radius:12px; padding:16px 20px; font-size:14.5px; line-height:1.6;}
+.usp-callout b{color:var(--color-accent-deep);}
+
+/* ---------- PROCESS ---------- */
+.process-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:24px;}
+.process-step .n{font-family:var(--font-heading); font-size:32px; color:var(--color-accent); font-weight:600;}
+.process-step h3{font-size:17px; margin:12px 0 6px;}
+.process-step p{font-size:13.5px; color:var(--color-text-muted); line-height:1.55;}
+
+/* ---------- PORTFOLIO ---------- */
+.portfolio-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+.portfolio-item{aspect-ratio:16/10; border-radius:16px; background:var(--color-secondary); border:1px solid var(--color-border); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; color:var(--color-text-muted); transition:transform .4s var(--ease);}
+.portfolio-item:hover{transform:translateY(-4px);}
+
+/* ---------- OFFER ---------- */
+.offer-card{max-width:780px; margin:0 auto; text-align:center; background:var(--color-surface); border:1.5px solid var(--color-accent); border-radius:24px; padding:clamp(32px,5vw,56px); box-shadow:0 40px 70px -40px rgba(42,42,34,.25);}
+.offer-pill{display:inline-block; font-size:13px; font-weight:600; color:var(--color-accent-deep); background:var(--color-accent-tint); border:1px solid var(--color-accent); padding:7px 16px; border-radius:999px; margin-bottom:14px;}
+.offer-card h2{font-size:clamp(1.5rem,3vw,2rem);}
+.offer-price{display:inline-flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center; margin:22px 0; font-size:15px; color:var(--color-text-muted);}
+.offer-price .old{text-decoration:line-through;}
+.offer-price .new{font-family:var(--font-heading); font-weight:600; font-size:26px; color:var(--status-success);}
+.offer-list{display:grid; gap:11px; max-width:600px; margin:0 auto; text-align:left;}
+.offer-list div{display:flex; gap:11px; align-items:flex-start; font-size:14.5px;}
+.offer-list b{color:var(--color-text);}
+
+/* ---------- ABOUT ---------- */
+.about{display:grid; grid-template-columns:0.82fr 1.18fr; gap:48px; align-items:center;}
+.about-img{aspect-ratio:1/1; border-radius:18px; background:var(--color-secondary); border:1px solid var(--color-border); display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; color:var(--color-text-muted);}
+.about-text p{font-size:18px; line-height:1.65; margin-top:16px;}
+.about-text h2{font-size:clamp(1.6rem,3vw,2.1rem); margin-top:14px;}
+.about-text .small{font-size:15px; color:var(--color-text-muted); margin-top:14px;}
+
+/* ---------- FAQ ---------- */
+.faq-list{max-width:760px; margin:0 auto; display:grid; gap:11px;}
+.faq-item{background:var(--color-surface); border:1px solid var(--color-border); border-radius:14px; overflow:hidden; transition:border-color .3s var(--ease);}
+.faq-item.open{border-color:var(--color-accent);}
+.faq-q{display:flex; align-items:center; justify-content:space-between; padding:18px 22px; cursor:pointer; font-weight:700; font-size:15px;}
+.faq-q .plus{color:var(--color-accent); font-size:18px; transition:transform .35s var(--ease);}
+.faq-item.open .plus{transform:rotate(45deg);}
+.faq-a{max-height:0; overflow:hidden; transition:max-height .4s var(--ease);}
+.faq-a p{padding:0 22px 20px; font-size:14.5px; color:var(--color-text-muted); line-height:1.6;}
+
+/* ---------- CONTACT ---------- */
+.contact-card{max-width:560px; margin:0 auto; background:var(--color-background); border:1px solid var(--color-border); border-radius:20px; padding:40px; box-shadow:0 40px 70px -40px rgba(42,42,34,.25);}
+.field{display:flex; flex-direction:column; gap:7px; margin-bottom:16px;}
+.field label{font-size:13px; font-weight:600; color:var(--color-text-muted);}
+.field input, .field textarea{border:1px solid var(--color-border); border-radius:10px; padding:13px 15px; font-family:var(--font-body); font-size:15px; background:var(--color-surface); transition:border-color .25s var(--ease), box-shadow .25s var(--ease);}
+.field input:focus, .field textarea:focus{outline:none; border-color:var(--color-accent); box-shadow:0 0 0 4px var(--color-accent-tint);}
+
+footer.site{background:var(--color-primary); color:var(--color-on-primary); padding:56px 0 28px;}
+.footer-grid{display:flex; justify-content:space-between; flex-wrap:wrap; gap:28px;}
+.footer-grid a{opacity:.85;}
+.footer-grid a:hover{opacity:1;}
+
+@media (max-width: 980px){
+  .nav-links{display:none;}
+  .benefits-grid, .usp-grid, .process-grid{grid-template-columns:1fr 1fr;}
+  .segments-grid, .about, .pillars-grid{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .stat:nth-child(2)::after{display:none;}
+}
+@media (max-width: 600px){
+  .benefits-grid, .usp-grid, .process-grid, .stats-grid{grid-template-columns:1fr;}
+  .stat::after{display:none;}
+}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container">
+    <nav class="bar">
+      <a href="#top" class="logo"><span class="mark">M</span>Makler·Content</a>
+      <div class="nav-links">
+        <a href="#leistungen">Leistungen</a>
+        <a href="#segmente">Verkauf/Miete</a>
+        <a href="#marke">Markenbildung</a>
+        <a href="#prozess">Prozess</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#angebot">Angebot</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <a href="#kontakt" class="btn btn-primary btn-sm">Gratis-Pilot anfragen →</a>
+    </nav>
+  </div>
+</header>
+
+<section id="top" class="hero">
+  <div class="container hero-inner">
+    <span class="eyebrow reveal">Foto &amp; Video für Makler · Raum Bühl · Mittelbaden · Ortenau</span>
+    <h1 class="reveal">Content, der Ihre Objekte heraushebt – und Ihr <span>Maklerbüro</span>.</h1>
+    <p class="lead reveal">Professionelle Fotos und konzipierte Videos für Maklerbüros. Hochwertiger Content, der Ihre Objekte schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro als Marke sichtbar macht — mit einem Ansprechpartner von der Strategie über das Konzept bis zum fertigen Ergebnis.</p>
+    <div class="hero-actions reveal">
+      <a href="#kontakt" class="btn btn-primary">Gratis-Pilot anfragen →</a>
+      <a href="#portfolio" class="btn btn-ghost">Arbeitsproben ansehen</a>
+    </div>
+    <p class="hero-note reveal">Für Verkauf &amp; Vermietung · Foto, Video, Drohne und 360° · schnelle Lieferung nach Paketumfang.</p>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-panel reveal">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-icon">▲</div><div class="num" data-count="403" data-suffix=" %" data-prefix="+">0</div><p>mehr Anfragen mit Video</p></div>
+        <div class="stat"><div class="stat-icon">◷</div><div class="num" data-count="32" data-suffix=" %" data-prefix="~">0</div><p>schnellere Vermittlung mit Profi-Fotos</p></div>
+        <div class="stat"><div class="stat-icon">✓</div><div class="num" data-count="73" data-suffix=" %">0</div><p>der Verkäufer bevorzugen Makler, die Video nutzen</p></div>
+        <div class="stat"><div class="stat-icon">!</div><div class="num" data-count="9" data-suffix=" %" data-prefix="nur ">0</div><p>der Makler machen objektspezifische Videos</p></div>
+      </div>
+      <p class="stats-source">Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international) — die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.</p>
+    </div>
+  </div>
+</section>
+
+<section id="leistungen">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Warum hochwertiger Content</span>
+      <h2>Sechs Gründe, warum sich der Invest in guten Content rechnet.</h2>
+      <p class="lead">Hochwertige Fotos und Videos sind kein Schmuck fürs Inserat. Sie sind ein messbarer Hebel auf Anfragen, Vermittlungsdauer und das Bild, das Ihr Büro abgibt.</p>
+    </div>
+    <div class="benefits-grid reveal-stagger">
+      <div class="benefit-card"><div class="benefit-icon">↗</div><h3>Objekte heben sich ab</h3><p>Im Portal entscheidet das erste Bild. Profi-Fotos bringen spürbar mehr Aufmerksamkeit.</p><span class="benefit-kpi">+61 % mehr Aufrufe</span></div>
+      <div class="benefit-card"><div class="benefit-icon">◉</div><h3>Bleiben im Kopf</h3><p>Video vermittelt Raumgefühl, Licht und Laufwege. Interessenten erinnern sich an Ihr Objekt, nicht an das nächste in der Liste.</p></div>
+      <div class="benefit-card"><div class="benefit-icon">◷</div><h3>Schneller vermittelt</h3><p>Bessere Darstellung verkürzt die Zeit am Markt nachweislich, bei Fotos wie bei Video.</p><span class="benefit-kpi">bis zu ~32 % schneller</span></div>
+      <div class="benefit-card"><div class="benefit-icon">◎</div><h3>Qualifiziertere Anfragen</h3><p>Wer das Objekt im Video gesehen hat, meldet sich gezielter. Weniger Besichtigungstourismus, weniger vergeudete Termine.</p></div>
+      <div class="benefit-card"><div class="benefit-icon">▣</div><h3>Repräsentiert Ihr Büro</h3><p>Konsistenter, hochwertiger Content zeigt Ihren Qualitätsanspruch. Bei Eigentümern wie bei Käufern.</p></div>
+      <div class="benefit-card"><div class="benefit-icon">✦</div><h3>Baut Ihre Marke</h3><p>Reels und Maklerpräsenz arbeiten auch für Sie, nicht nur fürs Objekt.</p><span class="benefit-kpi">71 % wählen Makler mit starker Online-Präsenz</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="segmente">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Für welches Ziel?</span>
+      <h2>Ob Verkauf oder Vermietung: Der richtige Content für Ihr Objekt.</h2>
+    </div>
+    <div class="segments-grid reveal-stagger">
+      <div class="segment-card">
+        <span class="tag">Verkaufen</span>
+        <h3>Wohnungen · Häuser · Anwesen</h3>
+        <p>Content, der den Wert eines Kaufobjekts vermittelt und den richtigen Käufer schneller anzieht.</p>
+        <ul>
+          <li>Schnellere Vermittlung, höhere Wahrnehmung des Objekts</li>
+          <li>Vorqualifizierte Käufer durch realistisches Raumgefühl</li>
+          <li>Stärkere Position im Akquisegespräch mit Eigentümern</li>
+        </ul>
+        <div class="segment-media">BEISPIEL · VERKAUFSOBJEKT</div>
+      </div>
+      <div class="segment-card">
+        <span class="tag sage">Vermieten &amp; Ferienwohnung</span>
+        <h3>Miet- &amp; Kurzzeit-/Ferienobjekte</h3>
+        <p>Content, der Buchungen und Mietanfragen steigert — bis hin zu Ferienwohnung und Airbnb.</p>
+        <ul>
+          <li>Bis zu +40 % mehr Buchungen mit Profi-Fotos</li>
+          <li>~26 % höhere erzielbare Preise, weniger Leerstand</li>
+          <li>Wiederverwendbarer Content für Portale &amp; Social Media</li>
+        </ul>
+        <div class="segment-media">BEISPIEL · FERIENWOHNUNG</div>
+      </div>
+    </div>
+    <p class="stats-source" style="text-align:left; margin-top:18px;">Vermietungs-/Ferienwohnungs-Zahlen: Airbnb- und Branchen-Zusammenstellungen. Richtwerte, keine Garantie.</p>
+  </div>
+</section>
+
+<section id="marke">
+  <div class="container">
+    <div class="branding reveal">
+      <span class="eyebrow on-dark">Markenbildung</span>
+      <h2>Nicht nur das Objekt — Ihr Maklerbüro als Marke.</h2>
+      <p class="branding-lead">Einzelne Objekte zu vermarkten ist der Anfang. Der eigentliche Hebel liegt darin, Sie und Ihr Büro als feste Größe in der Region sichtbar zu machen — ob etabliertes Maklerbüro oder eigenständiger Makler.</p>
+      <div class="pillars-grid">
+        <div class="pillar"><div class="pillar-icon">▤</div><h3>Konsistente Bildsprache</h3><p>Eine durchgängige Handschrift über alle Objekte hinweg. Ihr Büro wird auf den ersten Blick wiedererkannt.</p></div>
+        <div class="pillar"><div class="pillar-icon">◈</div><h3>Sie als Gesicht der Region</h3><p>Makler-Reels, Porträt- und Experten-Content, der Vertrauen aufbaut, bevor das erste Gespräch beginnt.</p></div>
+        <div class="pillar"><div class="pillar-icon">✓</div><h3>Strategie statt Einzelclips</h3><p>Ein roter Faden für Portale, Social Media und Website. Strategisch geplant, nicht zufällig zusammengestellt.</p></div>
+      </div>
+      <div class="branding-cta">
+        <p>Wir starten beim einzelnen Objekt — und bauen daraus Schritt für Schritt Ihre Marke.</p>
+        <a href="#kontakt" class="btn btn-primary btn-sm">Markenbildung besprechen →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="usp">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Was uns von anderen Anbietern unterscheidet</span>
+      <h2>Alles aus einer Hand. Gedacht aus Sicht Ihrer Zielgruppe.</h2>
+    </div>
+    <div class="usp-grid reveal-stagger">
+      <div class="usp-card"><div class="usp-num">1</div><h3>Alles aus einer Hand</h3><p>Strategie, Konzept, Dreh, Schnitt und Feinschliff — alles aus einer Hand. Ein Ansprechpartner statt vieler Schnittstellen: keine Overhead-Kosten, keine Reibungsverluste.</p></div>
+      <div class="usp-card"><div class="usp-num">2</div><h3>Bewusst auf wenige Kunden begrenzt</h3><p>Wir arbeiten gezielt mit wenigen Kunden gleichzeitig. So bleiben die Wege kurz und die Lieferung schnell. Jedes Objekt bekommt die volle Aufmerksamkeit.</p></div>
+      <div class="usp-card"><div class="usp-num">3</div><h3>Konsistenter, hochwertiger Look</h3><p>Eine durchgängige Bildsprache, die die Wertigkeit Ihres Maklerbüros unterstreicht. Objekt für Objekt wiedererkennbar.</p></div>
+      <div class="usp-card"><div class="usp-num">4</div><h3>Gedacht aus Sicht der Zielgruppe</h3><p>Wir denken aus der Perspektive Ihrer Käufer und Mieter und rücken genau das in den Fokus, was für diese Zielgruppe wirklich zählt.</p></div>
+    </div>
+    <div class="usp-callout reveal"><b>Die Chance:</b> Nur rund 9 % der Makler produzieren objektspezifische Videos — in unserer Region noch weniger. Wer jetzt in gutes Bewegtbild investiert, hebt sich sichtbar vom Markt ab.</div>
+  </div>
+</section>
+
+<section id="prozess">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">So läuft's ab</span>
+      <h2>In vier Schritten zum fertigen Objekt-Content.</h2>
+    </div>
+    <div class="process-grid reveal-stagger">
+      <div class="process-step"><div class="n">01</div><h3>Kurzes Briefing</h3><p>10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.</p></div>
+      <div class="process-step"><div class="n">02</div><h3>Ein Termin vor Ort</h3><p>Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein.</p></div>
+      <div class="process-step"><div class="n">03</div><h3>Konzipierter Schnitt</h3><p>Geschnitten nach Konzept, nicht nach Schema.</p></div>
+      <div class="process-step"><div class="n">04</div><h3>Schnelle Lieferung</h3><p>Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Arbeitsproben</span>
+      <h2>Die ersten Referenzobjekte entstehen gerade.</h2>
+      <p class="lead">Wir bauen unser regionales Portfolio auf. Wenn Sie ein passendes Objekt haben — zum Verkauf oder zur Vermietung — kann Ihr Objekt eines davon sein. Kostenlos.</p>
+    </div>
+    <div class="portfolio-grid reveal-stagger">
+      <div class="portfolio-item">REFERENZOBJEKT 1 · VERKAUF</div>
+      <div class="portfolio-item">REFERENZOBJEKT 2 · VERMIETUNG</div>
+      <div class="portfolio-item">REFERENZOBJEKT 3 · VIDEO + BILDSTRECKE</div>
+    </div>
+  </div>
+</section>
+
+<section id="angebot">
+  <div class="container">
+    <div class="offer-card reveal">
+      <span class="offer-pill">Nur 3 Pilotplätze in der Region</span>
+      <h2>Eine ehrliche Sache: Wir suchen 3 Objekte für unser Portfolio.</h2>
+      <p class="lead" style="margin-top:14px;">Wir sind neu am Markt im Raum Bühl / Mittelbaden und bauen unser Referenz-Portfolio auf. Statt Versprechen zu machen, zeigen wir Ihnen lieber das Ergebnis — an einem Ihrer Objekte.</p>
+      <div class="offer-price"><span class="old">Regulärer Wert: 840 €</span><span>→</span><span class="new">0 €</span><span>für die ersten 3 Pilot-Objekte</span></div>
+      <div class="offer-list">
+        <div><span style="color:var(--status-success);">✓</span><span><b>Was Sie bekommen:</b> komplette Produktion, konzipiertes Objektvideo (60–90 s) + vertikales Reel + bearbeitete Objektfotos. Für Verkauf oder Vermietung.</span></div>
+        <div><span style="color:var(--status-success);">✓</span><span><b>Was wir dafür möchten:</b> Ihr Einverständnis, das Ergebnis als Referenz zeigen zu dürfen.</span></div>
+        <div><span style="color:var(--status-success);">✓</span><span><b>Was nicht dahintersteckt:</b> kein Abo, keine versteckten Kosten, keine Verpflichtung.</span></div>
+      </div>
+      <a href="#kontakt" class="btn btn-primary" style="margin-top:26px;">Pilotplatz sichern (3 frei) →</a>
+      <p style="font-size:13px; color:var(--color-text-muted); margin-top:16px;">Bewusst begrenzt — damit jedes Objekt die volle Aufmerksamkeit bekommt.</p>
+    </div>
+  </div>
+</section>
+
+<section id="ueber-mich">
+  <div class="container">
+    <div class="about reveal">
+      <div class="about-img">PORTRÄTFOTO · PLATZHALTER</div>
+      <div class="about-text">
+        <span class="eyebrow">Wer das macht</span>
+        <h2>Fabian — Foto, Video und strategischer Blick für Immobilienmarken.</h2>
+        <p>Ich komme aus der professionellen Foto- und Videoproduktion und habe über viele Jahre visuelle Projekte für namhafte Unternehmen umgesetzt. Dabei ging es nie nur um schöne Bilder, sondern immer um die Frage: Welche Botschaft soll ankommen und wie muss sie aussehen, damit sie bei der richtigen Zielgruppe wirkt?</p>
+        <p>Genau diesen Anspruch übertrage ich auf Immobilien. Ich produziere Fotos, Videos und Markencontent, die Objekte hochwertig zeigen, Maklerbüros professionell positionieren und aus einem einzelnen Auftrag ein stimmiges Gesamtbild machen.</p>
+        <p class="small">Ansässig in Bühl, unterwegs in Mittelbaden und der Ortenau.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="container">
+    <div class="section-head center reveal"><span class="eyebrow">Häufige Fragen</span><h2>Bevor Sie anfragen.</h2></div>
+    <div class="faq-list">
+      <div class="faq-item reveal"><div class="faq-q"><span>Lohnt sich das wirtschaftlich?</span><span class="plus">+</span></div><div class="faq-a"><p>Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen. Der Content amortisiert sich meist über ein einziges Objekt.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Erstellen Sie auch Content für Objekte zur Vermietung?</span><span class="plus">+</span></div><div class="faq-a"><p>Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking).</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Warum gratis, wo ist der Haken?</span><span class="plus">+</span></div><div class="faq-a"><p>Keiner. Wir bauen unser Portfolio auf und brauchen dafür echte Objekte in Top-Qualität. Fairer Tausch.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Wie viel Zeit kostet mich das?</span><span class="plus">+</span></div><div class="faq-a"><p>10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Wem gehören die Aufnahmen?</span><span class="plus">+</span></div><div class="faq-a"><p>Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="kontakt">
+  <div class="container">
+    <div class="section-head center reveal"><span class="eyebrow">Jetzt anfragen</span><h2>Sichern Sie sich einen der 3 Pilotplätze.</h2><p class="lead">Kurz Ihre Eckdaten — wir melden uns innerhalb von 24 Stunden mit einem Terminvorschlag.</p></div>
+    <div class="contact-card reveal">
+      <form onsubmit="event.preventDefault(); this.querySelector('button').textContent='Danke — angekommen ✓';">
+        <div class="field"><label>Ihr Name</label><input type="text" placeholder="Vor- und Nachname" required></div>
+        <div class="field"><label>E-Mail</label><input type="email" placeholder="ihre@email.de" required></div>
+        <div class="field"><label>Nachricht</label><textarea rows="4" placeholder="Kurz zu Ihrem Objekt und Anliegen" required></textarea></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Gratis-Pilot anfragen →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="container footer-grid">
+    <div>
+      <a href="#top" class="logo" style="color:var(--color-on-primary);"><span class="mark" style="background:var(--color-accent);">M</span>Makler·Content</a>
+      <p style="margin-top:14px; max-width:38ch; font-size:14px; opacity:.85;">Fabian Schneebiegl · Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung · Raum Bühl · Mittelbaden · Ortenau</p>
+    </div>
+    <div style="font-size:14px; line-height:2;">
+      <div><a href="mailto:fabian.schneebiegl@gmail.com">fabian.schneebiegl@gmail.com</a></div>
+      <div><a href="tel:+4915904692843">0159 0469 2843</a></div>
+      <div style="display:flex; gap:14px; margin-top:6px;"><a href="#">Impressum</a><a href="#">Datenschutz</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.14 });
+  document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => io.observe(el));
+
+  let counted = false;
+  const statIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !counted) {
+        counted = true;
+        document.querySelectorAll('.stat .num').forEach(el => {
+          const target = parseInt(el.dataset.count, 10);
+          const suffix = el.dataset.suffix || '';
+          const prefix = el.dataset.prefix || '';
+          let cur = 0;
+          const step = Math.max(1, Math.round(target / 36));
+          const tick = () => {
+            cur += step;
+            if (cur >= target) { el.textContent = prefix + target + suffix; return; }
+            el.textContent = prefix + cur + suffix;
+            requestAnimationFrame(tick);
+          };
+          tick();
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.stats-panel').forEach(el => statIo.observe(el));
+
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const a = item.querySelector('.faq-a');
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(o => { o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null; });
+      if (!isOpen) { item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; }
+    });
+  });
+</script>
+</body>
+</html>
