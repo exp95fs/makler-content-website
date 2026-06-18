@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foto &amp; Video für Makler — V3 Konzept (Premium)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Mulish:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-primary:#565E45; --color-primary-deep:#434A36; --color-secondary:#C7BCA9;
+    --color-background:#F3EEE5; --color-surface:#FBF8F1; --color-text:#2A2A22; --color-text-muted:#5C5A4E;
+    --color-accent:#BC6B49; --color-accent-deep:#A4583A; --color-border:#E0D8CA;
+    --color-on-primary:#F3EEE5; --color-on-accent:#FBF8F1;
+    --color-primary-tint:#EAE9E0; --color-accent-tint:#F0E2D9; --color-surface-sunk:#EFE9DD;
+    --font-heading:'Fraunces', Georgia, serif; --font-body:'Mulish', sans-serif; --font-mono:'IBM Plex Mono', monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--font-body); color:var(--color-text); background:var(--color-background);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  img{display:block; max-width:100%;}
+  a{color:inherit; text-decoration:none;}
+  .container{max-width:1180px; margin:0 auto; padding:0 28px;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--color-accent); font-weight:500; display:inline-flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:''; width:18px; height:1px; background:var(--color-accent);}
+  h1,h2,h3{font-family:var(--font-heading); font-weight:600; letter-spacing:-0.01em; color:var(--color-text); line-height:1.1;}
+  .reveal{opacity:0; transform:translateY(28px); transition:opacity .9s var(--ease), transform .9s var(--ease);}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  .reveal-scale{opacity:0; transform:scale(.92); transition:opacity 1s var(--ease), transform 1s var(--ease);}
+  .reveal-scale.in{opacity:1; transform:scale(1);}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100; padding:18px 0;
+    transition:background .4s var(--ease), padding .4s var(--ease), box-shadow .4s var(--ease);
+  }
+  header.scrolled{
+    background:rgba(243,238,229,.86); backdrop-filter:blur(14px); padding:12px 0;
+    box-shadow:0 1px 0 var(--color-border);
+  }
+  nav{display:flex; align-items:center; justify-content:space-between;}
+  .logo{font-family:var(--font-heading); font-weight:600; font-size:20px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px;}
+  .logo span{color:var(--color-accent);}
+  .nav-links{display:flex; gap:32px; font-size:14px; font-weight:500;}
+  .nav-links a{position:relative; padding:4px 0; color:var(--color-text);}
+  .nav-links a::after{
+    content:''; position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--color-accent);
+    transition:width .35s var(--ease);
+  }
+  .nav-links a:hover::after{width:100%;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px; font-family:var(--font-body); font-weight:700; font-size:14.5px;
+    padding:13px 26px; border-radius:999px; cursor:pointer; border:1px solid transparent; position:relative; overflow:hidden;
+    transition:transform .35s var(--ease), box-shadow .35s var(--ease);
+  }
+  .btn-primary{background:var(--color-accent); color:var(--color-on-accent); box-shadow:0 8px 24px -8px rgba(188,107,73,.55);}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 14px 30px -8px rgba(188,107,73,.65);}
+  .btn-primary::before{
+    content:''; position:absolute; inset:0; background:linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
+    transform:translateX(-120%); transition:transform .6s var(--ease);
+  }
+  .btn-primary:hover::before{transform:translateX(120%);}
+  .btn-ghost{border-color:var(--color-border); color:var(--color-text); background:transparent;}
+  .btn-ghost:hover{border-color:var(--color-primary); background:var(--color-primary-tint);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative; padding:200px 0 140px; text-align:center; overflow:hidden;
+    background:radial-gradient(ellipse 80% 60% at 50% -10%, var(--color-accent-tint), transparent 60%);
+  }
+  .hero::before{
+    content:''; position:absolute; top:-200px; left:50%; width:900px; height:900px; transform:translateX(-50%);
+    background:radial-gradient(circle, rgba(86,94,69,.10), transparent 65%); pointer-events:none;
+  }
+  .hero-grain{position:absolute; inset:0; opacity:.04; pointer-events:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .hero-content{position:relative; z-index:2; max-width:780px; margin:0 auto;}
+  .hero h1{font-size:clamp(2.6rem, 5.4vw, 4.6rem); margin:22px 0 0; text-wrap:balance;}
+  .hero h1 em{font-style:italic; color:var(--color-accent); font-weight:500;}
+  .hero p.lead{
+    font-size:clamp(1.05rem,1.6vw,1.25rem); font-weight:300; color:var(--color-text-muted); max-width:54ch;
+    margin:24px auto 0; line-height:1.65;
+  }
+  .hero-actions{display:flex; gap:16px; justify-content:center; margin-top:38px;}
+  .hero-frame{
+    margin:72px auto 0; max-width:980px; position:relative; border-radius:28px; overflow:hidden;
+    box-shadow:0 50px 90px -40px rgba(42,42,34,.35); border:1px solid var(--color-border);
+  }
+  .hero-frame img{width:100%; height:560px; object-fit:cover; transform:scale(1.06); transition:transform 1.4s var(--ease);}
+  .hero-frame:hover img{transform:scale(1);}
+  .hero-frame .badge{
+    position:absolute; bottom:24px; left:24px; background:rgba(251,248,241,.92); backdrop-filter:blur(8px);
+    border-radius:14px; padding:14px 18px; display:flex; align-items:center; gap:12px; box-shadow:0 12px 30px -10px rgba(0,0,0,.2);
+    font-size:13px; font-weight:600;
+  }
+  .pulse-dot{width:9px; height:9px; border-radius:50%; background:var(--status-success,#5C7048); position:relative;}
+  .pulse-dot::after{content:''; position:absolute; inset:-6px; border-radius:50%; border:1px solid #5C7048; animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{transform:scale(.6); opacity:.9;} 100%{transform:scale(1.8); opacity:0;}}
+
+  /* ---------- MARQUEE / TICKER ---------- */
+  .ticker-wrap{border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border); background:var(--color-surface); overflow:hidden; padding:18px 0;}
+  .ticker{display:flex; gap:64px; white-space:nowrap; width:max-content; animation:scroll 28s linear infinite;}
+  .ticker span{font-family:var(--font-mono); font-size:13px; letter-spacing:.06em; color:var(--color-text-muted); display:flex; align-items:center; gap:64px;}
+  .ticker span b{color:var(--color-accent); font-weight:500;}
+  @keyframes scroll{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+
+  /* ---------- STATS ---------- */
+  .stats{padding:96px 0; background:var(--color-background);}
+  .stats-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border);}
+  .stat{text-align:center; padding:48px 24px; border-right:1px solid var(--color-border); position:relative;}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-family:var(--font-heading); font-size:clamp(2.4rem,4vw,3.4rem); font-weight:600; color:var(--color-primary);}
+  .stat .num span{color:var(--color-accent);}
+  .stat p{margin-top:8px; font-size:14px; color:var(--color-text-muted); max-width:24ch; margin-left:auto; margin-right:auto;}
+
+  /* ---------- SECTION GENERIC ---------- */
+  section{padding:120px 0; position:relative;}
+  .section-head{text-align:center; max-width:680px; margin:0 auto 64px;}
+  .section-head h2{font-size:clamp(1.9rem,3.4vw,2.6rem); margin-top:16px;}
+  .section-head p{font-size:17px; color:var(--color-text-muted); margin-top:16px; font-weight:300; line-height:1.6;}
+
+  /* ---------- BENEFITS (symmetric grid, not split) ---------- */
+  .benefits-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:28px;}
+  .benefit-card{
+    background:var(--color-surface); border:1px solid var(--color-border); border-radius:22px; padding:36px 30px;
+    transition:transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease);
+  }
+  .benefit-card:hover{transform:translateY(-8px); box-shadow:0 30px 60px -30px rgba(42,42,34,.25); border-color:var(--color-accent);}
+  .benefit-icon{
+    width:52px; height:52px; border-radius:14px; background:var(--color-accent-tint); color:var(--color-accent);
+    display:flex; align-items:center; justify-content:center; font-size:22px; margin-bottom:22px;
+    transition:transform .45s var(--ease), background .45s var(--ease);
+  }
+  .benefit-card:hover .benefit-icon{transform:rotate(-8deg) scale(1.08); background:var(--color-accent); color:var(--color-on-accent);}
+  .benefit-card h3{font-size:19px; font-weight:600; margin-bottom:10px;}
+  .benefit-card p{font-size:14.5px; color:var(--color-text-muted); line-height:1.6;}
+
+  /* ---------- PROCESS (symmetric, animated connecting line) ---------- */
+  .process{background:var(--color-primary); color:var(--color-on-primary); border-radius:32px; margin:0 28px;}
+  .process .container{max-width:1100px;}
+  .process .section-head h2, .process .section-head p{color:var(--color-on-primary);}
+  .process .eyebrow{color:#E2BFA9;}
+  .process-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative;}
+  .process-grid::before{
+    content:''; position:absolute; top:26px; left:6%; right:6%; height:1px; background:rgba(243,238,229,.25);
+  }
+  .process-step{text-align:center; padding:0 18px; position:relative;}
+  .step-num{
+    width:52px; height:52px; border-radius:50%; background:var(--color-primary-deep); border:1px solid rgba(243,238,229,.3);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-family:var(--font-heading); font-size:18px;
+    position:relative; z-index:2; transition:background .4s var(--ease), transform .4s var(--ease);
+  }
+  .process-step:hover .step-num{background:var(--color-accent); transform:scale(1.1);}
+  .process-step h3{font-size:16px; font-weight:600; color:var(--color-on-primary); margin-bottom:10px;}
+  .process-step p{font-size:13.5px; color:rgba(243,238,229,.72); line-height:1.6;}
+
+  /* ---------- PORTFOLIO (symmetric masonry-ish but balanced) ---------- */
+  .portfolio-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .portfolio-item{
+    border-radius:20px; overflow:hidden; position:relative; aspect-ratio:4/5; border:1px solid var(--color-border);
+  }
+  .portfolio-item img{width:100%; height:100%; object-fit:cover; transition:transform .6s var(--ease);}
+  .portfolio-item:hover img{transform:scale(1.08);}
+  .portfolio-item .overlay{
+    position:absolute; inset:0; background:linear-gradient(to top, rgba(42,42,34,.78), transparent 55%);
+    display:flex; align-items:flex-end; padding:22px; opacity:0; transition:opacity .4s var(--ease);
+  }
+  .portfolio-item:hover .overlay{opacity:1;}
+  .portfolio-item .overlay span{color:#fff; font-weight:600; font-size:15px;}
+
+  /* ---------- OFFER (premium card, symmetric, centered) ---------- */
+  .offer-card{
+    max-width:760px; margin:0 auto; background:var(--color-surface); border:1px solid var(--color-border);
+    border-radius:28px; padding:64px 56px; text-align:center; position:relative; overflow:hidden;
+    box-shadow:0 60px 100px -60px rgba(42,42,34,.3);
+  }
+  .offer-card::before{
+    content:''; position:absolute; top:-120px; right:-120px; width:300px; height:300px; border-radius:50%;
+    background:radial-gradient(circle, var(--color-accent-tint), transparent 70%);
+  }
+  .offer-list{display:flex; flex-direction:column; gap:14px; max-width:420px; margin:32px auto 0; text-align:left;}
+  .offer-list div{display:flex; align-items:flex-start; gap:12px; font-size:15px;}
+  .offer-list div b{color:var(--color-accent);}
+
+  /* ---------- ABOUT ---------- */
+  .about{display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;}
+  .about-img{border-radius:24px; overflow:hidden; aspect-ratio:1/1.05; border:1px solid var(--color-border); box-shadow:0 40px 80px -40px rgba(42,42,34,.3);}
+  .about-img img{width:100%; height:100%; object-fit:cover;}
+  .about-text p{font-size:16px; line-height:1.75; color:var(--color-text-muted); margin-top:18px;}
+  .about-text h2{font-size:clamp(1.8rem,3vw,2.3rem); margin-top:14px;}
+
+  /* ---------- FAQ ---------- */
+  .faq-list{max-width:740px; margin:0 auto; display:flex; flex-direction:column; gap:12px;}
+  .faq-item{background:var(--color-surface); border:1px solid var(--color-border); border-radius:16px; overflow:hidden; transition:border-color .3s var(--ease);}
+  .faq-item.open{border-color:var(--color-accent);}
+  .faq-q{display:flex; align-items:center; justify-content:space-between; padding:20px 24px; cursor:pointer; font-weight:700; font-size:15.5px;}
+  .faq-q .plus{transition:transform .35s var(--ease); color:var(--color-accent); font-size:20px;}
+  .faq-item.open .plus{transform:rotate(45deg);}
+  .faq-a{max-height:0; overflow:hidden; transition:max-height .4s var(--ease);}
+  .faq-a p{padding:0 24px 22px; font-size:14.5px; color:var(--color-text-muted); line-height:1.65;}
+
+  /* ---------- CONTACT ---------- */
+  .contact-card{
+    max-width:560px; margin:0 auto; background:var(--color-background); border:1px solid var(--color-border);
+    border-radius:24px; padding:44px; box-shadow:0 50px 90px -50px rgba(42,42,34,.3);
+  }
+  .field{display:flex; flex-direction:column; gap:8px; margin-bottom:18px;}
+  .field label{font-size:13px; font-weight:600; color:var(--color-text-muted);}
+  .field input, .field textarea{
+    border:1px solid var(--color-border); border-radius:12px; padding:14px 16px; font-family:var(--font-body);
+    font-size:15px; background:var(--color-surface); transition:border-color .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--color-accent); box-shadow:0 0 0 4px var(--color-accent-tint);}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--color-primary); color:var(--color-on-primary); padding:72px 0 32px;}
+  .footer-grid{display:flex; justify-content:space-between; flex-wrap:wrap; gap:32px;}
+  footer a{opacity:.85;}
+  footer a:hover{opacity:1;}
+
+  /* ---------- Floating CTA pill ---------- */
+  .float-cta{
+    position:fixed; bottom:26px; right:26px; z-index:90; opacity:0; transform:translateY(20px) scale(.9);
+    transition:opacity .4s var(--ease), transform .4s var(--ease); pointer-events:none;
+  }
+  .float-cta.show{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+
+  @media (max-width: 880px){
+    .nav-links{display:none;}
+    .benefits-grid, .portfolio-grid{grid-template-columns:1fr 1fr;}
+    .process-grid{grid-template-columns:1fr 1fr; row-gap:40px;}
+    .process-grid::before{display:none;}
+    .stats-grid{grid-template-columns:1fr;}
+    .stat{border-right:none; border-bottom:1px solid var(--color-border);}
+    .about{grid-template-columns:1fr;}
+  }
+  @media (max-width: 560px){
+    .benefits-grid, .portfolio-grid{grid-template-columns:1fr;}
+    .process-grid{grid-template-columns:1fr;}
+    .offer-card{padding:44px 26px;}
+  }
+</style>
+</head>
+<body>
+
+<header id="header">
+  <div class="container">
+    <nav>
+      <div class="logo">Raum<span>Bühl</span></div>
+      <div class="nav-links">
+        <a href="#leistungen">Leistungen</a>
+        <a href="#prozess">Prozess</a>
+        <a href="#portfolio">Portfolio</a>
+        <a href="#angebot">Angebot</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <a href="#kontakt" class="btn btn-primary" style="padding:11px 22px; font-size:13.5px;">Gratis-Pilot</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-grain"></div>
+  <div class="container hero-content">
+    <span class="eyebrow reveal">Raum Bühl · Mittelbaden · Ortenau</span>
+    <h1 class="reveal">Immobilien, die man sofort <em>verstehen</em> will.</h1>
+    <p class="lead reveal">Professionelle Foto- &amp; Videoproduktion für Maklerbüros — mehr Anfragen, schnellere Vermittlung, eine Marke, die man sich merkt.</p>
+    <div class="hero-actions reveal">
+      <a href="#kontakt" class="btn btn-primary">Gratis-Pilot anfragen →</a>
+      <a href="#portfolio" class="btn btn-ghost">Portfolio ansehen</a>
+    </div>
+    <div class="hero-frame reveal-scale">
+      <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1600&auto=format&fit=crop" alt="Modernes Wohnzimmer">
+      <div class="badge"><span class="pulse-dot"></span> Live-Projekt · Bühl-Mitte</div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span><b>+32%</b> schnellerer Verkauf · <b>4×</b> mehr Anfragen mit Video · <b>3</b> Pilotplätze frei · <b>24h</b> Rückmeldezeit · <b>10 Min</b> Briefing reicht</span>
+    <span><b>+32%</b> schnellerer Verkauf · <b>4×</b> mehr Anfragen mit Video · <b>3</b> Pilotplätze frei · <b>24h</b> Rückmeldezeit · <b>10 Min</b> Briefing reicht</span>
+  </div>
+</div>
+
+<section class="stats">
+  <div class="container">
+    <div class="stats-grid reveal">
+      <div class="stat"><div class="num" data-count="32">0<span>%</span></div><p>schneller verkauft mit Profi-Fotos</p></div>
+      <div class="stat"><div class="num" data-count="4">0<span>×</span></div><p>mehr Anfragen durch Video-Content</p></div>
+      <div class="stat"><div class="num" data-count="24">0<span>h</span></div><p>Rückmeldezeit nach Ihrer Anfrage</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="leistungen">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Was Sie bekommen</span>
+      <h2>Drei Bausteine, ein Ergebnis: Vertrauen.</h2>
+      <p>Jedes Objekt bekommt die volle Aufmerksamkeit — von der ersten Aufnahme bis zur fertigen Story.</p>
+    </div>
+    <div class="benefits-grid">
+      <div class="benefit-card reveal"><div class="benefit-icon">◆</div><h3>Architektur-Fotografie</h3><p>Licht, Linien, Perspektive — Aufnahmen, die das Objekt größer und hochwertiger wirken lassen, als Smartphone-Fotos je könnten.</p></div>
+      <div class="benefit-card reveal"><div class="benefit-icon">▶</div><h3>Cinematische Videos</h3><p>Kurze, geschnittene Walkthroughs für Portale und Social Media — gebaut, um Anfragen auszulösen, nicht nur „nett auszusehen".</p></div>
+      <div class="benefit-card reveal"><div class="benefit-icon">✦</div><h3>Markenauftritt</h3><p>Ein durchgängiger visueller Stil für Ihr Maklerbüro, der bei jedem neuen Objekt sofort wiedererkennbar ist.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="prozess">
+  <div class="container">
+    <div class="process reveal" style="padding:80px 64px;">
+      <div class="section-head"><span class="eyebrow">So läuft's ab</span><h2>Vier Schritte. Kein Aufwand für Sie.</h2></div>
+      <div class="process-grid">
+        <div class="process-step"><div class="step-num">01</div><h3>Briefing</h3><p>10 Minuten Telefonat — Objekt, Termin, Zielgruppe.</p></div>
+        <div class="process-step"><div class="step-num">02</div><h3>Vor-Ort-Termin</h3><p>Ich komme, Sie öffnen die Tür. Fertig.</p></div>
+        <div class="process-step"><div class="step-num">03</div><h3>Postproduktion</h3><p>Bildbearbeitung &amp; Schnitt in meinem Studio.</p></div>
+        <div class="process-step"><div class="step-num">04</div><h3>Übergabe</h3><p>Fertiger Content, bereit für Inserat &amp; Social Media.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="portfolio">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Arbeitsproben</span>
+      <h2>Ein Blick auf das Ergebnis.</h2>
+    </div>
+    <div class="portfolio-grid">
+      <div class="portfolio-item reveal"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=900&auto=format&fit=crop" alt=""><div class="overlay"><span>Einfamilienhaus · Bühl</span></div></div>
+      <div class="portfolio-item reveal"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=900&auto=format&fit=crop" alt=""><div class="overlay"><span>Penthouse · Achern</span></div></div>
+      <div class="portfolio-item reveal"><img src="https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=900&auto=format&fit=crop" alt=""><div class="overlay"><span>Ferienwohnung · Ortenau</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="angebot">
+  <div class="container">
+    <div class="offer-card reveal-scale">
+      <span class="eyebrow" style="justify-content:center;">Gratis-Pilot</span>
+      <h2 style="font-size:clamp(1.8rem,3vw,2.3rem); margin-top:16px;">Ihr erstes Objekt — kostenlos.</h2>
+      <p style="color:var(--color-text-muted); margin-top:14px; font-weight:300; line-height:1.6;">Ich baue mein Portfolio auf und brauche dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, ich eine Referenz.</p>
+      <div class="offer-list">
+        <div><b>✓</b> Foto- &amp; Videoproduktion für ein Objekt, vollständig kostenlos</div>
+        <div><b>✓</b> Volle Nutzungsrechte für Vermarktung &amp; Ihre Kanäle</div>
+        <div><b>✓</b> Nur 3 Pilotplätze verfügbar</div>
+      </div>
+      <a href="#kontakt" class="btn btn-primary" style="margin-top:32px;">Platz sichern →</a>
+    </div>
+  </div>
+</section>
+
+<section id="ueber-mich">
+  <div class="container">
+    <div class="about">
+      <div class="about-img reveal-scale"><img src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=900&auto=format&fit=crop" alt="Fabian Schneebiegl"></div>
+      <div class="about-text reveal">
+        <span class="eyebrow">Über mich</span>
+        <h2>Fabian Schneebiegl</h2>
+        <p>Ich produziere Foto- und Videocontent für Maklerbüros im Raum Bühl, Mittelbaden und Ortenau — mit dem Ziel, dass jedes Objekt so wirkt, wie es sich tatsächlich anfühlt.</p>
+        <p>Kein Agentur-Overhead, keine Standardpakete von der Stange — nur ein klarer Blick fürs Detail und ein Prozess, der Ihnen keine Zeit kostet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="background:var(--color-surface-sunk); border-radius:32px; margin:0 28px;">
+  <div class="container">
+    <div class="section-head reveal"><span class="eyebrow">Häufige Fragen</span><h2>Bevor Sie anfragen.</h2></div>
+    <div class="faq-list">
+      <div class="faq-item reveal"><div class="faq-q"><span>Lohnt sich das wirtschaftlich?</span><span class="plus">+</span></div><div class="faq-a"><p>Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32% schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen. Der Content amortisiert sich meist über ein einziges Objekt.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Warum gratis, wo ist der Haken?</span><span class="plus">+</span></div><div class="faq-a"><p>Keiner. Ich baue mein Portfolio auf und brauche dafür echte Objekte in Top-Qualität. Fairer Tausch.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Wie viel Zeit kostet mich das?</span><span class="plus">+</span></div><div class="faq-a"><p>10 Minuten Briefing und Zugang zum Objekt. Den Rest mache ich.</p></div></div>
+      <div class="faq-item reveal"><div class="faq-q"><span>Wem gehören die Aufnahmen?</span><span class="plus">+</span></div><div class="faq-a"><p>Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="kontakt">
+  <div class="container">
+    <div class="section-head reveal"><span class="eyebrow">Jetzt anfragen</span><h2>Sichern Sie sich einen der 3 Pilotplätze.</h2><p>Kurz Ihre Eckdaten — ich melde mich innerhalb von 24 Stunden.</p></div>
+    <div class="contact-card reveal-scale">
+      <form onsubmit="event.preventDefault(); this.querySelector('button').textContent='Danke — angekommen ✓';">
+        <div class="field"><label>Ihr Name</label><input type="text" placeholder="Vor- und Nachname" required></div>
+        <div class="field"><label>E-Mail</label><input type="email" placeholder="ihre@email.de" required></div>
+        <div class="field"><label>Nachricht</label><textarea rows="4" placeholder="Kurz zu Ihrem Objekt" required></textarea></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Gratis-Pilot anfragen →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container footer-grid">
+    <div><div class="logo">Raum<span>Bühl</span></div><p style="margin-top:14px; max-width:38ch; font-size:14px; opacity:.8;">Fabian Schneebiegl · Foto- &amp; Videoproduktion für Immobilien · Raum Bühl · Mittelbaden · Ortenau</p></div>
+    <div style="font-size:14px; line-height:2;">
+      <div><a href="mailto:fabian.schneebiegl@gmail.com">fabian.schneebiegl@gmail.com</a></div>
+      <div><a href="tel:+4915904692843">0159 0469 2843</a></div>
+    </div>
+  </div>
+</footer>
+
+<a href="#kontakt" class="btn btn-primary float-cta" id="floatCta">Gratis-Pilot →</a>
+
+<script>
+  // Reveal on scroll
+  const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Header scroll state
+  const header = document.getElementById('header');
+  const floatCta = document.getElementById('floatCta');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 40);
+    floatCta.classList.toggle('show', window.scrollY > 800);
+  });
+
+  // Count-up stats
+  const nums = document.querySelectorAll('.stat .num');
+  let counted = false;
+  const statIo = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !counted) {
+        counted = true;
+        nums.forEach(el => {
+          const target = parseInt(el.dataset.count, 10);
+          const suffixEl = el.querySelector('span');
+          const suffix = suffixEl ? suffixEl.outerHTML : '';
+          let cur = 0;
+          const step = Math.max(1, Math.round(target / 40));
+          const tick = () => {
+            cur += step;
+            if (cur >= target) { el.innerHTML = target + suffix; return; }
+            el.innerHTML = cur + suffix;
+            requestAnimationFrame(tick);
+          };
+          tick();
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('.stats-grid').forEach(el => statIo.observe(el));
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const a = item.querySelector('.faq-a');
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(o => { o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight = null; });
+      if (!isOpen) { item.classList.add('open'); a.style.maxHeight = a.scrollHeight + 'px'; }
+    });
+  });
+</script>
+</body>
+</html>
