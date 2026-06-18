@@ -16,23 +16,23 @@ export function Process() {
     <Section bg="surface" divider>
       <Container>
         <SectionHead eyebrow="So läuft's ab" title="In vier Schritten zum fertigen Objekt-Content." />
-        <div style={{
-          display: 'grid', gap: '20px', marginTop: 'clamp(32px, 4vw, 46px)',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        <div className="mc-timeline" style={{
+          display: 'grid', gap: '20px', marginTop: 'clamp(40px, 5vw, 56px)',
+          gridTemplateColumns: 'repeat(4, 1fr)', position: 'relative',
         }}>
           {steps.map((s) => (
-            <div key={s.n} className="mc-timeline-step">
-              <span className="mc-timeline-n" style={{
-                fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-                fontSize: '34px', color: 'var(--color-accent)', lineHeight: 1,
-                letterSpacing: 'var(--ls-heading)',
-                display: 'inline-block',
-                transition: 'transform var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard)',
-              }}>{s.n}</span>
+            <div key={s.n} className="mc-timeline-step" style={{ position: 'relative', paddingTop: '60px' }}>
+              <div className="mc-timeline-n" style={{
+                position: 'absolute', top: 0, left: 0, width: '44px', height: '44px',
+                borderRadius: '50%', background: 'var(--surface-card)', border: '2px solid var(--color-accent)',
+                color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '16px',
+                transition: 'transform var(--dur-slow) var(--ease-soft), background var(--dur-slow) var(--ease-soft), color var(--dur-slow) var(--ease-soft)',
+              }}>{s.n}</div>
               <h3 style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
                 fontSize: '18px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
-                margin: '14px 0 8px',
+                margin: '0 0 8px',
               }}>{s.title}</h3>
               <p style={{
                 fontFamily: 'var(--font-body)', fontSize: '14px', lineHeight: 'var(--lh-normal)',
@@ -58,7 +58,7 @@ export function Portfolio() {
         <SectionHead
           eyebrow="Arbeitsproben"
           title="Die ersten Referenzobjekte entstehen gerade."
-          lead="Wir bauen unser regionales Portfolio auf. Wenn Sie ein passendes Objekt haben — zum Verkauf oder zur Vermietung — kann Ihr Objekt eines davon sein. Kostenlos. Wie das funktioniert, lesen Sie gleich."
+          lead="Wir bauen unser regionales Portfolio auf. Wenn Sie ein passendes Objekt haben, zum Verkauf oder zur Vermietung, kann Ihr Objekt eines davon sein. Kostenlos. Wie das funktioniert, lesen Sie gleich."
         />
         <div style={{
           display: 'grid', gap: '18px', marginTop: 'clamp(28px, 4vw, 40px)',
@@ -123,7 +123,7 @@ export function Offer({ onNav }) {
             color: 'var(--text-muted)', margin: '16px auto 0', maxWidth: '60ch',
           }}>
             Wir sind neu am Markt im Raum Bühl / Mittelbaden und bauen unser Referenz-Portfolio auf.
-            Statt Versprechen zu machen, zeigen wir Ihnen lieber das Ergebnis — an einem Ihrer Objekte.
+            Statt Versprechen zu machen, zeigen wir Ihnen lieber das Ergebnis, an einem Ihrer Objekte.
           </p>
           <div style={{
             margin: '24px 0', display: 'inline-flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap',
@@ -153,7 +153,7 @@ export function Offer({ onNav }) {
             </Button>
           </div>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', margin: '18px 0 0' }}>
-            Bewusst begrenzt — damit jedes Objekt die volle Aufmerksamkeit bekommt.
+            Bewusst begrenzt, damit jedes Objekt die volle Aufmerksamkeit bekommt.
           </p>
         </div>
       </Container>

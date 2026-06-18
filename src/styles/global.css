@@ -47,9 +47,25 @@ body {
   color: var(--color-on-accent) !important;
 }
 
+.mc-timeline::before {
+  content: '';
+  position: absolute;
+  top: 21px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border-hair);
+}
 .mc-timeline-step:hover .mc-timeline-n {
   transform: scale(1.1);
-  color: var(--color-accent-deep);
+  background: var(--color-accent) !important;
+  color: var(--color-on-accent) !important;
+}
+@media (max-width: 980px) {
+  .mc-timeline { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .mc-timeline::before { top: 0; bottom: 0; left: 21px; right: auto; width: 2px; height: auto; }
+  .mc-timeline-step { padding-top: 0 !important; padding-left: 60px !important; }
+  .mc-timeline-step .mc-timeline-n { top: 0; left: 0; }
 }
 
 .mc-portfolio-instagram:hover {

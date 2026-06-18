@@ -25,7 +25,7 @@ export function Hero({ onNav }) {
         }}>
           Professionelle Fotos und konzipierte Videos für Maklerbüros. Hochwertiger Content,
           der Ihre Objekte schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
-          als Marke sichtbar macht — Konzept, Dreh und Schnitt aus einer Hand.
+          als Marke sichtbar macht. Konzept, Dreh und Schnitt aus einer Hand.
         </p>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', margin: '30px 0 0' }}>
           <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav('anfrage')}>
@@ -114,7 +114,7 @@ export function StatBar() {
           fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)',
           opacity: 0.85, textAlign: 'center', margin: '26px auto 0', maxWidth: '78ch', lineHeight: 1.55,
         }}>
-          Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international) — die Größenordnung
+          Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international). Die Größenordnung
           ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.
         </p>
       </Container>

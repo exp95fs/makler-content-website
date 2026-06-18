@@ -29,7 +29,7 @@ export function Branding({ onNav }) {
             color: 'var(--color-secondary)', margin: '16px 0 0',
           }}>
             Einzelne Objekte zu vermarkten ist der Anfang. Der eigentliche Hebel liegt darin, Sie und
-            Ihr Büro als feste Größe in der Region sichtbar zu machen — ob etabliertes Maklerbüro oder
+            Ihr Büro als feste Größe in der Region sichtbar zu machen, ob etabliertes Maklerbüro oder
             eigenständiger Makler.
           </p>
         </div>
@@ -74,7 +74,7 @@ export function Branding({ onNav }) {
             fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '15px',
             color: 'var(--color-on-primary)', margin: 0, maxWidth: '46ch', lineHeight: 1.55,
           }}>
-            Wir starten beim einzelnen Objekt — und bauen daraus Schritt für Schritt Ihre Marke.
+            Wir starten beim einzelnen Objekt und bauen daraus Schritt für Schritt Ihre Marke.
           </p>
           <Button variant="primary" size="md" iconRight={<Icon name="arrow-right" size={16} />} onClick={() => onNav('anfrage')}>
             Markenbildung besprechen

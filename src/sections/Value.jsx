@@ -75,7 +75,7 @@ export function Segments() {
     {
       tag: 'Vermieten & Ferienwohnung', tagTone: 'sage', accent: 'var(--color-primary)',
       title: 'Miet- & Kurzzeit-/Ferienobjekte',
-      text: 'Content, der Buchungen und Mietanfragen steigert — bis hin zu Ferienwohnung und Airbnb.',
+      text: 'Content, der Buchungen und Mietanfragen steigert, bis hin zu Ferienwohnung und Airbnb.',
       points: [
         'Bis zu +40 % mehr Buchungen mit Profi-Fotos',
         '~26 % höhere erzielbare Preise, weniger Leerstand',

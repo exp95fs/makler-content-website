@@ -22,7 +22,7 @@ export function Faq() {
   return (
     <Section bg="page">
       <Container>
-        <SectionHead align="center" eyebrow="Häufige Fragen" title="Bevor Sie anfragen." />
+        <SectionHead align="center" eyebrow="Häufige Fragen" title="Damit keine Fragen offen bleiben." />
         <div style={{ maxWidth: '820px', margin: 'clamp(28px, 4vw, 40px) auto 0', display: 'grid', gap: '12px' }}>
           {items.map((it, i) => {
             const isOpen = open === i;
@@ -109,7 +109,7 @@ export function ContactForm() {
             fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)', fontSize: 'var(--fs-lead)',
             lineHeight: 'var(--lh-normal)', color: 'var(--text-muted)', margin: '14px auto 0',
           }}>
-            Kurz Ihre Eckdaten — wir melden uns innerhalb von 24 Stunden mit einem Terminvorschlag.
+            Kurz Ihre Eckdaten, wir melden uns innerhalb von 24 Stunden mit einem Terminvorschlag.
           </p>
         </div>
 
@@ -127,10 +127,10 @@ export function ContactForm() {
                 background: 'var(--color-primary-tint)', color: 'var(--color-primary)',
               }}><Icon name="check" size={28} color="var(--color-primary)" /></span>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '23px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)', margin: 0 }}>
-                Danke — wir melden uns.
+                Danke, wir melden uns.
               </h3>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 'var(--lh-normal)', color: 'var(--text-muted)', margin: 0, maxWidth: '44ch' }}>
-                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns — mit einem Terminvorschlag für Ihr Pilot-Objekt.
+                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns, mit einem Terminvorschlag für Ihr Pilot-Objekt.
               </p>
               <Button variant="ghost" size="md" onClick={() => setSent(false)}>Weitere Anfrage</Button>
             </div>
