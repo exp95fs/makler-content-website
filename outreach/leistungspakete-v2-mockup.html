@@ -29,7 +29,7 @@
     --container-max:1140px; --container-pad:28px;
   }
   *{box-sizing:border-box; margin:0; padding:0}
-  body{background:var(--color-background); color:var(--color-text); font-family:var(--font-body); line-height:var(--lh-normal); -webkit-font-smoothing:antialiased}
+  body{background:var(--color-background); color:var(--color-text); font-family:var(--font-body); line-height:var(--lh-normal); -webkit-font-smoothing:antialiased; overflow-x:hidden}
   .wrap{max-width:var(--container-max); margin:0 auto; padding:0 var(--container-pad)}
   .banner{background:var(--color-primary-deep); color:var(--color-on-primary); text-align:center; font-family:var(--font-body); font-size:13px; font-weight:var(--fw-body-medium); padding:10px 16px; letter-spacing:.02em}
   .banner b{color:#fff}
@@ -83,17 +83,21 @@
   .retainer-note{background:var(--color-primary-tint); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:18px 22px; font-size:14.5px; color:var(--color-primary-deep)}
 
   /* Sparrechner */
-  .calc-card{margin-top:40px; background:var(--color-surface); color:var(--color-text); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:clamp(26px,4vw,44px); display:grid; gap:32px; grid-template-columns:1.05fr 1fr}
-  @media(max-width:880px){.calc-card{grid-template-columns:1fr}}
+  .calc-card{margin-top:40px; background:var(--color-surface); color:var(--color-text); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:clamp(26px,4vw,44px); display:grid; gap:32px; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+  @media(max-width:880px){.calc-card{grid-template-columns:minmax(0,1fr)}}
 
   .calc-group{margin-bottom:24px}
   .calc-group:last-child{margin-bottom:0}
   .calc-label{display:block; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px}
   .calc-pills{display:flex; flex-wrap:wrap; gap:8px}
-  .calc-pill{font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:13.5px; color:var(--color-text); background:var(--color-surface-sunk); border:1.5px solid transparent; border-radius:var(--radius-pill); padding:9px 18px; cursor:pointer; transition:all .25s var(--ease-standard)}
+  .calc-pill{font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:13.5px; color:var(--color-text); background:var(--color-surface-sunk); border:1.5px solid transparent; border-radius:var(--radius-pill); padding:9px 18px; cursor:pointer; white-space:normal; text-align:center; line-height:1.3; -webkit-tap-highlight-color:transparent; touch-action:manipulation; transition:all .25s var(--ease-standard)}
   .calc-pill:hover{border-color:var(--color-border)}
   .calc-pill.active{background:var(--color-accent); color:var(--color-on-accent); box-shadow:0 6px 16px -8px rgba(164,88,58,.5)}
   .calc-pill .sub-line{display:block; font-size:11px; font-weight:var(--fw-body); opacity:.85; margin-top:1px}
+  @media(max-width:600px){
+    .calc-pills{flex-direction:column}
+    .calc-pill{width:100%; text-align:left; border-radius:var(--radius-md)}
+  }
 
   .calc-result{background:var(--color-primary); color:var(--color-on-primary); border-radius:var(--radius-lg); padding:28px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden}
   .calc-result::before{content:""; position:absolute; inset:0; background:radial-gradient(120% 100% at 100% 0%, rgba(188,107,73,.28), transparent 60%)}
