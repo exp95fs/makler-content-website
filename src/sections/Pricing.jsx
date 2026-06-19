@@ -18,12 +18,13 @@ const TIERS = [
   },
   {
     key: 'kombi',
-    name: 'Foto & Video Basis',
-    price: 890,
-    desc: 'Die meistgewählte Kombination: Fotos plus Objektvideo für mehr Reichweite.',
+    name: 'Foto & Video & Drohne (Basis)',
+    price: 990,
+    desc: 'Die meistgewählte Kombination: Fotos, Objektvideo und Luftaufnahmen für mehr Reichweite.',
     points: [
       'Alles aus Foto-Basis',
       'Konzipiertes Objektvideo (60–90 s)',
+      'Drohnenaufnahmen für Außen- & Lageperspektive',
       'Vertikales Reel für Social Media & Story',
     ],
     featured: true,
@@ -31,12 +32,12 @@ const TIERS = [
   {
     key: 'premium',
     name: 'Foto & Video Premium',
-    price: 1590,
-    desc: 'Die volle Produktion für Ihre Top-Objekte, mit Drohne und 360°-Rundgang.',
+    price: 1490,
+    desc: 'Die volle Produktion für Ihre Top-Objekte, mit aufwendigerem Schnitt und mehr Material.',
     points: [
-      'Alles aus Foto & Video Basis',
-      'Premium-Videoschnitt mit Drohnenaufnahmen',
-      '360°-Rundgang für Ihr Objekt',
+      'Alles aus Foto & Video & Drohne (Basis)',
+      'Premium-Videoschnitt mit ausführlicherem Erzählbogen',
+      'Erweiterte Bildstrecke inkl. Detail- & Lifestyle-Aufnahmen',
     ],
   },
 ];
@@ -111,7 +112,7 @@ export function Leistungspakete({ onNav }) {
   );
 }
 
-const PRICES = { foto: 490, kombi: 890, premium: 1590 };
+const PRICES = { foto: 490, kombi: 990, premium: 1490 };
 const DISCOUNTS = { 3: 0.05, 6: 0.10, 12: 0.15 };
 
 function fmt(n) {
@@ -152,7 +153,7 @@ export function RetainerCalculator() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                 {[
                   { v: 'foto', label: 'Foto-Basis' },
-                  { v: 'kombi', label: 'Foto & Video Basis' },
+                  { v: 'kombi', label: 'Foto & Video & Drohne (Basis)' },
                   { v: 'premium', label: 'Foto & Video Premium' },
                 ].map((o) => (
                   <PillLight key={o.v} active={mix === o.v} onClick={() => setMix(o.v)}>{o.label}</PillLight>

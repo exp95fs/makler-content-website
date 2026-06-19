@@ -130,7 +130,7 @@ export function Offer({ onNav }) {
             justifyContent: 'center',
             fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--text-muted)',
           }}>
-            <span>Regulärer Wert: <span style={{ textDecoration: 'line-through' }}>1.590 €</span></span>
+            <span>Regulärer Wert: <span style={{ textDecoration: 'line-through' }}>1.490 €</span></span>
             <Icon name="arrow-right" size={16} color="var(--text-muted)" />
             <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '26px', color: 'var(--status-success)' }}>0 €</span>
             <span>für die ersten 3 Pilot-Objekte</span>

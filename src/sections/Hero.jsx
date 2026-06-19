@@ -39,7 +39,7 @@ export function Hero({ onNav }) {
           fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)',
           margin: '20px 0 0', lineHeight: 1.6,
         }}>
-          Für Verkauf &amp; Vermietung · Foto, Video, Drohne und 360° · schnelle Lieferung nach Paketumfang.
+          Für Verkauf &amp; Vermietung · Foto, Video und Drohne · schnelle Lieferung nach Paketumfang.
         </p>
       </Container>
     </section>
