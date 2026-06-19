@@ -1,6 +1,7 @@
 import { Nav } from './sections/Nav.jsx';
 import { Hero, StatBar } from './sections/Hero.jsx';
 import { Benefits, Segments } from './sections/Value.jsx';
+import { Leistungspakete, RetainerCalculator } from './sections/Pricing.jsx';
 import { Branding, Usp } from './sections/Branding.jsx';
 import { Process, Portfolio, Offer, About } from './sections/Flow.jsx';
 import { Faq, ContactForm, SiteFooter } from './sections/FaqContact.jsx';
@@ -25,6 +26,8 @@ export default function App() {
         <Portfolio />
         <Offer onNav={onNav} />
         <About />
+        <Leistungspakete onNav={onNav} />
+        <RetainerCalculator />
         <Faq />
         <ContactForm />
       </main>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Quadratblick · Leistungspakete & Retainer (V2 Entwurf)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Mulish:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --color-primary:#565E45; --color-primary-deep:#434A36; --color-secondary:#C7BCA9;
+    --color-background:#F3EEE5; --color-surface:#FBF8F1; --color-text:#2A2A22; --color-text-muted:#5C5A4E;
+    --color-accent:#BC6B49; --color-accent-deep:#A4583A; --color-border:#E0D8CA;
+    --color-on-primary:#F3EEE5; --color-on-accent:#FBF8F1;
+    --color-primary-tint:#EAE9E0; --color-accent-tint:#F0E2D9; --color-surface-sunk:#EFE9DD;
+
+    --font-heading:'Plus Jakarta Sans','Mulish',-apple-system,sans-serif;
+    --font-body:'Mulish',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --fw-heading:600; --fw-heading-reg:500; --fw-body-light:300; --fw-body:400; --fw-body-medium:500; --fw-body-bold:700;
+    --ls-heading:-0.01em; --ls-label:0.18em; --lh-normal:1.65; --lh-snug:1.3;
+
+    --radius-sm:8px; --radius-md:13px; --radius-lg:18px; --radius-xl:24px; --radius-pill:100px;
+    --shadow-sm:0 1px 2px rgba(42,42,34,.05), 0 4px 10px -6px rgba(42,42,34,.16);
+    --shadow-md:0 2px 4px rgba(42,42,34,.05), 0 14px 30px -18px rgba(42,42,34,.28);
+    --shadow-lg:0 4px 8px rgba(42,42,34,.06), 0 24px 50px -28px rgba(42,42,34,.34);
+    --ease-standard:cubic-bezier(.22,.61,.36,1); --dur-base:.24s;
+    --container-max:1140px; --container-pad:28px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--color-background); color:var(--color-text); font-family:var(--font-body); line-height:var(--lh-normal); -webkit-font-smoothing:antialiased; overflow-x:hidden}
+  .wrap{max-width:var(--container-max); margin:0 auto; padding:0 var(--container-pad)}
+  .banner{background:var(--color-primary-deep); color:var(--color-on-primary); text-align:center; font-family:var(--font-body); font-size:13px; font-weight:var(--fw-body-medium); padding:10px 16px; letter-spacing:.02em}
+  .banner b{color:#fff}
+
+  section{padding:clamp(56px,8vw,96px) 0}
+  .surface{background:var(--color-surface); border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border)}
+  .sage{background:var(--color-primary); color:var(--color-on-primary)}
+
+  .eyebrow{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:12px; letter-spacing:var(--ls-label); text-transform:uppercase; color:var(--color-accent-deep)}
+  .eyebrow.onDark{color:var(--color-secondary)}
+  h2.head{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:clamp(1.7rem,3.2vw,2.3rem); line-height:1.14; letter-spacing:var(--ls-heading); color:var(--color-text); margin:14px 0 0; max-width:54ch}
+  h2.head.onDark{color:var(--color-on-primary)}
+  p.lead{font-family:var(--font-body); font-weight:var(--fw-body-light); font-size:18px; line-height:var(--lh-normal); color:var(--color-text-muted); margin:16px 0 0; max-width:54ch}
+  p.lead.onDark{color:var(--color-secondary)}
+  .center{text-align:center}
+  .center .head, .center .lead{margin-left:auto; margin-right:auto}
+
+  /* Pricing cards */
+  .pricing-grid{display:grid; gap:22px; margin-top:clamp(32px,4vw,46px); grid-template-columns:repeat(3,1fr)}
+  @media(max-width:900px){.pricing-grid{grid-template-columns:1fr}}
+
+  @keyframes riseIn{from{opacity:0; transform:translateY(18px)} to{opacity:1; transform:translateY(0)}}
+  .price-card{position:relative; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:32px; box-shadow:var(--shadow-md); display:flex; flex-direction:column; text-align:left; overflow:hidden; isolation:isolate; animation:riseIn .6s var(--ease-standard) backwards; transition:transform .38s var(--ease-standard), box-shadow .38s var(--ease-standard), border-color .38s var(--ease-standard)}
+  .price-card:nth-child(1){animation-delay:.02s}
+  .price-card:nth-child(2){animation-delay:.1s}
+  .price-card:nth-child(3){animation-delay:.18s}
+  .price-card::before{content:""; position:absolute; inset:0; z-index:-1; opacity:0; background:radial-gradient(120% 140% at 50% -20%, var(--color-accent-tint), transparent 60%); transition:opacity .45s var(--ease-standard)}
+  .price-card:hover{transform:translateY(-8px); box-shadow:var(--shadow-lg); border-color:var(--color-accent)}
+  .price-card:hover::before{opacity:1}
+  .price-card.featured{border-color:var(--color-accent); box-shadow:var(--shadow-lg); transform:translateY(-6px)}
+  .price-card.featured:hover{transform:translateY(-12px)}
+  .price-badge{position:absolute; top:-13px; left:32px; background:var(--color-accent); color:var(--color-on-accent); font-family:var(--font-body); font-weight:var(--fw-body-bold); font-size:12px; letter-spacing:.04em; padding:6px 14px; border-radius:var(--radius-pill); box-shadow:var(--shadow-sm)}
+  .tier-name{font-family:var(--font-heading); font-weight:var(--fw-heading-reg); font-size:15px; letter-spacing:.04em; text-transform:uppercase; color:var(--color-text-muted)}
+  .tier-price{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:2.4rem; letter-spacing:var(--ls-heading); color:var(--color-text); margin:10px 0 4px}
+  .tier-price small{font-family:var(--font-body); font-weight:var(--fw-body); font-size:14px; color:var(--color-text-muted)}
+  .tier-tagline{font-family:var(--font-body); font-size:14.5px; color:var(--color-text-muted); margin:0 0 22px}
+  .tier-list{list-style:none; display:grid; gap:11px; margin:0 0 26px; flex:1}
+  .tier-list li{display:flex; gap:10px; align-items:flex-start; font-family:var(--font-body); font-size:14.5px; color:var(--color-text); line-height:1.5}
+  .tier-list svg{flex:none; width:16px; height:16px; margin-top:3px; color:var(--color-accent)}
+  .price-card.featured .tier-list svg{color:var(--color-accent-deep)}
+  .btn{position:relative; align-self:stretch; text-align:center; display:inline-flex; align-items:center; justify-content:center; gap:9px; font-family:var(--font-body); font-weight:var(--fw-body-bold); font-size:15px; padding:13px 24px; border-radius:var(--radius-sm); text-decoration:none; overflow:hidden; transition:background .3s var(--ease-standard), transform .3s var(--ease-standard), box-shadow .3s var(--ease-standard)}
+  .btn.primary{background:var(--color-accent); color:var(--color-on-accent); box-shadow:0 6px 16px -8px rgba(164,88,58,.55)}
+  .btn.primary:hover{background:var(--color-accent-deep); transform:translateY(-2px); box-shadow:0 10px 22px -10px rgba(164,88,58,.65)}
+  .btn.ghost{background:transparent; color:var(--color-accent); border:1.5px solid var(--color-accent)}
+  .btn.ghost:hover{background:var(--color-accent-tint); transform:translateY(-2px)}
+
+  /* Retainer section */
+  .retainer-intro{display:grid; gap:18px; margin-top:clamp(28px,4vw,40px); grid-template-columns:1fr; max-width:74ch}
+  .retainer-note{background:var(--color-primary-tint); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:18px 22px; font-size:14.5px; color:var(--color-primary-deep)}
+
+  /* Sparrechner */
+  .calc-card{margin-top:40px; background:var(--color-surface); color:var(--color-text); border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); padding:clamp(26px,4vw,44px); display:grid; gap:32px; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}
+  @media(max-width:880px){.calc-card{grid-template-columns:minmax(0,1fr)}}
+
+  .calc-group{margin-bottom:24px}
+  .calc-group:last-child{margin-bottom:0}
+  .calc-label{display:block; font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:12px}
+  .calc-pills{display:flex; flex-wrap:wrap; gap:8px}
+  .calc-pill{font-family:var(--font-body); font-weight:var(--fw-body-medium); font-size:13.5px; color:var(--color-text); background:var(--color-surface-sunk); border:1.5px solid transparent; border-radius:var(--radius-pill); padding:9px 18px; cursor:pointer; white-space:normal; text-align:center; line-height:1.3; -webkit-tap-highlight-color:transparent; touch-action:manipulation; transition:all .25s var(--ease-standard)}
+  .calc-pill:hover{border-color:var(--color-border)}
+  .calc-pill.active{background:var(--color-accent); color:var(--color-on-accent); box-shadow:0 6px 16px -8px rgba(164,88,58,.5)}
+  .calc-pill .sub-line{display:block; font-size:11px; font-weight:var(--fw-body); opacity:.85; margin-top:1px}
+  @media(max-width:600px){
+    .calc-pills{flex-direction:column}
+    .calc-pill{width:100%; text-align:left; border-radius:var(--radius-md)}
+  }
+
+  .calc-result{background:var(--color-primary); color:var(--color-on-primary); border-radius:var(--radius-lg); padding:28px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden}
+  .calc-result::before{content:""; position:absolute; inset:0; background:radial-gradient(120% 100% at 100% 0%, rgba(188,107,73,.28), transparent 60%)}
+  .calc-result *{position:relative}
+  .calc-result .eyebrow{color:var(--color-secondary)}
+  .calc-monthly{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:clamp(2.2rem,4vw,2.8rem); letter-spacing:var(--ls-heading); margin:8px 0 2px; transition:opacity .2s}
+  .calc-monthly small{font-family:var(--font-body); font-weight:var(--fw-body); font-size:14px; color:var(--color-secondary)}
+  .calc-sub{font-family:var(--font-body); font-size:13px; color:var(--color-secondary); margin:0 0 22px}
+
+  .calc-bars{display:grid; gap:12px; margin-bottom:18px}
+  .calc-bar-row{display:grid; gap:6px}
+  .calc-bar-label{display:flex; justify-content:space-between; font-family:var(--font-body); font-size:12.5px; color:var(--color-secondary)}
+  .calc-bar-label b{color:var(--color-on-primary); font-weight:var(--fw-body-bold)}
+  .calc-bar-track{height:10px; border-radius:var(--radius-pill); background:rgba(243,238,229,.18); overflow:hidden}
+  .calc-bar-fill{height:100%; border-radius:var(--radius-pill); transition:width .7s var(--ease-standard)}
+  .calc-bar-fill.single{background:var(--color-secondary)}
+  .calc-bar-fill.retainer{background:var(--color-accent)}
+
+  .calc-savings{background:rgba(243,238,229,.12); border:1px solid rgba(243,238,229,.22); border-radius:var(--radius-md); padding:16px 18px}
+  .calc-savings b{font-family:var(--font-heading); font-weight:var(--fw-heading); font-size:1.3rem; color:var(--color-on-primary); display:block; margin-bottom:2px; transition:opacity .2s}
+  .calc-savings span{font-family:var(--font-body); font-size:12.5px; color:var(--color-secondary)}
+
+  footer{padding:40px 0; text-align:center; font-family:var(--font-body); font-size:13px; color:var(--color-text-muted)}
+</style>
+</head>
+<body>
+
+<div class="banner">⚠ <b>Visueller Entwurf (V2)</b> — nur zur internen Sichtung, nicht live geschaltet</div>
+
+<section>
+  <div class="wrap center">
+    <span class="eyebrow">Leistungen & Preise</span>
+    <h2 class="head">Drei Pakete. Klar erklärt, was Sie bekommen.</h2>
+    <p class="lead">Vom reinen Foto-Set bis zum cineastischen Anwesensfilm mit Drohne — jedes Paket ist in sich vollständig und professionell bearbeitet. Sie wählen, wie viel Bewegtbild Sie möchten.</p>
+
+    <div class="pricing-grid">
+
+      <div class="price-card">
+        <span class="tier-name">Foto-Basis</span>
+        <div class="tier-price">390&nbsp;€<small>&nbsp;netto</small></div>
+        <p class="tier-tagline">Professionelle Fotos von innen und außen — die solide Grundlage für jedes Inserat.</p>
+        <ul class="tier-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Professionelle Innen- & Außenaufnahmen</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Ca. 15–20 Bilder, abgestimmt auf Objektgröße</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Bildbearbeitung & einheitlicher Look</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Lieferung optimiert für Portale & Exposé</li>
+        </ul>
+        <a class="btn ghost" href="#anfrage">Anfragen</a>
+      </div>
+
+      <div class="price-card featured">
+        <span class="price-badge">Empfehlung</span>
+        <span class="tier-name">Foto & Video Basis</span>
+        <div class="tier-price">890&nbsp;€<small>&nbsp;netto</small></div>
+        <p class="tier-tagline">Fotos plus Rundgang-Video — Ihr Objekt zum Durchlaufen erleben, nicht nur betrachten.</p>
+        <ul class="tier-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Alles aus Foto-Basis</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Hochwertiges Rundgang-Video durch das gesamte Objekt</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Vollständig bearbeitet & farblich abgestimmt (Color Grading)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Social-Cutdowns für Reels/Anzeigen</li>
+        </ul>
+        <a class="btn primary" href="#anfrage">Anfragen</a>
+      </div>
+
+      <div class="price-card">
+        <span class="tier-name">Foto & Video Premium</span>
+        <div class="tier-price">1.590&nbsp;€<small>&nbsp;netto</small></div>
+        <p class="tier-tagline">Für Anwesen & besondere Objekte: Premium-Video mit Drohne und 360°-Aufnahmen.</p>
+        <ul class="tier-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Alles aus Foto & Video Basis</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Premium-Video: Detailaufnahmen & cinematischer Schnitt mit fließenden Übergängen</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Drohnenaufnahmen & 360°-Rundgang inklusive</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Erweiterte Schnittfassung + Social-Cutdowns</li>
+        </ul>
+        <a class="btn ghost" href="#anfrage">Anfragen</a>
+      </div>
+
+    </div>
+    <p class="lead" style="font-size:13.5px; margin-top:28px; max-width:74ch">Alle Preise netto, zzgl. MwSt.</p>
+  </div>
+</section>
+
+<section class="sage">
+  <div class="wrap">
+    <span class="eyebrow onDark">Für Makler mit laufendem Objektaufkommen</span>
+    <h2 class="head onDark">Die Retainer-Lösung: planbarer Content statt Einzelbeauftragung.</h2>
+    <p class="lead onDark">Ab ca. 3 Objekten im Monat lohnt sich ein fester Rahmen: Sie sichern sich Termin-Priorität, planbare Kosten und sparen gegenüber Einzelbuchung. Stellen Sie sich Ihr Modell zusammen — und sehen Sie sofort, wie viel das über die Vertragslaufzeit ausmacht.</p>
+
+    <div class="calc-card" id="calc">
+      <div>
+        <div class="calc-group">
+          <span class="calc-label">Paket-Mix</span>
+          <div class="calc-pills" data-group="mix">
+            <button class="calc-pill" type="button" data-value="foto">Foto-Basis</button>
+            <button class="calc-pill active" type="button" data-value="kombi">Foto & Video Basis</button>
+            <button class="calc-pill" type="button" data-value="premium">Foto & Video Premium</button>
+          </div>
+        </div>
+        <div class="calc-group">
+          <span class="calc-label">Objekte pro Monat</span>
+          <div class="calc-pills" data-group="objects">
+            <button class="calc-pill" type="button" data-value="3">~3</button>
+            <button class="calc-pill" type="button" data-value="4">~4</button>
+            <button class="calc-pill active" type="button" data-value="5">~5</button>
+          </div>
+        </div>
+        <div class="calc-group">
+          <span class="calc-label">Vertragslaufzeit</span>
+          <div class="calc-pills" data-group="duration">
+            <button class="calc-pill" type="button" data-value="3">3 Monate<span class="sub-line">−5&nbsp;%</span></button>
+            <button class="calc-pill active" type="button" data-value="6">6 Monate<span class="sub-line">−10&nbsp;%</span></button>
+            <button class="calc-pill" type="button" data-value="12">12 Monate<span class="sub-line">−15&nbsp;%</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="calc-result">
+        <span class="eyebrow onDark">Ihr Retainer</span>
+        <div class="calc-monthly" id="calcMonthly">— €<small>&nbsp;/ Monat</small></div>
+        <p class="calc-sub" id="calcSub">netto, zzgl. MwSt. · Laufzeit gemäß Auswahl</p>
+
+        <div class="calc-bars">
+          <div class="calc-bar-row">
+            <span class="calc-bar-label">Einzelbeauftragung gesamt <b id="calcSingleTotal">— €</b></span>
+            <div class="calc-bar-track"><div class="calc-bar-fill single" id="calcSingleBar" style="width:0%"></div></div>
+          </div>
+          <div class="calc-bar-row">
+            <span class="calc-bar-label">Mit Retainer gesamt <b id="calcRetainerTotal">— €</b></span>
+            <div class="calc-bar-track"><div class="calc-bar-fill retainer" id="calcRetainerBar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="calc-savings">
+          <b id="calcSavings">— €</b>
+          <span>Ersparnis über die gesamte Vertragslaufzeit gegenüber Einzelbuchung</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var PRICES = { foto: 390, kombi: 890, premium: 1590 };
+  var DISCOUNTS = { 3: .05, 6: .10, 12: .15 };
+
+  var state = { mix:'kombi', objects:5, duration:6 };
+
+  function fmt(n){ return n.toLocaleString('de-DE', {maximumFractionDigits:0}) + ' €'; }
+
+  function avgPricePerObject(mixKey){
+    return PRICES[mixKey];
+  }
+
+  function update(){
+    var avg = avgPricePerObject(state.mix);
+    var months = state.duration;
+    var discount = DISCOUNTS[months];
+    var singleTotal = avg * state.objects * months;
+    var retainerTotal = singleTotal * (1 - discount);
+    var monthly = retainerTotal / months;
+    var savings = singleTotal - retainerTotal;
+
+    document.getElementById('calcMonthly').innerHTML = fmt(monthly) + '<small>&nbsp;/ Monat</small>';
+    document.getElementById('calcSub').textContent = 'netto, zzgl. MwSt. · ' + months + ' Monate Laufzeit · −' + Math.round(discount*100) + ' % ggü. Einzelbuchung';
+    document.getElementById('calcSingleTotal').textContent = fmt(singleTotal);
+    document.getElementById('calcRetainerTotal').textContent = fmt(retainerTotal);
+    document.getElementById('calcSavings').textContent = fmt(savings) + ' (' + Math.round(discount*100) + ' %)';
+
+    document.getElementById('calcSingleBar').style.width = '100%';
+    document.getElementById('calcRetainerBar').style.width = ((retainerTotal/singleTotal)*100) + '%';
+  }
+
+  document.querySelectorAll('.calc-pills').forEach(function(group){
+    var key = group.getAttribute('data-group');
+    group.querySelectorAll('.calc-pill').forEach(function(pill){
+      pill.addEventListener('click', function(){
+        group.querySelectorAll('.calc-pill').forEach(function(p){ p.classList.remove('active'); });
+        pill.classList.add('active');
+        var v = pill.getAttribute('data-value');
+        state[key] = (key === 'objects' || key === 'duration') ? parseInt(v,10) : v;
+        update();
+      });
+    });
+  });
+
+  update();
+})();
+</script>
+
+<footer>Entwurf V2 · nicht deployt · Quadratblick</footer>
+
+</body>
+</html>

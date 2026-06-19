@@ -18,6 +18,10 @@ body {
 @media (max-width: 460px) {
   .mc-stats { grid-template-columns: 1fr !important; }
 }
+@media (max-width: 880px) {
+  .mc-calc-grid { grid-template-columns: 1fr !important; }
+  .mc-calc-result { border-left: none !important; padding-left: 0 !important; border-top: 1px solid var(--border-hair); padding-top: 24px; margin-top: 8px; }
+}
 
 /* ---------- Hover effects (ported from V6 concept) ---------- */
 .mc-card-hover .mc-card-icon {
