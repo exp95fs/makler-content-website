@@ -7,7 +7,7 @@ import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
 const TIERS = [
   {
     key: 'foto',
-    name: 'Foto-Basis',
+    name: 'Foto (Basis)',
     price: 490,
     desc: 'Solide Bildstrecke für Verkauf oder Vermietung, schnell einsatzbereit.',
     points: [
@@ -18,11 +18,11 @@ const TIERS = [
   },
   {
     key: 'kombi',
-    name: 'Foto & Video & Drohne (Basis)',
+    name: 'Foto & Video (Basis)',
     price: 990,
     desc: 'Die meistgewählte Kombination: Fotos, Objektvideo und Luftaufnahmen für mehr Reichweite.',
     points: [
-      'Alles aus Foto-Basis',
+      'Alles aus Foto (Basis)',
       'Konzipiertes Objektvideo (60–90 s)',
       'Drohnenaufnahmen für Außen- & Lageperspektive',
       'Vertikales Reel für Social Media & Story',
@@ -35,7 +35,7 @@ const TIERS = [
     price: 1490,
     desc: 'Die volle Produktion für Ihre Top-Objekte, mit aufwendigerem Schnitt und mehr Material.',
     points: [
-      'Alles aus Foto & Video & Drohne (Basis)',
+      'Alles aus Foto & Video (Basis)',
       'Premium-Videoschnitt mit ausführlicherem Erzählbogen',
       'Erweiterte Bildstrecke inkl. Detail- & Lifestyle-Aufnahmen',
     ],
@@ -152,8 +152,8 @@ export function RetainerCalculator() {
               <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '13.5px', color: 'var(--text-strong)' }}>Paket</span>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                 {[
-                  { v: 'foto', label: 'Foto-Basis' },
-                  { v: 'kombi', label: 'Foto & Video & Drohne (Basis)' },
+                  { v: 'foto', label: 'Foto (Basis)' },
+                  { v: 'kombi', label: 'Foto & Video (Basis)' },
                   { v: 'premium', label: 'Foto & Video Premium' },
                 ].map((o) => (
                   <PillLight key={o.v} active={mix === o.v} onClick={() => setMix(o.v)}>{o.label}</PillLight>
