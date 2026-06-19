@@ -9,7 +9,7 @@ const TIERS = [
   {
     key: 'foto',
     name: 'Foto-Basis',
-    price: 390,
+    price: 490,
     desc: 'Solide Bildstrecke für Verkauf oder Vermietung, schnell einsatzbereit.',
     points: [
       'Bearbeitete Fotostrecke fürs Exposé & Portale',
@@ -115,7 +115,7 @@ export function Leistungspakete({ onNav }) {
   );
 }
 
-const PRICES = { foto: 390, kombi: 890, premium: 1590 };
+const PRICES = { foto: 490, kombi: 890, premium: 1590 };
 const DISCOUNTS = { 3: 0.05, 6: 0.10, 12: 0.15 };
 
 function fmt(n) {

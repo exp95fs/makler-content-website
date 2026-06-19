@@ -20,14 +20,14 @@ export default function App() {
         <StatBar />
         <Benefits />
         <Segments />
-        <Leistungspakete onNav={onNav} />
-        <RetainerCalculator />
         <Branding onNav={onNav} />
         <Usp />
         <Process />
         <Portfolio />
         <Offer onNav={onNav} />
         <About />
+        <Leistungspakete onNav={onNav} />
+        <RetainerCalculator />
         <Faq />
         <ContactForm />
       </main>
