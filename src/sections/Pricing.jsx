@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card } from '../components/ds/Card.jsx';
-import { Badge } from '../components/ds/Badge.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
 import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
@@ -62,11 +61,8 @@ export function Leistungspakete({ onNav }) {
               padding="lg"
               style={{
                 display: 'flex', flexDirection: 'column',
-                borderColor: t.featured ? 'var(--color-accent)' : 'var(--border-hair)',
-                borderWidth: t.featured ? '1.5px' : '1px',
               }}
             >
-              {t.featured && <Badge tone="accent" style={{ alignSelf: 'flex-start', marginBottom: '12px' }}>Empfehlung</Badge>}
               <h3 style={{
                 fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
                 fontSize: '21px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
