@@ -148,7 +148,7 @@
 
       <div class="price-card featured">
         <span class="price-badge">Empfehlung</span>
-        <span class="tier-name">Foto & Video Kombi</span>
+        <span class="tier-name">Foto & Video Basis</span>
         <div class="tier-price">890&nbsp;€<small>&nbsp;netto</small></div>
         <p class="tier-tagline">Fotos plus Rundgang-Video — Ihr Objekt zum Durchlaufen erleben, nicht nur betrachten.</p>
         <ul class="tier-list">
@@ -165,7 +165,7 @@
         <div class="tier-price">1.590&nbsp;€<small>&nbsp;netto</small></div>
         <p class="tier-tagline">Für Anwesen & besondere Objekte: Premium-Video mit Drohne und 360°-Aufnahmen.</p>
         <ul class="tier-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Alles aus Foto & Video Kombi</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Alles aus Foto & Video Basis</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Premium-Video: Detailaufnahmen & cinematischer Schnitt mit fließenden Übergängen</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Drohnenaufnahmen & 360°-Rundgang inklusive</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Erweiterte Schnittfassung + Social-Cutdowns</li>
@@ -189,25 +189,25 @@
         <div class="calc-group">
           <span class="calc-label">Paket-Mix</span>
           <div class="calc-pills" data-group="mix">
-            <button class="calc-pill" data-value="foto">Foto-fokussiert<span class="sub-line">überwiegend Foto-Basis</span></button>
-            <button class="calc-pill active" data-value="ausgewogen">Ausgewogen<span class="sub-line">Foto-Basis & Foto & Video Kombi</span></button>
-            <button class="calc-pill" data-value="premium">Premium-fokussiert<span class="sub-line">viele Foto & Video Kombi & Foto & Video Premium</span></button>
+            <button class="calc-pill" type="button" data-value="foto">Foto-Basis</button>
+            <button class="calc-pill active" type="button" data-value="kombi">Foto & Video Basis</button>
+            <button class="calc-pill" type="button" data-value="premium">Foto & Video Premium</button>
           </div>
         </div>
         <div class="calc-group">
           <span class="calc-label">Objekte pro Monat</span>
           <div class="calc-pills" data-group="objects">
-            <button class="calc-pill" data-value="3">~3</button>
-            <button class="calc-pill active" data-value="5">~5</button>
-            <button class="calc-pill" data-value="7">~7</button>
+            <button class="calc-pill" type="button" data-value="3">~3</button>
+            <button class="calc-pill" type="button" data-value="4">~4</button>
+            <button class="calc-pill active" type="button" data-value="5">~5</button>
           </div>
         </div>
         <div class="calc-group">
           <span class="calc-label">Vertragslaufzeit</span>
           <div class="calc-pills" data-group="duration">
-            <button class="calc-pill" data-value="3">3 Monate<span class="sub-line">−5&nbsp;%</span></button>
-            <button class="calc-pill active" data-value="6">6 Monate<span class="sub-line">−10&nbsp;%</span></button>
-            <button class="calc-pill" data-value="12">12 Monate<span class="sub-line">−15&nbsp;%</span></button>
+            <button class="calc-pill" type="button" data-value="3">3 Monate<span class="sub-line">−5&nbsp;%</span></button>
+            <button class="calc-pill active" type="button" data-value="6">6 Monate<span class="sub-line">−10&nbsp;%</span></button>
+            <button class="calc-pill" type="button" data-value="12">12 Monate<span class="sub-line">−15&nbsp;%</span></button>
           </div>
         </div>
       </div>
@@ -240,21 +240,14 @@
 <script>
 (function(){
   var PRICES = { foto: 390, kombi: 890, premium: 1590 };
-  var MIXES = {
-    foto:       { foto:.70, kombi:.25, premium:.05 },
-    ausgewogen: { foto:.40, kombi:.45, premium:.15 },
-    premium:    { foto:.15, kombi:.45, premium:.40 }
-  };
   var DISCOUNTS = { 3: .05, 6: .10, 12: .15 };
 
-  var state = { mix:'ausgewogen', objects:5, duration:6 };
+  var state = { mix:'kombi', objects:5, duration:6 };
 
-  function fmt(n){ return n.toLocaleString('de-DE', {maximumFractionDigits:0}) + ' €'; }
+  function fmt(n){ return n.toLocaleString('de-DE', {maximumFractionDigits:0}) + ' €'; }
 
   function avgPricePerObject(mixKey){
-    var m = MIXES[mixKey], total = 0;
-    Object.keys(m).forEach(function(k){ total += m[k] * PRICES[k]; });
-    return total;
+    return PRICES[mixKey];
   }
 
   function update(){
