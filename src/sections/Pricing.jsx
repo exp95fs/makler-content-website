@@ -154,7 +154,7 @@ export function Leistungspakete({ onNav }) {
             Paket &amp; Termin anfragen
           </Button>
           <Button variant="ghost" size="lg" onClick={() => onNav && onNav('anfrage')}>
-            Lieber erst kennenlernen
+            Nachricht schreiben
           </Button>
         </div>
 
