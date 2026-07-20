@@ -8,7 +8,7 @@ export function Hero({ onNav }) {
   return (
     <section id="top" style={{ background: 'var(--bg-page)' }}>
       <Container style={{ padding: 'clamp(44px, 6vw, 80px) var(--container-pad) clamp(40px, 5vw, 64px)' }}>
-        <Eyebrow>Foto &amp; Video für Makler · Raum Bühl · Mittelbaden · Ortenau</Eyebrow>
+        <Eyebrow>Immobilienfotografie &amp; Immobilienvideo · Raum Bühl · Mittelbaden · Ortenau</Eyebrow>
         <h1 style={{
           fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
           fontSize: 'clamp(2.3rem, 4.8vw, 3.5rem)', lineHeight: 1.06,
@@ -23,9 +23,10 @@ export function Hero({ onNav }) {
           fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-normal)',
           color: 'var(--text-muted)', margin: '22px 0 0', maxWidth: '58ch',
         }}>
-          Professionelle Fotos und konzipierte Videos für Maklerbüros. Hochwertiger Content,
-          der Ihre Objekte schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
-          als Marke sichtbar macht. Konzept, Dreh und Schnitt aus einer Hand.
+          Professionelle Immobilienfotografie und konzipierte Immobilienvideos für Maklerbüros
+          im Raum Bühl, Baden-Baden und Ortenau. Hochwertiger Content, der Ihre Objekte schneller
+          vermittelt, qualifiziertere Anfragen bringt und Ihr Büro als Marke sichtbar macht.
+          Konzept, Dreh und Schnitt aus einer Hand.
         </p>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', margin: '30px 0 0' }}>
           <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav('start')}>
