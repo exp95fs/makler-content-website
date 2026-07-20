@@ -1,256 +1,168 @@
 import React from 'react';
-import { Card } from '../components/ds/Card.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
 import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
 
-const TIERS = [
+const NOTES = [
   {
-    key: 'foto',
-    name: 'Foto (Basis)',
-    price: 490,
-    desc: 'Solide Bildstrecke für Verkauf oder Vermietung, schnell einsatzbereit.',
-    points: [
-      'Bearbeitete Fotostrecke fürs Exposé & Portale',
-      'Anfahrt bis 60 km, vor Ort & Nachbearbeitung inklusive',
-      'Lieferung in wenigen Werktagen',
-    ],
+    group: 'foto',
+    label: 'Foto',
+    dot: 'var(--color-primary)',
+    lead: 'Foto Basis oder Premium?',
+    text: ' Foto Basis eignet sich für Wohnungen und klassische Immobilien, Foto Premium für besondere, hochpreisige oder emotional zu vermarktende Objekte.',
   },
   {
-    key: 'kombi',
-    name: 'Foto & Video (Basis)',
-    price: 990,
-    desc: 'Die meistgewählte Kombination: Fotos, Objektvideo und Luftaufnahmen für mehr Reichweite.',
-    points: [
-      'Alles aus Foto (Basis)',
-      'Konzipiertes Objektvideo (60–90 s)',
-      'Drohnenaufnahmen für Außen- & Lageperspektive',
-      'Vertikales Reel für Social Media & Story',
-    ],
-    featured: true,
-  },
-  {
-    key: 'premium',
-    name: 'Foto & Video Premium',
-    price: 1490,
-    desc: 'Die volle Produktion für Ihre Top-Objekte, mit aufwendigerem Schnitt und mehr Material.',
-    points: [
-      'Alles aus Foto & Video (Basis)',
-      'Premium-Videoschnitt mit ausführlicherem Erzählbogen',
-      'Erweiterte Bildstrecke inkl. Detail- & Lifestyle-Aufnahmen',
-    ],
+    group: 'film',
+    label: 'Film',
+    dot: 'var(--color-accent)',
+    lead: 'Objektfilm oder Makler-Film?',
+    text: ' Der Objektfilm inszeniert die Immobilie ohne Auftritt vor der Kamera, der Makler-Film zeigt Sie zusätzlich persönlich und stärkt Vertrauen und Marke.',
   },
 ];
 
-export function Leistungspakete({ onNav }) {
+const TIERS = [
+  {
+    key: 'foto-basis',
+    group: 'foto',
+    name: 'Foto Basis',
+    price: '390 €',
+    desc: 'Ca. 1–2 Aufnahmen pro Raum, professionell bearbeitet, für einen vollständigen, überzeugenden Immobilienauftritt. Ideal für Wohnungen und klassische Verkaufsobjekte.',
+  },
+  {
+    key: 'foto-premium',
+    group: 'foto',
+    name: 'Foto Premium',
+    price: '590 €',
+    desc: '30–40 professionell bearbeitete Aufnahmen inkl. Detail- und Atmosphärenbildern. Ideal für besondere, hochpreisige und emotional zu vermarktende Immobilien.',
+  },
+  {
+    key: 'objektfilm',
+    group: 'film',
+    name: 'Objektfilm',
+    price: '890 €',
+    desc: 'Hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll vermittelt – ganz ohne Personen vor der Kamera. Ideal für eine emotionale Präsentation.',
+  },
+  {
+    key: 'makler-film',
+    group: 'film',
+    name: 'Makler-Film',
+    price: '1.290 €',
+    desc: 'Atmosphärische Aufnahmen der Immobilie treffen auf Ihre persönliche Präsentation vor der Kamera – für Vertrauen und Ihre Marke.',
+  },
+];
+
+function PkgRow({ tier }) {
+  const [hover, setHover] = React.useState(false);
+  const accent = tier.group === 'film' ? 'var(--color-accent)' : 'var(--color-primary)';
   return (
-    <Section bg="page" id="leistungen" divider>
-      <Container>
-        <SectionHead
-          eyebrow="Leistungspakete"
-          title="Drei Pakete, klar kalkuliert, für jedes Objekt das passende Format."
-          lead="Alle Preise netto, zzgl. MwSt. Für laufende Zusammenarbeit lohnt sich der Retainer-Rechner weiter unten."
-        />
-        <div style={{
-          display: 'grid', gap: '20px', marginTop: 'clamp(32px, 4vw, 46px)',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', alignItems: 'stretch',
-        }}>
-          {TIERS.map((t) => (
-            <Card
-              key={t.key}
-              interactive
-              padding="lg"
-              style={{
-                display: 'flex', flexDirection: 'column',
-              }}
-            >
-              <h3 style={{
-                fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-                fontSize: '21px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
-                margin: 0,
-              }}>{t.name}</h3>
-              <div style={{ margin: '14px 0 0', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{
-                  fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-                  fontSize: '32px', color: 'var(--text-strong)',
-                }}>{t.price.toLocaleString('de-DE')} €</span>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)' }}>netto</span>
-              </div>
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 'var(--lh-normal)',
-                color: 'var(--text-muted)', margin: '12px 0 0',
-              }}>{t.desc}</p>
-              <ul style={{ listStyle: 'none', margin: '18px 0 0', padding: 0, display: 'grid', gap: '11px', flex: 1 }}>
-                {t.points.map((p) => (
-                  <li key={p} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <span style={{ marginTop: '2px', flex: 'none', color: 'var(--color-accent)' }}>
-                      <Icon name="check" size={16} color="var(--color-accent)" />
-                    </span>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14.5px', color: 'var(--text-body)', lineHeight: 1.5 }}>{p}</span>
-                  </li>
-                ))}
-              </ul>
-              <div style={{ marginTop: '22px' }}>
-                <Button
-                  variant={t.featured ? 'primary' : 'ghost'}
-                  size="md"
-                  style={{ width: '100%' }}
-                  onClick={() => onNav && onNav('anfrage')}
-                >
-                  Anfragen
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <p style={{
-          fontFamily: 'var(--font-body)', fontSize: '13.5px', color: 'var(--text-muted)',
-          margin: '28px 0 0', maxWidth: '74ch',
-        }}>Alle Preise netto, zzgl. MwSt.</p>
-      </Container>
-    </Section>
-  );
-}
-
-const PRICES = { foto: 490, kombi: 990, premium: 1490 };
-const DISCOUNTS = { 3: 0.05, 6: 0.10, 12: 0.15 };
-
-function fmt(n) {
-  return Math.round(n).toLocaleString('de-DE') + ' €';
-}
-
-export function RetainerCalculator() {
-  const [mix, setMix] = React.useState('kombi');
-  const [objects, setObjects] = React.useState(5);
-  const [duration, setDuration] = React.useState(6);
-
-  const avg = PRICES[mix];
-  const discount = DISCOUNTS[duration];
-  const singleTotal = avg * objects * duration;
-  const retainerTotal = singleTotal * (1 - discount);
-  const monthly = retainerTotal / duration;
-  const savings = singleTotal - retainerTotal;
-  const retainerBarPct = (retainerTotal / singleTotal) * 100;
-
-  return (
-    <Section bg="sage" id="retainer">
-      <Container>
-        <SectionHead
-          eyebrow="Für laufende Zusammenarbeit"
-          title="Mit einem Retainer sparen Sie über die Vertragslaufzeit deutlich."
-          lead="Wählen Sie Paket, Objekte pro Monat und Laufzeit, der Rechner zeigt sofort den Vorteil gegenüber Einzelbuchung."
-          onDark
-        />
-        <div style={{
-          marginTop: '40px', background: 'var(--surface-card)', color: 'var(--text-body)',
-          borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-lg)',
-          padding: 'clamp(26px, 4vw, 44px)', display: 'grid', gap: '32px',
-          gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 1fr)',
-        }} className="mc-calc-grid">
-          <div>
-            <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '13.5px', color: 'var(--text-strong)' }}>Paket</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
-                {[
-                  { v: 'foto', label: 'Foto (Basis)' },
-                  { v: 'kombi', label: 'Foto & Video (Basis)' },
-                  { v: 'premium', label: 'Foto & Video Premium' },
-                ].map((o) => (
-                  <PillLight key={o.v} active={mix === o.v} onClick={() => setMix(o.v)}>{o.label}</PillLight>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '13.5px', color: 'var(--text-strong)' }}>Objekte pro Monat</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
-                {[3, 4, 5].map((o) => (
-                  <PillLight key={o} active={objects === o} onClick={() => setObjects(o)}>{`~${o}`}</PillLight>
-                ))}
-              </div>
-            </div>
-            <div>
-              <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '13.5px', color: 'var(--text-strong)' }}>Vertragslaufzeit</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
-                {[
-                  { v: 3, label: '3 Monate', d: '−5 %' },
-                  { v: 6, label: '6 Monate', d: '−10 %' },
-                  { v: 12, label: '12 Monate', d: '−15 %' },
-                ].map((o) => (
-                  <PillLight key={o.v} active={duration === o.v} onClick={() => setDuration(o.v)}>
-                    {o.label}
-                    <span style={{ display: 'block', fontSize: '11px', fontWeight: 'var(--fw-body)', opacity: 0.85, marginTop: '1px' }}>{o.d}</span>
-                  </PillLight>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ borderLeft: '1px solid var(--border-hair)', paddingLeft: 'clamp(0px, 4vw, 32px)' }} className="mc-calc-result">
-            <div>
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)', fontSize: '34px', color: 'var(--text-strong)' }}>
-                {fmt(monthly)}
-              </span>
-              <small style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-muted)' }}> / Monat</small>
-            </div>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', margin: '6px 0 22px' }}>
-              netto, zzgl. MwSt. · {duration} Monate Laufzeit · −{Math.round(discount * 100)} % ggü. Einzelbuchung
-            </p>
-
-            <div style={{ display: 'grid', gap: '10px' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                  <span>Einzelbuchung</span><span>{fmt(singleTotal)}</span>
-                </div>
-                <div style={{ height: '10px', borderRadius: 'var(--radius-pill)', background: 'var(--surface-sunk)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: '100%', background: 'var(--text-muted)' }} />
-                </div>
-              </div>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                  <span>Retainer</span><span>{fmt(retainerTotal)}</span>
-                </div>
-                <div style={{ height: '10px', borderRadius: 'var(--radius-pill)', background: 'var(--surface-sunk)', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${retainerBarPct}%`, background: 'var(--color-accent)' }} />
-                </div>
-              </div>
-            </div>
-
-            <div style={{
-              marginTop: '22px', background: 'var(--color-accent-tint)', border: '1px solid var(--color-accent)',
-              borderRadius: 'var(--radius-md)', padding: '14px 18px',
-            }}>
-              <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '14.5px', color: 'var(--color-accent-deep)' }}>
-                Sie sparen {fmt(savings)} ({Math.round(discount * 100)} %)
-              </span>
-              <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                über die gesamte Vertragslaufzeit, im Vergleich zur Einzelbuchung.
-              </span>
-            </div>
-          </div>
-        </div>
-      </Container>
-    </Section>
-  );
-}
-
-function PillLight({ active, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
-        fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '13.5px',
-        color: active ? 'var(--color-on-accent)' : 'var(--text-body)',
-        background: active ? 'var(--color-accent)' : 'var(--surface-sunk)',
-        border: '1.5px solid transparent',
-        borderRadius: 'var(--radius-pill)', padding: '9px 18px', cursor: 'pointer',
-        lineHeight: 1.3, textAlign: 'center', WebkitTapHighlightColor: 'transparent',
-        touchAction: 'manipulation',
-        boxShadow: active ? '0 6px 16px -8px rgba(164,88,58,.5)' : 'none',
-        transition: 'all .2s ease',
+        position: 'relative', overflow: 'hidden',
+        background: 'var(--surface-card)',
+        border: '1px solid', borderColor: hover ? accent : 'var(--border-hair)',
+        borderRadius: 'var(--radius-md)', padding: '18px 22px',
+        boxShadow: hover ? 'var(--shadow-sm)' : 'none',
+        display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap',
+        transition: 'box-shadow var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard)',
       }}
     >
-      {children}
-    </button>
+      <span style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '3px', background: accent }} />
+      <div style={{ minWidth: '140px' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
+          fontSize: '17px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
+          margin: 0,
+        }}>{tier.name}</h3>
+        <div style={{ marginTop: '3px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+          <span style={{
+            fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
+            fontSize: '21px', lineHeight: 1, color: 'var(--text-strong)',
+          }}>{tier.price}</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--text-muted)' }}>netto</span>
+        </div>
+      </div>
+      <p style={{
+        fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.5,
+        color: 'var(--text-muted)', margin: 0, flex: '1 1 320px',
+      }}>{tier.desc}</p>
+    </div>
+  );
+}
+
+export function Leistungspakete({ onNav }) {
+  return (
+    <Section bg="page" id="leistungen">
+      <Container>
+        <SectionHead
+          eyebrow="Leistungen & Pakete"
+          title="Der passende Auftritt für jede Immobilie."
+          lead="Ob hochwertige Fotostrecke oder emotionaler Immobilienfilm: Wählen Sie das Paket, das zu Ihrem Objekt, Ihrer Zielgruppe und Ihrem Vermarktungsziel passt. Alle Leistungen lassen sich individuell ergänzen und auf Wunsch zu einer abgestimmten Content-Produktion kombinieren."
+          maxWidth="62ch"
+        />
+
+        {/* Foto / Film Gruppen — Erläuterung + Pakete untereinander, kompakt */}
+        <div style={{ marginTop: 'clamp(28px, 4vw, 40px)', display: 'grid', gap: '28px' }}>
+          {NOTES.map((n) => (
+            <div key={n.group}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '9px' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', flex: 'none', background: n.dot }} />
+                <span style={{
+                  fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-body-bold)', fontSize: '12.5px',
+                  letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)',
+                }}>{n.label}</span>
+              </div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text-muted)', margin: '0 0 14px' }}>
+                <strong style={{ color: 'var(--text-strong)', fontWeight: 'var(--fw-body-bold)' }}>{n.lead}</strong>{n.text}
+              </p>
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {TIERS.filter((t) => t.group === n.group).map((t) => <PkgRow key={t.key} tier={t} />)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mehrobjekt-Rabatt */}
+        <div style={{
+          marginTop: '34px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
+          background: 'var(--color-accent-tint)', border: '1.5px solid var(--color-accent)',
+          borderRadius: 'var(--radius-lg)', padding: '20px 26px',
+        }}>
+          <span style={{
+            flex: 'none', width: '44px', height: '44px', borderRadius: 'var(--radius-md)',
+            background: 'var(--color-accent)', color: 'var(--color-on-accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Icon name="tag" size={20} color="var(--color-on-accent)" />
+          </span>
+          <div style={{ minWidth: '200px', flex: 1 }}>
+            <p style={{
+              fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-body-bold)', fontSize: '16.5px',
+              color: 'var(--color-accent-deep)', margin: '0 0 3px',
+            }}>Mehrere Objekte, ein Termin: 10 % Rabatt</p>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', color: 'var(--text-body)', margin: 0, lineHeight: 1.5 }}>
+              Beauftragen Sie mehr als ein Objekt bei einem gemeinsamen Termin, erhalten Sie auf die Gesamtsumme
+              10 % Rabatt. Direkt in der Terminanfrage wählbar.
+            </p>
+          </div>
+        </div>
+
+        {/* CTAs — zwei Wege */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginTop: '28px' }}>
+          <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav && onNav('booking')}>
+            Paket &amp; Termin anfragen
+          </Button>
+          <Button variant="ghost" size="lg" onClick={() => onNav && onNav('anfrage')}>
+            Nachricht schreiben
+          </Button>
+        </div>
+
+        <p style={{
+          fontFamily: 'var(--font-body)', fontSize: '13.5px', color: 'var(--text-muted)',
+          margin: '20px 0 0', maxWidth: '74ch',
+        }}>Alle Preise netto, zzgl. gesetzl. MwSt.</p>
+      </Container>
+    </Section>
   );
 }

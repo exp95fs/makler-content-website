@@ -13,8 +13,8 @@ export function Faq() {
   const items = [
     { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten. Der Content amortisiert sich meist über ein einziges Objekt.' },
     { q: 'Erstellen Sie auch Content für Objekte zur Vermietung?', a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking). Dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
-    { q: 'Warum gratis, wo ist der Haken?', a: 'Es gibt keinen. Wir bauen unser Portfolio auf und brauchen dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, wir bekommen eine Referenz. Fairer Tausch.' },
-    { q: 'Was kostet es danach?', a: 'Nichts, solange Sie nichts weiter beauftragen. Möchten Sie weitere Objekte, liegt eine Einzelproduktion bei 320–1.490 € je nach Umfang; für regelmäßigen Objektfluss gibt es planbare Monatspakete. Völlig unverbindlich.' },
+    { q: 'Wie läuft die Terminanfrage ab?', a: 'Sie stellen Ihr Paket im Buchungsbereich zusammen und wählen einen Wunschtermin. Bei zwei Objekten wählen Sie Paket und Optionen für jedes Objekt einzeln. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.' },
+    { q: 'Was kostet die Produktion?', a: 'Eine Einzelproduktion liegt je nach Umfang bei 390–1.290 € netto: Foto-Pakete ab 390 €, Videoproduktionen ab 890 €, dazu optionale Zusatzleistungen wie Drohne oder Home Staging. Bei zwei Objekten am selben Termin sparen Sie 10 % auf den Gesamtpreis. Ihr genauer Preis wird in der Terminanfrage berechnet.' },
     { q: 'Wie viel Zeit kostet mich das?', a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.' },
     { q: 'Wem gehören die Aufnahmen?', a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Wir dürfen das Ergebnis als Arbeitsprobe zeigen.' },
   ];
@@ -103,7 +103,7 @@ export function ContactForm() {
             letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
             margin: '14px 0 0', textWrap: 'balance',
           }}>
-            Sichern Sie sich einen der 3 Pilotplätze.
+            Erzählen Sie uns von Ihrem Objekt.
           </h2>
           <p style={{
             fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-light)', fontSize: 'var(--fs-lead)',
@@ -130,7 +130,7 @@ export function ContactForm() {
                 Danke, wir melden uns.
               </h3>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 'var(--lh-normal)', color: 'var(--text-muted)', margin: 0, maxWidth: '44ch' }}>
-                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns, mit einem Terminvorschlag für Ihr Pilot-Objekt.
+                Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns, mit einem Terminvorschlag für Ihr Objekt.
               </p>
               <Button variant="ghost" size="md" onClick={() => setSent(false)}>Weitere Anfrage</Button>
             </div>
@@ -142,7 +142,7 @@ export function ContactForm() {
               <Input label="E-Mail" name="email" type="email" placeholder="ihre@email.de" required />
               <Textarea label="Nachricht" name="nachricht" rows={4} placeholder="Kurz zu Ihrem Objekt und Anliegen" required />
               <Button type="submit" variant="primary" size="lg" disabled={submitting} iconRight={<Icon name="arrow-right" size={18} />} style={{ width: '100%' }}>
-                {submitting ? 'Wird gesendet …' : 'Gratis-Pilot anfragen'}
+                {submitting ? 'Wird gesendet …' : 'Unverbindlich anfragen'}
               </Button>
               {submitError && (
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--status-danger)', textAlign: 'center', margin: 0 }}>
