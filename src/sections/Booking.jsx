@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Container, Section, SectionHead } from '../components/ui/Layout.jsx';
 import { Button } from '../components/ds/Button.jsx';
 import { Icon } from '../components/ui/Icon.jsx';
@@ -61,6 +61,18 @@ function generateProductionDays(maxDays) {
 function hasFreeSlot(day, durationHours) {
   // No demo bookings configured → any day with a wide-enough window has slots.
   return day.window[1] - day.window[0] >= durationHours;
+}
+const timeLabel = (mins) => `${pad2(Math.floor(mins / 60))}:${pad2(mins % 60)}`;
+function generateTimeSlots(day, durationHours) {
+  const stepMin = 30;
+  const winStart = day.window[0] * 60;
+  const winEnd = day.window[1] * 60;
+  const durMin = durationHours * 60;
+  const slots = [];
+  for (let t = winStart; t + durMin <= winEnd; t += stepMin) {
+    slots.push({ start: t, label: `${timeLabel(t)}–${timeLabel(t + durMin)} Uhr` });
+  }
+  return slots;
 }
 
 /* ============================ Pricing / duration ============================ */
@@ -361,7 +373,10 @@ export function Booking() {
                       candidates={candidates}
                       slot={slot}
                       fallback={fallback}
-                      onPick={(d) => { setSlot({ key: d.key, label: formatDateLabel(d.date) }); setFallback(false); }}
+                      onPick={(d, timeSlot) => {
+                        setSlot({ key: d.key, dateLabel: formatDateLabel(d.date), timeLabel: timeSlot.label, label: `${formatDateLabel(d.date)}, ${timeSlot.label}` });
+                        setFallback(false);
+                      }}
                       onFallback={() => { setFallback(true); setSlot(null); }}
                       forced={forcedFallback}
                     />
@@ -515,7 +530,7 @@ function PackageStep({ intent, objectCount, objects, onPick, valid }) {
             <div style={GROUP_LABEL}>Video</div>
             <div style={{ display: 'grid', gap: '10px' }}>
               <OptCard selected={o.video === 'objektfilm'} name="Objektfilm" price="890 € netto" desc="Ein hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll in Szene setzt." onClick={() => onPick(idx, 'video', 'objektfilm')} />
-              <OptCard selected={o.video === 'maklerfilm'} name="Makler-Film" price="ab 1.290 € netto" desc="Atmosphärische Aufnahmen kombiniert mit Ihrer persönlichen Präsentation vor der Kamera." onClick={() => onPick(idx, 'video', 'maklerfilm')} />
+              <OptCard selected={o.video === 'maklerfilm'} name="Makler-Film" price="1.290 € netto" desc="Atmosphärische Aufnahmen kombiniert mit Ihrer persönlichen Präsentation vor der Kamera." onClick={() => onPick(idx, 'video', 'maklerfilm')} />
             </div>
           </div>
         )}
@@ -532,25 +547,41 @@ function PackageStep({ intent, objectCount, objects, onPick, valid }) {
 
 function InfoButton({ note }) {
   const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('click', onOutside, true);
+    document.addEventListener('touchstart', onOutside, true);
+    return () => {
+      document.removeEventListener('click', onOutside, true);
+      document.removeEventListener('touchstart', onOutside, true);
+    };
+  }, [open]);
+
   if (!note) return null;
   return (
     <span
+      ref={ref}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => { e.stopPropagation(); setOpen(true); }}
       style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}
     >
       <span style={{
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        width: '17px', height: '17px', borderRadius: '50%',
+        width: '19px', height: '19px', borderRadius: '50%',
         border: '1.5px solid var(--border-strong)', color: 'var(--text-muted)',
-        fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '10.5px',
-        cursor: 'help',
+        fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '11px',
+        cursor: 'help', touchAction: 'manipulation',
       }}>?</span>
       {open && (
         <span style={{
           position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-          width: '240px', background: 'var(--color-primary)', color: 'var(--color-on-primary)',
+          width: 'min(240px, 70vw)', background: 'var(--color-primary)', color: 'var(--color-on-primary)',
           borderRadius: 'var(--radius-md)', padding: '10px 13px', fontSize: '12px', fontWeight: 'var(--fw-body)',
           lineHeight: 1.5, boxShadow: 'var(--shadow-lg)', zIndex: 20, textAlign: 'left',
           fontFamily: 'var(--font-body)',
@@ -614,6 +645,7 @@ function AddonStep({ intent, objectCount, objects, onToggle }) {
 }
 
 function TerminStep({ durH, objectCount, overflow, noCandidates, candidates, slot, fallback, onPick, onFallback, forced }) {
+  const [openKey, setOpenKey] = useState(null);
   return (
     <StepShell title="Wählen Sie Ihren Wunschtermin" desc="Auf Grundlage Ihrer Auswahl planen wir ausreichend Zeit für eine hochwertige und reibungslose Produktion.">
       <div style={{ background: 'var(--surface-sunk)', border: '1px solid var(--border-hair)', borderRadius: 'var(--radius-md)', padding: '14px 16px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--text-body)', marginBottom: '18px' }}>
@@ -638,17 +670,55 @@ function TerminStep({ durH, objectCount, overflow, noCandidates, candidates, slo
           {candidates.map((item) => {
             const d = item.day;
             const picked = slot && slot.key === d.key;
+            const isOpen = openKey === d.key;
+            const slots = item.available ? generateTimeSlots(d, durH) : [];
             return (
-              <button key={d.key} type="button" disabled={!item.available} onClick={item.available ? () => onPick(d) : undefined}
-                style={{ ...selectableCardStyle(picked, { disabled: !item.available }), padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-                <span style={{ textAlign: 'left' }}>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '15px', color: 'var(--text-strong)' }}>{formatDateLabel(d.date)}</span>
-                  <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>{d.window[0]}–{d.window[1]} Uhr</span>
-                </span>
-                <span style={{ flex: 'none', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '12.5px', padding: '4px 10px', borderRadius: 'var(--radius-pill)', background: item.available ? 'var(--color-primary-tint)' : 'var(--surface-sunk)', color: item.available ? 'var(--status-success)' : 'var(--text-muted)' }}>
-                  {item.available ? 'Termine verfügbar' : 'Keine Termine verfügbar'}
-                </span>
-              </button>
+              <div key={d.key} style={{
+                background: 'var(--surface-card)',
+                border: picked ? '2px solid var(--color-accent)' : '2px solid var(--border-hair)',
+                boxShadow: picked ? '0 0 0 3px rgba(188,107,67,0.12)' : 'none',
+                borderRadius: 'var(--radius-md)', overflow: 'hidden', transition: CARD_TRANSITION,
+              }}>
+                <button type="button" disabled={!item.available}
+                  onClick={item.available ? () => setOpenKey(isOpen ? null : d.key) : undefined}
+                  style={{
+                    width: '100%', background: 'transparent', border: 'none', padding: '16px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+                    cursor: item.available ? 'pointer' : 'not-allowed', opacity: item.available ? 1 : 0.6,
+                    fontFamily: 'var(--font-body)', textAlign: 'left',
+                  }}>
+                  <span style={{ textAlign: 'left' }}>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '15px', color: 'var(--text-strong)' }}>{formatDateLabel(d.date)}</span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {picked ? slot.timeLabel : `${d.window[0]}–${d.window[1]} Uhr`}
+                    </span>
+                  </span>
+                  <span style={{
+                    flex: 'none', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-medium)', fontSize: '12.5px',
+                    padding: '4px 10px', borderRadius: 'var(--radius-pill)',
+                    background: item.available ? 'rgba(92,112,72,0.14)' : 'rgba(164,88,58,0.12)',
+                    color: item.available ? 'var(--status-success)' : 'var(--status-danger)',
+                  }}>
+                    {item.available ? 'Termine verfügbar' : 'Keine Termine verfügbar'}
+                  </span>
+                </button>
+                {isOpen && item.available && (
+                  <div style={{ padding: '0 16px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: '8px' }}>
+                    {slots.map((ts) => {
+                      const timeSelected = picked && slot.timeLabel === ts.label;
+                      return (
+                        <button key={ts.start} type="button" onClick={() => { onPick(d, ts); setOpenKey(null); }}
+                          style={{
+                            ...selectableCardStyle(timeSelected), padding: '9px 6px', textAlign: 'center',
+                            fontSize: '13px', fontWeight: 'var(--fw-body-medium)', color: 'var(--text-strong)',
+                          }}>
+                          {ts.label.replace(' Uhr', '')}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
