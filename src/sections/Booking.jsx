@@ -530,6 +530,36 @@ function PackageStep({ intent, objectCount, objects, onPick, valid }) {
   );
 }
 
+function InfoButton({ note }) {
+  const [open, setOpen] = useState(false);
+  if (!note) return null;
+  return (
+    <span
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onClick={(e) => e.stopPropagation()}
+      style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}
+    >
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: '17px', height: '17px', borderRadius: '50%',
+        border: '1.5px solid var(--border-strong)', color: 'var(--text-muted)',
+        fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '10.5px',
+        cursor: 'help',
+      }}>?</span>
+      {open && (
+        <span style={{
+          position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+          width: '240px', background: 'var(--color-primary)', color: 'var(--color-on-primary)',
+          borderRadius: 'var(--radius-md)', padding: '10px 13px', fontSize: '12px', fontWeight: 'var(--fw-body)',
+          lineHeight: 1.5, boxShadow: 'var(--shadow-lg)', zIndex: 20, textAlign: 'left',
+          fontFamily: 'var(--font-body)',
+        }}>{note}</span>
+      )}
+    </span>
+  );
+}
+
 function CheckLine({ selected, disabled, name, price, note, onClick }) {
   return (
     <button type="button" onClick={disabled ? undefined : onClick} disabled={disabled}
@@ -537,9 +567,9 @@ function CheckLine({ selected, disabled, name, price, note, onClick }) {
       <span style={{ display: 'inline-flex', width: '20px', height: '20px', flex: 'none', borderRadius: '6px', alignItems: 'center', justifyContent: 'center', border: selected ? '2px solid var(--color-accent)' : '2px solid var(--border-strong)', background: selected ? 'var(--color-accent)' : 'transparent', transition: CARD_TRANSITION }}>
         {selected && <Icon name="check" size={13} color="var(--color-on-accent)" strokeWidth={3} />}
       </span>
-      <span style={{ flex: 1, textAlign: 'left' }}>
-        <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '14.5px', color: 'var(--text-strong)' }}>{name}</span>
-        {note && <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--text-muted)', marginTop: '2px' }}>{note}</span>}
+      <span style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '7px' }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '14.5px', color: 'var(--text-strong)' }}>{name}</span>
+        <InfoButton note={note} />
       </span>
       <span style={{ flex: 'none', fontFamily: 'var(--font-body)', fontWeight: 'var(--fw-body-bold)', fontSize: '14px', color: disabled ? 'var(--text-muted)' : 'var(--color-accent)' }}>{price}</span>
     </button>
@@ -558,19 +588,19 @@ function AddonStep({ intent, objectCount, objects, onToggle }) {
         <div>
           <div style={GROUP_LABEL}>Bei der Aufnahme</div>
           {walkEligible && (
-            <CheckLine selected={!!o.addons.walkthrough} name="Walk-Through Video" price="+390 €" note="Bewegte Bilder fürs Inserat, stabilisierte Gimbal-Aufnahmen, Musiklizenz, 4K." onClick={() => onToggle(idx, 'walkthrough')} />
+            <CheckLine selected={!!o.addons.walkthrough} name="Walk-Through Video" price="+390 €" note="Ein professionell produzierter Rundgang, der Raumgefühl und Atmosphäre authentisch vermittelt. Ideal für Exposé, Website und Social Media – in 4K sowie im Hoch- oder Querformat." onClick={() => onToggle(idx, 'walkthrough')} />
           )}
           {!walkEligible && intent === 'video' && (
             <CheckLine disabled name="Walk-Through Video" price="–" note="Nur als Erweiterung bei Foto-Paketen buchbar." />
           )}
-          <CheckLine selected={!!o.addons.drohne} name="Drohnenaufnahmen" price="+150 €" note="Immobilie, Grundstück und Umgebung aus eindrucksvoller Perspektive. Vorbehaltlich Wetter." onClick={() => onToggle(idx, 'drohne')} />
+          <CheckLine selected={!!o.addons.drohne} name="Drohnenaufnahmen" price="+150 €" note="Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und attraktiven Lagen." onClick={() => onToggle(idx, 'drohne')} />
         </div>
         <div>
           <div style={GROUP_LABEL}>Bei der Bearbeitung</div>
-          <CheckLine selected={!!o.addons.express} name="Express-Lieferung" price="+30 %" note={`Final bearbeitete Aufnahmen innerhalb von ${expressDays}.`} onClick={() => onToggle(idx, 'express')} />
-          <CheckLine selected={!!o.addons.retusche} name="Objektentfernung / Retusche" price="n. Absprache" note="Störende Möbel oder Bildelemente digital entfernen. Aufwand und Festpreis vorab abgestimmt." onClick={() => onToggle(idx, 'retusche')} />
+          <CheckLine selected={!!o.addons.express} name="Express-Lieferung" price="+30 %" note={`Sie benötigen die Bilder besonders kurzfristig? Mit der Express-Lieferung erhalten Sie die final bearbeiteten Aufnahmen innerhalb von ${expressDays}.`} onClick={() => onToggle(idx, 'express')} />
+          <CheckLine selected={!!o.addons.retusche} name="Objektentfernung / Retusche" price="n. Absprache" note="Störende Möbel, Gegenstände oder andere Bildelemente können auf Wunsch digital entfernt oder retuschiert werden. Den Aufwand und den Festpreis stimmen wir vor dem Termin transparent mit Ihnen ab." onClick={() => onToggle(idx, 'retusche')} />
           {o.foto !== 'none' && (
-            <CheckLine selected={!!o.addons.homestaging} name="Virtuelles Home Staging" price="+190 €" note="Bis zu fünf Aufnahmen leerer Räume in realistisch eingerichtete Wohnwelten verwandelt." onClick={() => onToggle(idx, 'homestaging')} />
+            <CheckLine selected={!!o.addons.homestaging} name="Virtuelles Home Staging" price="+190 €" note="Wir verwandeln bis zu 5 Aufnahmen leerer Räume in hochwertige, realistisch eingerichtete Wohnwelten. Einrichtungsstil, Möbel und Dekoration werden passend zum Objekt und zur gewünschten Zielgruppe ausgewählt." onClick={() => onToggle(idx, 'homestaging')} />
           )}
         </div>
       </div>

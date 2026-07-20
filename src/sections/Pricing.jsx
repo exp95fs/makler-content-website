@@ -26,7 +26,7 @@ const TIERS = [
     group: 'foto',
     name: 'Foto Basis',
     price: '390 €',
-    desc: 'Ca. 20 professionell bearbeitete Aufnahmen für einen vollständigen, überzeugenden Immobilienauftritt. Ideal für Wohnungen und klassische Verkaufsobjekte.',
+    desc: 'Ca. 1–2 Aufnahmen pro Raum, professionell bearbeitet, für einen vollständigen, überzeugenden Immobilienauftritt. Ideal für Wohnungen und klassische Verkaufsobjekte.',
   },
   {
     key: 'foto-premium',
@@ -39,19 +39,19 @@ const TIERS = [
     key: 'objektfilm',
     group: 'film',
     name: 'Objektfilm',
-    price: 'ab 890 €',
+    price: '890 €',
     desc: 'Hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll vermittelt – ganz ohne Personen vor der Kamera. Ideal für eine emotionale Präsentation.',
   },
   {
     key: 'makler-film',
     group: 'film',
     name: 'Makler-Film',
-    price: 'ab 1.290 €',
+    price: '1.290 €',
     desc: 'Atmosphärische Aufnahmen der Immobilie treffen auf Ihre persönliche Präsentation vor der Kamera – für Vertrauen und Ihre Marke.',
   },
 ];
 
-function PkgCard({ tier }) {
+function PkgRow({ tier }) {
   const [hover, setHover] = React.useState(false);
   const accent = tier.group === 'film' ? 'var(--color-accent)' : 'var(--color-primary)';
   return (
@@ -62,29 +62,30 @@ function PkgCard({ tier }) {
         position: 'relative', overflow: 'hidden',
         background: 'var(--surface-card)',
         border: '1px solid', borderColor: hover ? accent : 'var(--border-hair)',
-        borderRadius: 'var(--radius-lg)', padding: '30px 26px',
-        boxShadow: hover ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-        transform: hover ? 'translateY(-4px)' : 'none',
-        display: 'flex', flexDirection: 'column',
-        transition: 'transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard)',
+        borderRadius: 'var(--radius-md)', padding: '18px 22px',
+        boxShadow: hover ? 'var(--shadow-sm)' : 'none',
+        display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap',
+        transition: 'box-shadow var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard)',
       }}
     >
-      <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: accent }} />
-      <h3 style={{
-        fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-        fontSize: '20px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
-        margin: '6px 0 0',
-      }}>{tier.name}</h3>
-      <div style={{ margin: '14px 0 0', display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
-        <span style={{
+      <span style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '3px', background: accent }} />
+      <div style={{ minWidth: '140px' }}>
+        <h3 style={{
           fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
-          fontSize: '30px', lineHeight: 1, color: 'var(--text-strong)',
-        }}>{tier.price}</span>
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--text-muted)' }}>netto</span>
+          fontSize: '17px', letterSpacing: 'var(--ls-heading)', color: 'var(--text-strong)',
+          margin: 0,
+        }}>{tier.name}</h3>
+        <div style={{ marginTop: '3px', display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+          <span style={{
+            fontFamily: 'var(--font-heading)', fontWeight: 'var(--fw-heading)',
+            fontSize: '21px', lineHeight: 1, color: 'var(--text-strong)',
+          }}>{tier.price}</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--text-muted)' }}>netto</span>
+        </div>
       </div>
       <p style={{
-        fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 'var(--lh-normal)',
-        color: 'var(--text-muted)', margin: '14px 0 0',
+        fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.5,
+        color: 'var(--text-muted)', margin: 0, flex: '1 1 320px',
       }}>{tier.desc}</p>
     </div>
   );
@@ -101,11 +102,8 @@ export function Leistungspakete({ onNav }) {
           maxWidth="62ch"
         />
 
-        {/* Foto / Film Erläuterungen */}
-        <div style={{
-          display: 'grid', gap: '20px', marginTop: 'clamp(28px, 4vw, 44px)',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        }}>
+        {/* Foto / Film Gruppen — Erläuterung + Pakete untereinander, kompakt */}
+        <div style={{ marginTop: 'clamp(28px, 4vw, 40px)', display: 'grid', gap: '28px' }}>
           {NOTES.map((n) => (
             <div key={n.group}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '9px' }}>
@@ -115,19 +113,14 @@ export function Leistungspakete({ onNav }) {
                   letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)',
                 }}>{n.label}</span>
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text-muted)', margin: 0 }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14.5px', lineHeight: 1.6, color: 'var(--text-muted)', margin: '0 0 14px' }}>
                 <strong style={{ color: 'var(--text-strong)', fontWeight: 'var(--fw-body-bold)' }}>{n.lead}</strong>{n.text}
               </p>
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {TIERS.filter((t) => t.group === n.group).map((t) => <PkgRow key={t.key} tier={t} />)}
+              </div>
             </div>
           ))}
-        </div>
-
-        {/* Paket-Karten */}
-        <div style={{
-          display: 'grid', gap: '20px', marginTop: '22px',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', alignItems: 'stretch',
-        }}>
-          {TIERS.map((t) => <PkgCard key={t.key} tier={t} />)}
         </div>
 
         {/* Mehrobjekt-Rabatt */}
