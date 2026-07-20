@@ -3,3 +3,4 @@ dist
 .netlify
 *.local
 .claude
+dist-ssr
