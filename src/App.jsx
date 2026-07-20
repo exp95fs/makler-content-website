@@ -1,9 +1,11 @@
 import { Nav } from './sections/Nav.jsx';
 import { Hero, StatBar } from './sections/Hero.jsx';
 import { Benefits, Segments } from './sections/Value.jsx';
-import { Leistungspakete, RetainerCalculator } from './sections/Pricing.jsx';
+import { Leistungspakete } from './sections/Pricing.jsx';
 import { Branding, Usp } from './sections/Branding.jsx';
-import { Process, Portfolio, Offer, About } from './sections/Flow.jsx';
+import { Process, Portfolio, About } from './sections/Flow.jsx';
+import { Fork } from './sections/Fork.jsx';
+import { Booking } from './sections/Booking.jsx';
 import { Faq, ContactForm, SiteFooter } from './sections/FaqContact.jsx';
 
 function onNav(id) {
@@ -19,15 +21,15 @@ export default function App() {
         <Hero onNav={onNav} />
         <StatBar />
         <Benefits />
+        <Leistungspakete onNav={onNav} />
         <Segments />
         <Branding onNav={onNav} />
         <Usp />
         <Process />
         <Portfolio />
-        <Offer onNav={onNav} />
         <About />
-        <Leistungspakete onNav={onNav} />
-        <RetainerCalculator />
+        <Fork onNav={onNav} />
+        <Booking />
         <Faq />
         <ContactForm />
       </main>

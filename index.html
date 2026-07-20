@@ -29,6 +29,22 @@
     <textarea name="nachricht"></textarea>
   </form>
 
+  <!-- Static fallback for the booking workflow (src/sections/Booking.jsx) so Netlify detects it. -->
+  <form name="terminanfrage" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="terminanfrage" />
+    <input type="text" name="bot-field" />
+    <input type="text" name="vorname" />
+    <input type="text" name="nachname" />
+    <input type="email" name="email" />
+    <input type="tel" name="telefon" />
+    <input type="text" name="firma" />
+    <input type="text" name="adresse" />
+    <input type="text" name="objektanzahl" />
+    <input type="text" name="wunschtermin" />
+    <textarea name="zusammenfassung"></textarea>
+    <textarea name="nachricht"></textarea>
+  </form>
+
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

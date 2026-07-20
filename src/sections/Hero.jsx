@@ -28,8 +28,8 @@ export function Hero({ onNav }) {
           als Marke sichtbar macht. Konzept, Dreh und Schnitt aus einer Hand.
         </p>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', margin: '30px 0 0' }}>
-          <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav('anfrage')}>
-            Gratis-Pilot anfragen
+          <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={18} />} onClick={() => onNav('start')}>
+            Paket &amp; Termin anfragen
           </Button>
           <Button variant="ghost" size="lg" onClick={() => onNav('portfolio')}>
             Arbeitsproben ansehen
