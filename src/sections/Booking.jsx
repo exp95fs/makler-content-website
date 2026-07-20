@@ -507,7 +507,7 @@ function OptCard({ selected, name, price, desc, onClick }) {
 
 function PackageStep({ intent, objectCount, objects, onPick, valid }) {
   const titles = {
-    foto: { t: 'Welches Foto-Paket passt zu Ihrem Objekt?', d: 'Für Wohnungen und klassische Immobilien ist unser Foto-Klassik-Paket ideal für ein überzeugendes Inserat. Bei besonderen, hochpreisigen oder emotional zu vermarktenden Objekten empfehlen wir Foto Exklusiv: Mehr Motive sowie zusätzliche Detail- und Atmosphärenaufnahmen sorgen für einen rundum hochwertigen Auftritt.' },
+    foto: { t: 'Welches Foto-Paket passt zu Ihrem Objekt?', d: 'Für Wohnungen und klassische Immobilien ist unser Foto-Basis-Paket ideal für ein überzeugendes Inserat. Bei besonderen, hochpreisigen oder emotional zu vermarktenden Objekten empfehlen wir Foto Premium: Mehr Motive sowie zusätzliche Detail- und Atmosphärenaufnahmen sorgen für einen rundum hochwertigen Auftritt.' },
     video: { t: 'Welcher Immobilienfilm passt zu Ihrer Vermarktung?', d: 'Der Objektfilm setzt die Immobilie atmosphärisch in Szene – ganz ohne Auftritt vor der Kamera. Mit dem Maklerfilm präsentieren Sie das Objekt persönlich, schaffen zusätzliches Vertrauen und stärken zugleich Ihre eigene Marke.' },
     both: { t: 'Stellen Sie Ihr Produktionspaket zusammen', d: 'Kombinieren Sie das passende Foto- und Video-Paket. Je nach Umfang benötigen Videoaufnahmen etwa 5–8 Std. und Fotoaufnahmen etwa 2–4 Std.' },
   };
