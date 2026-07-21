@@ -9,7 +9,6 @@ const sectionLinks = [
   { id: 'marke', label: 'Markenbildung' },
   { id: 'prozess', label: 'Prozess' },
   { id: 'portfolio', label: 'Portfolio' },
-  { id: 'angebot', label: 'Angebot' },
   { id: 'faq', label: 'FAQ' },
 ];
 
@@ -44,8 +43,8 @@ export function Nav({ onNav }) {
             </a>
           ))}
         </nav>
-        <Button variant="primary" size="sm" iconRight={<Icon name="arrow-right" size={16} />} onClick={() => onNav('anfrage')}>
-          Gratis-Pilot anfragen
+        <Button variant="primary" size="sm" iconRight={<Icon name="arrow-right" size={16} />} onClick={() => onNav('start')}>
+          Termin anfragen
         </Button>
       </Container>
     </header>
