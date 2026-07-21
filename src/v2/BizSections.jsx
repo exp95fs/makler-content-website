@@ -54,7 +54,7 @@ function Usp() {
     { title: 'Gedacht aus Sicht der Zielgruppe', text: 'Wir denken aus der Perspektive Ihrer Käufer und Mieter und rücken genau das in den Fokus, was für diese Zielgruppe wirklich zählt. So spricht jedes Bild die richtigen Menschen an.' },
   ];
   return (
-    <section className="v2-sec bg-linen">
+    <section className="v2-sec bg-linen-2">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Was uns von anderen Anbietern unterscheidet</p>
@@ -115,7 +115,7 @@ function Process() {
   }, []);
 
   return (
-    <section className="v2-sec bg-linen-2" id="prozess" ref={rootRef}>
+    <section className="v2-sec bg-linen" id="prozess" ref={rootRef}>
       <div className="v2-wrap">
         <div className="v2-proc">
           <div className="v2-proc-left">
@@ -140,49 +140,59 @@ function Process() {
   );
 }
 
-/* ---------- Angebot: Gratis-Pilot ---------- */
-function Offer() {
-  const list = [
-    { b: 'Was Sie bekommen:', t: ' komplette Produktion, konzipiertes Objektvideo (60–90 s) + vertikales Reel + bearbeitete Objektfotos. Für Verkauf oder Vermietung.' },
-    { b: 'Was wir dafür möchten:', t: ' Ihr Einverständnis, das Ergebnis als Referenz zeigen zu dürfen.' },
-    { b: 'Was nicht dahintersteckt:', t: ' kein Abo, keine versteckten Kosten, keine Verpflichtung.' },
-  ];
+/* ---------- Referenzprojekt / Arbeitsproben ---------- */
+function Showcase() {
   return (
-    <section className="v2-sec v2-offer bg-ink" id="angebot">
-      <div className="v2-offer-bg" aria-hidden="true">
-        <img src="/media/aussen-1-web.jpg" alt="" data-parallax="16" loading="lazy" />
-      </div>
+    <section className="v2-sec bg-ink v2-show" id="portfolio">
       <div className="v2-wrap">
-        <div className="v2-offer-inner">
-          <span className="v2-offer-badge" data-reveal><span className="rec" />Nur 3 Pilotplätze in der Region</span>
+        <div className="v2-sec-head">
+          <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben · Referenzprojekt 01</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Eine ehrliche Sache: Wir suchen 3 Objekte für unser Portfolio.
+            Die ersten Referenzobjekte entstehen gerade.
           </Split>
-          <p className="v2-lead" data-reveal>
-            Wir sind neu am Markt im Raum Bühl / Mittelbaden und bauen unser Referenz-Portfolio auf.
-            Statt Versprechen zu machen, zeigen wir Ihnen lieber das Ergebnis, an einem Ihrer Objekte.
+          <p className="v2-lead on-dark" data-reveal>
+            Wir bauen unser regionales Portfolio auf. Erste Projekte sind bereits abgeschlossen —
+            wie dieses Mehrgenerationenhaus in Mittelbaden, außen wie innen. Weitere entstehen
+            laufend, diese Seite wächst mit jedem neuen Objekt.
           </p>
-          <div className="v2-offer-price" data-reveal>
-            <span className="was">1.490 €</span>
-            <span className="now">0 €</span>
-            <span className="for">für die ersten 3 Pilot-Objekte</span>
-          </div>
-          <div className="v2-offer-list" data-reveal>
-            {list.map((l) => (
-              <div className="row" key={l.b}>
-                <span className="tick">✓</span>
-                <p><strong>{l.b}</strong>{l.t}</p>
-              </div>
-            ))}
-          </div>
-          <div className="v2-offer-cta" data-reveal>
-            <Magnetic>
-              <button type="button" className="v2-btn" onClick={() => scrollToId('anfrage')}>
-                Pilotplatz sichern <Arrow />
-              </button>
-            </Magnetic>
-          </div>
-          <p className="v2-offer-sub" data-reveal>Bewusst begrenzt, damit jedes Objekt die volle Aufmerksamkeit bekommt.</p>
+        </div>
+
+        <div className="v2-show-grid">
+          <figure className="v2-show-item v2-show-a" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
+            <div className="frame" data-clip-reveal>
+              <img src="/media/ref-aussen-1.jpg" alt="Mehrgenerationenhaus — Außenaufnahme mit Carport und Zufahrt" loading="lazy" />
+            </div>
+            <figcaption className="v2-show-cap"><span>Außen · Zufahrt &amp; Architektur</span><span>01</span></figcaption>
+          </figure>
+
+          <figure className="v2-show-item v2-show-air" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Drohne">
+            <div className="frame" data-clip-reveal>
+              <img src="/media/ref-luft.jpg" alt="Drohnenaufnahme — das Referenzobjekt und seine Lage aus der Luft" loading="lazy" />
+            </div>
+            <figcaption className="v2-show-cap"><span>Drohne · Objekt &amp; Lage</span><span>02</span></figcaption>
+          </figure>
+
+          <figure className="v2-show-item v2-show-b" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
+            <div className="frame" data-clip-reveal>
+              <img src="/media/ref-innen-1.jpg" alt="Wohnung im Referenzobjekt — lichtdurchfluteter Wohnraum mit Parkett" loading="lazy" />
+            </div>
+            <figcaption className="v2-show-cap"><span>Innen · Wohnraum &amp; Licht</span><span>03</span></figcaption>
+          </figure>
+
+          <figure className="v2-show-item v2-show-c" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
+            <div className="frame" data-clip-reveal>
+              <img src="/media/ref-aussen-2.jpg" alt="Referenzobjekt — Balkonperspektive mit Blick über die Felder" loading="lazy" />
+            </div>
+            <figcaption className="v2-show-cap"><span>Außen · Lage &amp; Ausblick</span><span>04</span></figcaption>
+          </figure>
+        </div>
+
+        <div className="v2-show-foot" data-reveal>
+          <a className="v2-link-inline" href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener noreferrer">
+            Mehr Arbeitsproben auf Instagram
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M8 7h9v9" /></svg>
+          </a>
+          <span className="v2-idx" style={{ color: 'rgba(243,238,229,0.4)' }}>Mehrgenerationenhaus · Mittelbaden · 2026</span>
         </div>
       </div>
     </section>
@@ -192,7 +202,7 @@ function Offer() {
 /* ---------- Über ---------- */
 function About() {
   return (
-    <section className="v2-sec bg-linen">
+    <section className="v2-sec bg-linen-2">
       <div className="v2-wrap">
         <div className="v2-about">
           <div className="v2-about-visual" data-reveal>
@@ -231,7 +241,7 @@ export function BizSections() {
       <Branding />
       <Usp />
       <Process />
-      <Offer />
+      <Showcase />
       <About />
     </>
   );

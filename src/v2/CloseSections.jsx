@@ -1,168 +1,52 @@
 import { useEffect, useRef, useState } from 'react';
-import { Split, scrollToId } from './fx.jsx';
+import { Split, Magnetic, scrollToId } from './fx.jsx';
 import { Arrow } from './AppV2.jsx';
+import { BookingV2 } from './BookingV2.jsx';
 
-/* ---------- Leistungspakete ---------- */
-const TIERS = [
-  {
-    key: 'foto',
-    name: 'Foto (Basis)',
-    price: 490,
-    desc: 'Solide Bildstrecke für Verkauf oder Vermietung, schnell einsatzbereit.',
-    points: [
-      'Bearbeitete Fotostrecke fürs Exposé & Portale',
-      'Anfahrt bis 60 km, vor Ort & Nachbearbeitung inklusive',
-      'Lieferung in wenigen Werktagen',
-    ],
-  },
-  {
-    key: 'kombi',
-    name: 'Foto & Video (Basis)',
-    price: 990,
-    desc: 'Die meistgewählte Kombination: Fotos, Objektvideo und Luftaufnahmen für mehr Reichweite.',
-    points: [
-      'Alles aus Foto (Basis)',
-      'Konzipiertes Objektvideo (60–90 s)',
-      'Drohnenaufnahmen für Außen- & Lageperspektive',
-      'Vertikales Reel für Social Media & Story',
-    ],
-    featured: true,
-  },
-  {
-    key: 'premium',
-    name: 'Foto & Video Premium',
-    price: 1490,
-    desc: 'Die volle Produktion für Ihre Top-Objekte, mit aufwendigerem Schnitt und mehr Material.',
-    points: [
-      'Alles aus Foto & Video (Basis)',
-      'Premium-Videoschnitt mit ausführlicherem Erzählbogen',
-      'Erweiterte Bildstrecke inkl. Detail- & Lifestyle-Aufnahmen',
-    ],
-  },
-];
-
-function Tiers() {
+/* ---------- Fork: Zwei Wege ---------- */
+function Fork() {
   return (
-    <section className="v2-sec bg-linen-2" id="leistungen">
+    <section className="v2-sec bg-linen-2" id="start">
       <div className="v2-wrap">
-        <div className="v2-sec-head">
-          <p className="v2-eyebrow" data-reveal>Leistungspakete</p>
+        <div className="v2-sec-head center">
+          <p className="v2-eyebrow" data-reveal>Bereit für Ihr Objekt?</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Drei Pakete, klar kalkuliert, für jedes Objekt das passende Format.
+            Zwei Wege — Sie wählen, was zu Ihnen passt.
           </Split>
           <p className="v2-lead" data-reveal>
-            Alle Preise netto, zzgl. MwSt. Für laufende Zusammenarbeit lohnt sich der Retainer-Rechner weiter unten.
+            Noch unsicher oder erst kennenlernen? Schreiben Sie uns kurz. Sie wissen schon,
+            was Sie brauchen? Dann direkt zum Wunschtermin.
           </p>
         </div>
-        <div className="v2-tiers">
-          {TIERS.map((t, i) => (
-            <article className={`v2-tier ${t.featured ? 'featured' : ''}`} key={t.key} data-reveal data-delay={i * 0.12}>
-              <span className="tname">{t.name}</span>
-              <div className="price">
-                {t.price.toLocaleString('de-DE')} €<span className="net">netto</span>
-              </div>
-              <p className="desc">{t.desc}</p>
-              <ul>
-                {t.points.map((p) => (
-                  <li key={p}><span className="tick">✓</span>{p}</li>
-                ))}
-              </ul>
-              <div className="cta">
-                <button
-                  type="button"
-                  className={`v2-btn ${t.featured ? '' : 'ghost'}`}
-                  onClick={() => scrollToId('anfrage')}
-                >
-                  Anfragen <Arrow size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-        <p className="v2-fine" data-reveal>Alle Preise netto, zzgl. MwSt.</p>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Retainer-Rechner ---------- */
-const PRICES = { foto: 490, kombi: 990, premium: 1490 };
-const DISCOUNTS = { 3: 0.05, 6: 0.10, 12: 0.15 };
-const fmt = (n) => Math.round(n).toLocaleString('de-DE') + ' €';
-
-function Retainer() {
-  const [mix, setMix] = useState('kombi');
-  const [objects, setObjects] = useState(5);
-  const [duration, setDuration] = useState(6);
-
-  const avg = PRICES[mix];
-  const discount = DISCOUNTS[duration];
-  const singleTotal = avg * objects * duration;
-  const retainerTotal = singleTotal * (1 - discount);
-  const monthly = retainerTotal / duration;
-  const savings = singleTotal - retainerTotal;
-  const retainerBarPct = (retainerTotal / singleTotal) * 100;
-
-  return (
-    <section className="v2-sec bg-sage" id="retainer">
-      <div className="v2-wrap">
-        <div className="v2-sec-head">
-          <p className="v2-eyebrow on-dark" data-reveal>Für laufende Zusammenarbeit</p>
-          <Split as="h2" className="v2-h-display v2-h-lg">
-            Mit einem Retainer sparen Sie über die Vertragslaufzeit deutlich.
-          </Split>
-          <p className="v2-lead on-dark" data-reveal>
-            Wählen Sie Paket, Objekte pro Monat und Laufzeit, der Rechner zeigt sofort den Vorteil gegenüber Einzelbuchung.
-          </p>
-        </div>
-        <div className="v2-calc" data-reveal>
-          <div>
-            <span className="v2-calc-label">Paket</span>
-            <div className="v2-pills">
-              {[
-                { v: 'foto', label: 'Foto (Basis)' },
-                { v: 'kombi', label: 'Foto & Video (Basis)' },
-                { v: 'premium', label: 'Foto & Video Premium' },
-              ].map((o) => (
-                <button type="button" key={o.v} className={`v2-pill ${mix === o.v ? 'is-on' : ''}`} onClick={() => setMix(o.v)}>{o.label}</button>
-              ))}
-            </div>
-            <span className="v2-calc-label">Objekte pro Monat</span>
-            <div className="v2-pills">
-              {[3, 4, 5].map((o) => (
-                <button type="button" key={o} className={`v2-pill ${objects === o ? 'is-on' : ''}`} onClick={() => setObjects(o)}>~{o}</button>
-              ))}
-            </div>
-            <span className="v2-calc-label">Vertragslaufzeit</span>
-            <div className="v2-pills" style={{ marginBottom: 0 }}>
-              {[
-                { v: 3, label: '3 Monate', d: '−5 %' },
-                { v: 6, label: '6 Monate', d: '−10 %' },
-                { v: 12, label: '12 Monate', d: '−15 %' },
-              ].map((o) => (
-                <button type="button" key={o.v} className={`v2-pill ${duration === o.v ? 'is-on' : ''}`} onClick={() => setDuration(o.v)}>
-                  {o.label}<small>{o.d}</small>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="v2-calc-result">
-            <div className="v2-calc-monthly">{fmt(monthly)} <small>/ Monat</small></div>
-            <p className="v2-calc-note">
-              netto, zzgl. MwSt. · {duration} Monate Laufzeit · −{Math.round(discount * 100)} % ggü. Einzelbuchung
+        <div className="v2-fork-grid">
+          <div className="v2-fork-card" data-reveal>
+            <span className="v2-fork-badge">Neu hier? · Unverbindlich</span>
+            <h3>Kurz kennenlernen</h3>
+            <p>
+              Sie wollen erst Fragen klären oder uns kennenlernen? Schreiben Sie uns kurz über das
+              Kontaktformular — unverbindlich und ohne Terminzwang. Wir melden uns persönlich.
             </p>
-            <div className="v2-bar-row">
-              <div className="v2-bar-head"><span>Einzelbuchung</span><span>{fmt(singleTotal)}</span></div>
-              <div className="v2-bar"><div className="full" /></div>
-            </div>
-            <div className="v2-bar-row">
-              <div className="v2-bar-head"><span>Retainer</span><span>{fmt(retainerTotal)}</span></div>
-              <div className="v2-bar"><div className="part" style={{ width: `${retainerBarPct}%` }} /></div>
-            </div>
-            <div className="v2-savings">
-              <strong>Sie sparen {fmt(savings)} ({Math.round(discount * 100)} %)</strong>
-              <span>über die gesamte Vertragslaufzeit, im Vergleich zur Einzelbuchung.</span>
-            </div>
+            <Magnetic>
+              <button type="button" className="v2-btn ghost" onClick={() => scrollToId('anfrage')}>
+                Nachricht schreiben
+              </button>
+            </Magnetic>
+            <span className="v2-fork-meta"><span className="dot" />Ideal für neue Interessenten</span>
+          </div>
+          <div className="v2-fork-card dark" data-reveal data-delay="0.12">
+            <span className="v2-fork-badge">Sie wissen, was Sie brauchen?</span>
+            <h3>Objekt-Termin direkt anfragen</h3>
+            <p>
+              Sie kennen uns bereits oder wissen genau, was Ihr Objekt braucht? Stellen Sie in wenigen
+              Schritten Ihr Paket zusammen und fragen Sie direkt einen Wunschtermin an — die Anfrage
+              ist unverbindlich, wir bestätigen persönlich.
+            </p>
+            <Magnetic>
+              <button type="button" className="v2-btn" onClick={() => scrollToId('booking')}>
+                Paket &amp; Termin wählen <Arrow />
+              </button>
+            </Magnetic>
+            <span className="v2-fork-meta"><span className="dot" />Ideal für Bestandskunden &amp; Entschlossene</span>
           </div>
         </div>
       </div>
@@ -197,14 +81,14 @@ function Faq() {
   const items = [
     { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten. Der Content amortisiert sich meist über ein einziges Objekt.' },
     { q: 'Erstellen Sie auch Content für Objekte zur Vermietung?', a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking). Dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
-    { q: 'Warum gratis, wo ist der Haken?', a: 'Es gibt keinen. Wir bauen unser Portfolio auf und brauchen dafür echte Objekte in Top-Qualität. Sie bekommen das fertige Ergebnis, wir bekommen eine Referenz. Fairer Tausch.' },
-    { q: 'Was kostet es danach?', a: 'Nichts, solange Sie nichts weiter beauftragen. Möchten Sie weitere Objekte, liegt eine Einzelproduktion bei 320–1.490 € je nach Umfang; für regelmäßigen Objektfluss gibt es planbare Monatspakete. Völlig unverbindlich.' },
+    { q: 'Wie läuft die Terminanfrage ab?', a: 'Sie stellen Ihr Paket im Buchungsbereich zusammen und wählen einen Wunschtermin. Bei zwei Objekten wählen Sie Paket und Optionen für jedes Objekt einzeln. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.' },
+    { q: 'Was kostet die Produktion?', a: 'Eine Einzelproduktion liegt je nach Umfang bei 390–1.290 € netto: Foto-Pakete ab 390 €, Videoproduktionen ab 890 €, dazu optionale Zusatzleistungen wie Drohne oder Home Staging. Bei zwei Objekten am selben Termin sparen Sie 10 % auf den Gesamtpreis. Ihr genauer Preis wird in der Terminanfrage berechnet.' },
     { q: 'Wie viel Zeit kostet mich das?', a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.' },
     { q: 'Wem gehören die Aufnahmen?', a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Wir dürfen das Ergebnis als Arbeitsprobe zeigen.' },
   ];
   const [open, setOpen] = useState(0);
   return (
-    <section className="v2-sec bg-linen" id="faq">
+    <section className="v2-sec bg-linen-2" id="faq">
       <div className="v2-wrap">
         <div className="v2-sec-head center">
           <p className="v2-eyebrow" data-reveal>Häufige Fragen</p>
@@ -256,7 +140,7 @@ function Contact() {
           <div className="v2-contact-info">
             <p className="v2-eyebrow on-dark" data-reveal>Jetzt anfragen</p>
             <Split as="h2" className="v2-h-display v2-h-lg">
-              Sichern Sie sich einen der 3 Pilotplätze.
+              Erzählen Sie uns von Ihrem Objekt.
             </Split>
             <p className="v2-lead on-dark" data-reveal>
               Kurz Ihre Eckdaten, wir melden uns innerhalb von 24 Stunden mit einem Terminvorschlag.
@@ -275,7 +159,7 @@ function Contact() {
                 <h3>Danke, wir melden uns.</h3>
                 <p>
                   Ihre Anfrage ist angekommen. Sie hören innerhalb von 24 Stunden von uns,
-                  mit einem Terminvorschlag für Ihr Pilot-Objekt.
+                  mit einem Terminvorschlag für Ihr Objekt.
                 </p>
                 <button type="button" className="v2-btn ghost sm" onClick={() => setSent(false)}>Weitere Anfrage</button>
               </div>
@@ -296,7 +180,7 @@ function Contact() {
                   <textarea id="v2-msg" name="nachricht" rows={4} placeholder="Kurz zu Ihrem Objekt und Anliegen" required />
                 </div>
                 <button type="submit" className="v2-btn" disabled={submitting} style={{ width: '100%', justifyContent: 'center' }}>
-                  {submitting ? 'Wird gesendet …' : 'Gratis-Pilot anfragen'} <Arrow />
+                  {submitting ? 'Wird gesendet …' : 'Unverbindlich anfragen'} <Arrow />
                 </button>
                 {submitError && (
                   <p className="v2-form-error">
@@ -320,8 +204,8 @@ function Contact() {
 export function CloseSections() {
   return (
     <>
-      <Tiers />
-      <Retainer />
+      <Fork />
+      <BookingV2 />
       <Faq />
       <Contact />
     </>

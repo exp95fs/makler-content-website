@@ -1,4 +1,5 @@
-import { Split } from './fx.jsx';
+import { Split, Magnetic, scrollToId } from './fx.jsx';
+import { Arrow } from './AppV2.jsx';
 
 /* ---------- Warum hochwertiger Content (6 Gründe) ---------- */
 function Benefits() {
@@ -27,9 +28,11 @@ function Benefits() {
           {items.map((it, i) => (
             <article className="v2-benefit" key={it.title} data-reveal data-delay={Math.min(i * 0.06, 0.3)}>
               <span className="num">0{i + 1}</span>
-              <h3>{it.title}</h3>
+              <div>
+                <h3>{it.title}</h3>
+                {it.kpi && <span className="kpi">{it.kpi}</span>}
+              </div>
               <p>{it.text}</p>
-              {it.kpi ? <span className="kpi">{it.kpi}</span> : <span />}
             </article>
           ))}
         </div>
@@ -38,62 +41,92 @@ function Benefits() {
   );
 }
 
-/* ---------- Referenzprojekt / Arbeitsproben ---------- */
-function Showcase() {
+/* ---------- Leistungen & Pakete ---------- */
+const PKG_GROUPS = [
+  {
+    key: 'foto',
+    label: 'Foto',
+    dot: 'sage',
+    lead: 'Foto Basis oder Premium?',
+    note: ' Foto Basis eignet sich für Wohnungen und klassische Immobilien, Foto Premium für besondere, hochpreisige oder emotional zu vermarktende Objekte.',
+    tiers: [
+      { name: 'Foto Basis', price: '390 €', desc: 'Ca. 1–2 Aufnahmen pro Raum, professionell bearbeitet, für einen vollständigen, überzeugenden Immobilienauftritt. Ideal für Wohnungen und klassische Verkaufsobjekte.' },
+      { name: 'Foto Premium', price: '590 €', desc: '30–40 professionell bearbeitete Aufnahmen inkl. Detail- und Atmosphärenbildern. Ideal für besondere, hochpreisige und emotional zu vermarktende Immobilien.' },
+    ],
+  },
+  {
+    key: 'film',
+    label: 'Film',
+    dot: 'terra',
+    lead: 'Objektfilm oder Makler-Film?',
+    note: ' Der Objektfilm inszeniert die Immobilie ohne Auftritt vor der Kamera, der Makler-Film zeigt Sie zusätzlich persönlich und stärkt Vertrauen und Marke.',
+    tiers: [
+      { name: 'Objektfilm', price: '890 €', desc: 'Hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll vermittelt – ganz ohne Personen vor der Kamera. Ideal für eine emotionale Präsentation.' },
+      { name: 'Makler-Film', price: '1.290 €', desc: 'Atmosphärische Aufnahmen der Immobilie treffen auf Ihre persönliche Präsentation vor der Kamera – für Vertrauen und Ihre Marke.' },
+    ],
+  },
+];
+
+function Pakete() {
   return (
-    <section className="v2-sec bg-ink v2-show" id="portfolio">
+    <section className="v2-sec bg-linen-2" id="leistungen">
       <div className="v2-wrap">
         <div className="v2-sec-head">
-          <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben · Referenzprojekt 01</p>
+          <p className="v2-eyebrow" data-reveal>Leistungen &amp; Pakete</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Die ersten Referenzobjekte entstehen gerade.
+            Der passende Auftritt für jede Immobilie.
           </Split>
-          <p className="v2-lead on-dark" data-reveal>
-            Wir bauen unser regionales Portfolio auf — hier ein Einblick in ein aktuelles Projekt:
-            ein Mehrgenerationenhaus in Mittelbaden, außen wie innen. Wenn Sie ein passendes Objekt
-            haben, zum Verkauf oder zur Vermietung, kann Ihr Objekt eines der nächsten sein.
-            Kostenlos. Wie das funktioniert, lesen Sie gleich.
+          <p className="v2-lead" data-reveal>
+            Ob hochwertige Fotostrecke oder emotionaler Immobilienfilm: Wählen Sie das Paket, das zu
+            Ihrem Objekt, Ihrer Zielgruppe und Ihrem Vermarktungsziel passt. Alle Leistungen lassen
+            sich individuell ergänzen und auf Wunsch zu einer abgestimmten Content-Produktion kombinieren.
           </p>
         </div>
 
-        <div className="v2-show-grid">
-          <figure className="v2-show-item v2-show-a" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
-            <div className="frame" data-clip-reveal>
-              <img src="/media/aussen-1-web.jpg" alt="Mehrgenerationenhaus — Außenaufnahme mit Carport und Zufahrt" loading="lazy" />
+        <div className="v2-pkg-groups">
+          {PKG_GROUPS.map((g) => (
+            <div key={g.key} data-reveal>
+              <div className="v2-pkg-group-head">
+                <span className={`dot ${g.dot}`} />
+                <span>{g.label}</span>
+              </div>
+              <p className="v2-pkg-note"><strong>{g.lead}</strong>{g.note}</p>
+              <div className="v2-pkg-rows">
+                {g.tiers.map((t) => (
+                  <div className="v2-pkg-row" key={t.name}>
+                    <div>
+                      <h3>{t.name}</h3>
+                      <div className="price">{t.price}<span className="net">netto</span></div>
+                    </div>
+                    <p>{t.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <figcaption className="v2-show-cap"><span>Außen · Zufahrt &amp; Architektur</span><span>01</span></figcaption>
-          </figure>
-
-          <figure className="v2-show-item v2-show-reel" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Reel">
-            <div className="v2-reel-frame" data-reveal>
-              <span className="v2-reel-badge"><span className="rec" />Drohne · Reel</span>
-              <video src="/media/drohne-web.mp4" poster="/media/drohne-poster.jpg" autoPlay muted loop playsInline />
-            </div>
-            <figcaption className="v2-show-cap"><span>Drohnensequenz · 9:16</span><span>02</span></figcaption>
-          </figure>
-
-          <figure className="v2-show-item v2-show-b" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
-            <div className="frame" data-clip-reveal>
-              <img src="/media/innen-1-web.jpg" alt="Wohnung im Referenzobjekt — offener Wohnraum mit Parkett und bodentiefen Fenstern" loading="lazy" />
-            </div>
-            <figcaption className="v2-show-cap"><span>Innen · Wohnraum &amp; Licht</span><span>03</span></figcaption>
-          </figure>
-
-          <figure className="v2-show-item v2-show-c" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
-            <div className="frame" data-clip-reveal>
-              <img src="/media/innen-2-web.jpg" alt="Wohnung im Referenzobjekt — lichtdurchfluteter Raum mit Gartenblick" loading="lazy" />
-            </div>
-            <figcaption className="v2-show-cap"><span>Innen · Raumgefühl</span><span>04</span></figcaption>
-          </figure>
+          ))}
         </div>
 
-        <div className="v2-show-foot" data-reveal>
-          <a className="v2-link-inline" href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener noreferrer">
-            Mehr Arbeitsproben auf Instagram
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M8 7h9v9" /></svg>
-          </a>
-          <span className="v2-idx" style={{ color: 'rgba(243,238,229,0.4)' }}>Mehrgenerationenhaus · Mittelbaden · 2026</span>
+        <div className="v2-chance" data-reveal>
+          <span className="label">Mehrere Objekte, ein Termin: 10 % Rabatt</span>
+          <p>
+            Beauftragen Sie mehr als ein Objekt bei einem gemeinsamen Termin, erhalten Sie auf die
+            Gesamtsumme 10 % Rabatt. Direkt in der Terminanfrage wählbar.
+          </p>
         </div>
+
+        <div className="v2-pkg-ctas" data-reveal>
+          <Magnetic>
+            <button type="button" className="v2-btn" onClick={() => scrollToId('booking')}>
+              Paket &amp; Termin anfragen <Arrow />
+            </button>
+          </Magnetic>
+          <Magnetic>
+            <button type="button" className="v2-btn ghost" onClick={() => scrollToId('anfrage')}>
+              Nachricht schreiben
+            </button>
+          </Magnetic>
+        </div>
+        <p className="v2-fine" data-reveal>Alle Preise netto, zzgl. gesetzl. MwSt.</p>
       </div>
     </section>
   );
@@ -111,8 +144,8 @@ function Segments() {
         'Vorqualifizierte Käufer durch realistisches Raumgefühl',
         'Stärkere Position im Akquisegespräch mit Eigentümern',
       ],
-      img: '/media/innen-1-web.jpg',
-      alt: 'Innenaufnahme — offener Wohnraum eines Verkaufsobjekts',
+      img: '/media/ref-innen-3.jpg',
+      alt: 'Innenaufnahme — großzügiger Wohnraum eines Verkaufsobjekts mit bodentiefen Fenstern',
     },
     {
       tag: 'Vermieten & Ferienwohnung', tone: 'sage', flip: true,
@@ -123,12 +156,12 @@ function Segments() {
         '~26 % höhere erzielbare Preise, weniger Leerstand',
         'Wiederverwendbarer Content für Portale & Social Media',
       ],
-      img: '/media/innen-2-web.jpg',
-      alt: 'Innenaufnahme — lichtdurchfluteter Raum eines Mietobjekts',
+      img: '/media/ref-innen-2.jpg',
+      alt: 'Innenaufnahme — offene Wohnküche eines Mietobjekts mit warmem Boden',
     },
   ];
   return (
-    <section className="v2-sec bg-linen-2" id="segmente">
+    <section className="v2-sec bg-linen" id="segmente">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Für welches Ziel?</p>
@@ -167,7 +200,7 @@ export function StorySections() {
   return (
     <>
       <Benefits />
-      <Showcase />
+      <Pakete />
       <Segments />
     </>
   );

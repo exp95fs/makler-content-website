@@ -6,7 +6,7 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 
 export const prefersReducedMotion = () =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let lenisInstance = null;
 

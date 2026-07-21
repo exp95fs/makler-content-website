@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { id: 'marke', label: 'Markenbildung' },
   { id: 'prozess', label: 'Prozess' },
   { id: 'portfolio', label: 'Portfolio' },
-  { id: 'angebot', label: 'Angebot' },
   { id: 'faq', label: 'FAQ' },
 ];
 
@@ -55,8 +54,8 @@ function Nav() {
           ))}
         </nav>
         <Magnetic strength={0.25}>
-          <button type="button" className="v2-btn sm" onClick={() => scrollToId('anfrage')}>
-            Gratis-Pilot anfragen <Arrow size={15} />
+          <button type="button" className="v2-btn sm" onClick={() => scrollToId('start')}>
+            Termin anfragen <Arrow size={15} />
           </button>
         </Magnetic>
       </div>
@@ -67,7 +66,7 @@ function Nav() {
 function Hero() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
-    const tween = gsap.fromTo('.v2-hero-media img, .v2-hero-media video',
+    const tween = gsap.fromTo('.v2-hero-media img',
       { scale: 1.14 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
     return () => tween.kill();
   }, []);
@@ -75,24 +74,24 @@ function Hero() {
   return (
     <section className="v2-hero" id="top">
       <div className="v2-hero-media">
-        <img src="/media/aussen-2-web.jpg" alt="Referenzprojekt: Außenaufnahme eines Mehrgenerationenhauses im warmen Abendlicht" data-parallax="14" fetchpriority="high" />
-        <video src="/media/drohne-web.mp4" poster="/media/drohne-poster.jpg" autoPlay muted loop playsInline data-parallax="10" />
+        <img src="/media/hero.jpg" alt="Referenzprojekt: Innenhof eines Mehrgenerationenhauses im warmen Sommerlicht" data-parallax="14" fetchpriority="high" />
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark" data-reveal>Foto &amp; Video für Makler · Raum Bühl · Mittelbaden · Ortenau</p>
+        <p className="v2-eyebrow on-dark" data-reveal>Immobilienfotografie &amp; Immobilienvideo · Raum Bühl · Mittelbaden · Ortenau</p>
         <Split as="h1" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
           Content, der Ihre Objekte heraushebt — und Ihr <span className="accent">Maklerbüro</span>.
         </Split>
         <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
-          Professionelle Fotos und konzipierte Videos für Maklerbüros. Hochwertiger Content,
-          der Ihre Objekte schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
-          als Marke sichtbar macht. Konzept, Dreh und Schnitt aus einer Hand.
+          Professionelle Immobilienfotografie und konzipierte Immobilienvideos für Maklerbüros
+          im Raum Bühl, Baden-Baden und Ortenau. Hochwertiger Content, der Ihre Objekte schneller
+          vermittelt, qualifiziertere Anfragen bringt und Ihr Büro als Marke sichtbar macht.
+          Konzept, Dreh und Schnitt aus einer Hand.
         </p>
         <div className="v2-hero-ctas" data-reveal data-delay="0.5">
           <Magnetic>
-            <button type="button" className="v2-btn" onClick={() => scrollToId('anfrage')}>
-              Gratis-Pilot anfragen <Arrow />
+            <button type="button" className="v2-btn" onClick={() => scrollToId('start')}>
+              Paket &amp; Termin anfragen <Arrow />
             </button>
           </Magnetic>
           <Magnetic>
@@ -114,7 +113,7 @@ function Hero() {
 }
 
 function Marquee() {
-  const items = ['Immobilienfotografie', 'Objektfilme', 'Drohnenaufnahmen', 'Vertikale Reels', 'Exposé-Content', 'Markenbildung'];
+  const items = ['Immobilienfotografie', 'Objektfilme', 'Makler-Filme', 'Drohnenaufnahmen', 'Virtuelles Home Staging', 'Markenbildung'];
   const row = items.map((t) => (
     <span className="v2-marquee-item" key={t}><span className="dot" />{t}</span>
   ));
