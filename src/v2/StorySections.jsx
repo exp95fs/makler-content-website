@@ -1,8 +1,8 @@
 import { Split, Magnetic, scrollToId } from './fx.jsx';
-import { Arrow } from './AppV2.jsx';
+import { Arrow } from './ui.jsx';
 
 /* ---------- Warum hochwertiger Content (6 Gründe) ---------- */
-function Benefits() {
+export function Benefits() {
   const items = [
     { title: 'Objekte heben sich ab', text: 'Im Portal entscheidet das erste Bild. Profi-Fotos bringen spürbar mehr Aufmerksamkeit.', kpi: '+61 % mehr Aufrufe' },
     { title: 'Bleiben im Kopf', text: 'Video vermittelt Raumgefühl, Licht und Laufwege. Interessenten erinnern sich an Ihr Objekt, nicht an das nächste in der Liste.' },
@@ -67,7 +67,7 @@ const PKG_GROUPS = [
   },
 ];
 
-function Pakete() {
+export function Pakete() {
   return (
     <section className="v2-sec bg-linen-2" id="leistungen">
       <div className="v2-wrap">
@@ -133,7 +133,7 @@ function Pakete() {
 }
 
 /* ---------- Segmente: Verkauf / Vermietung ---------- */
-function Segments() {
+export function Segments() {
   const segs = [
     {
       tag: 'Verkaufen', tone: 'terra',
@@ -196,12 +196,3 @@ function Segments() {
   );
 }
 
-export function StorySections() {
-  return (
-    <>
-      <Benefits />
-      <Pakete />
-      <Segments />
-    </>
-  );
-}

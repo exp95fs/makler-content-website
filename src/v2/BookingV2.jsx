@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Split } from './fx.jsx';
-import { Arrow } from './AppV2.jsx';
+import { Arrow } from './ui.jsx';
 
 /* ============================ Daten (identisch zum Produktiv-Stand) ============================ */
 const fotoData = {

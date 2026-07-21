@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Split, Magnetic, scrollToId } from './fx.jsx';
-import { Arrow } from './AppV2.jsx';
-import { BookingV2 } from './BookingV2.jsx';
+import { Arrow } from './ui.jsx';
 
 /* ---------- Fork: Zwei Wege ---------- */
-function Fork() {
+export function Fork() {
   return (
     <section className="v2-sec bg-linen-2" id="start">
       <div className="v2-wrap">
@@ -77,7 +76,7 @@ function FaqItem({ q, a, open, onToggle }) {
   );
 }
 
-function Faq() {
+export function Faq() {
   const items = [
     { q: 'Lohnt sich das wirtschaftlich?', a: 'Die Zahlen sprechen dafür: Objekte mit Profi-Fotos verkaufen rund 32 % schneller, Inserate mit Video erhalten ein Vielfaches an Anfragen, und Ferienobjekte mit guten Fotos werden deutlich öfter gebucht. Schnellere Vermittlung und qualifiziertere Anfragen sparen Ihnen Zeit und Folgekosten. Der Content amortisiert sich meist über ein einziges Objekt.' },
     { q: 'Erstellen Sie auch Content für Objekte zur Vermietung?', a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Miet- und Ferienobjekte (z. B. Airbnb/Booking). Dort wirkt guter Content auf Buchungsrate und erzielbaren Preis besonders stark.' },
@@ -113,7 +112,7 @@ function encodeFormData(data) {
     .join('&');
 }
 
-function Contact() {
+export function Contact() {
   const [sent, setSent] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -201,13 +200,3 @@ function Contact() {
   );
 }
 
-export function CloseSections() {
-  return (
-    <>
-      <Fork />
-      <BookingV2 />
-      <Faq />
-      <Contact />
-    </>
-  );
-}

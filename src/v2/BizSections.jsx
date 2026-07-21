@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { Split, Magnetic, scrollToId, gsap, ScrollTrigger, prefersReducedMotion } from './fx.jsx';
-import { Arrow } from './AppV2.jsx';
+import { Arrow } from './ui.jsx';
 
 /* ---------- Markenbildung ---------- */
-function Branding() {
+export function Branding() {
   const pillars = [
     { title: 'Konsistente Bildsprache', text: 'Eine durchgängige Handschrift über alle Objekte hinweg. Ihr Büro wird auf den ersten Blick wiedererkannt.' },
     { title: 'Sie als Gesicht der Region', text: 'Makler-Reels, Porträt- und Experten-Content, der Vertrauen aufbaut, bevor das erste Gespräch beginnt.' },
@@ -35,9 +35,9 @@ function Branding() {
         <div className="v2-brand-foot" data-reveal>
           <p>Wir starten beim einzelnen Objekt und bauen daraus Schritt für Schritt Ihre Marke.</p>
           <Magnetic>
-            <button type="button" className="v2-btn" onClick={() => scrollToId('anfrage')}>
-              Markenbildung besprechen <Arrow />
-            </button>
+            <a className="v2-btn" href="/marke-und-social/">
+              Marke &amp; Social entdecken <Arrow />
+            </a>
           </Magnetic>
         </div>
       </div>
@@ -46,7 +46,7 @@ function Branding() {
 }
 
 /* ---------- USP ---------- */
-function Usp() {
+export function Usp() {
   const usps = [
     { title: 'Alles aus einer Hand', text: 'Strategie, Konzept, Dreh, Schnitt und Feinschliff. alles aus einer Hand. Ein Ansprechpartner statt vieler Schnittstellen: keine Overhead-Kosten, keine Reibungsverluste.' },
     { title: 'Bewusst auf wenige Kunden begrenzt', text: 'Wir arbeiten gezielt mit wenigen Kunden gleichzeitig. So bleiben die Wege kurz und die Lieferung schnell. Jedes Objekt bekommt die volle Aufmerksamkeit.' },
@@ -84,7 +84,7 @@ function Usp() {
 }
 
 /* ---------- Prozess mit Scroll-Fortschrittslinie ---------- */
-function Process() {
+export function Process() {
   const rootRef = useRef(null);
   const steps = [
     { title: 'Kurzes Briefing', text: '10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.' },
@@ -141,7 +141,7 @@ function Process() {
 }
 
 /* ---------- Referenzprojekt / Arbeitsproben ---------- */
-function Showcase() {
+export function Showcase({ compact = false }) {
   return (
     <section className="v2-sec bg-ink v2-show" id="portfolio">
       <div className="v2-wrap">
@@ -172,26 +172,37 @@ function Showcase() {
             <figcaption className="v2-show-cap"><span>Drohne · Objekt &amp; Lage</span><span>02</span></figcaption>
           </figure>
 
+          {!compact && (
           <figure className="v2-show-item v2-show-b" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
             <div className="frame" data-clip-reveal>
               <img src="/media/ref-innen-1.jpg" alt="Wohnung im Referenzobjekt — lichtdurchfluteter Wohnraum mit Parkett" loading="lazy" />
             </div>
             <figcaption className="v2-show-cap"><span>Innen · Wohnraum &amp; Licht</span><span>03</span></figcaption>
           </figure>
+          )}
 
+          {!compact && (
           <figure className="v2-show-item v2-show-c" style={{ margin: 0 }} data-cursor="view" data-cursor-label="Referenz">
             <div className="frame" data-clip-reveal>
               <img src="/media/ref-aussen-2.jpg" alt="Referenzobjekt — Balkonperspektive mit Blick über die Felder" loading="lazy" />
             </div>
             <figcaption className="v2-show-cap"><span>Außen · Lage &amp; Ausblick</span><span>04</span></figcaption>
           </figure>
+          )}
         </div>
 
         <div className="v2-show-foot" data-reveal>
+          {compact ? (
+            <a className="v2-link-inline" href="/referenzen/">
+              Alle Referenzen ansehen
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+            </a>
+          ) : (
           <a className="v2-link-inline" href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener noreferrer">
             Mehr Arbeitsproben auf Instagram
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7" /><path d="M8 7h9v9" /></svg>
           </a>
+          )}
           <span className="v2-idx" style={{ color: 'rgba(243,238,229,0.4)' }}>Mehrgenerationenhaus · Mittelbaden · 2026</span>
         </div>
       </div>
@@ -200,7 +211,7 @@ function Showcase() {
 }
 
 /* ---------- Über ---------- */
-function About() {
+export function About({ teaser = false }) {
   return (
     <section className="v2-sec bg-linen-2">
       <div className="v2-wrap">
@@ -228,6 +239,15 @@ function About() {
               einem einzelnen Auftrag ein stimmiges Gesamtbild machen.
             </p>
             <p className="loc" data-reveal>Ansässig in Bühl · unterwegs in Mittelbaden &amp; der Ortenau</p>
+            {teaser && (
+              <div style={{ marginTop: 28 }} data-reveal>
+                <Magnetic>
+                  <a className="v2-btn ghost" href="/ueber-uns/">
+                    Mehr über den Hintergrund <Arrow />
+                  </a>
+                </Magnetic>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -235,14 +255,3 @@ function About() {
   );
 }
 
-export function BizSections() {
-  return (
-    <>
-      <Branding />
-      <Usp />
-      <Process />
-      <Showcase />
-      <About />
-    </>
-  );
-}
