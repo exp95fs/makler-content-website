@@ -4,4 +4,4 @@ Disallow: /impressum.html
 Disallow: /datenschutz.html
 Disallow: /referenzen/
 
-Sitemap: https://www.quadratblick.de/sitemap.xml
+Sitemap: https://quadratblick.de/sitemap.xml
