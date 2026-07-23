@@ -25,7 +25,7 @@ const TIERS = [
     key: 'foto-basis',
     group: 'foto',
     name: 'Foto Basis',
-    price: '390 €',
+    price: '350 €',
     desc: 'Ca. 1–2 Aufnahmen pro Raum, professionell bearbeitet, für einen vollständigen, überzeugenden Immobilienauftritt. Ideal für Wohnungen und klassische Verkaufsobjekte.',
   },
   {

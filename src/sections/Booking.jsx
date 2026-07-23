@@ -6,7 +6,7 @@ import { Icon } from '../components/ui/Icon.jsx';
 /* ============================ Data ============================ */
 const fotoData = {
   none: { name: 'Kein Foto', price: 0, hours: 0 },
-  basis: { name: 'Foto Basis', price: 390, hours: 2 },
+  basis: { name: 'Foto Basis', price: 350, hours: 2 },
   premium: { name: 'Foto Premium', price: 590, hours: 3 },
 };
 const videoData = {
@@ -16,7 +16,7 @@ const videoData = {
 };
 const addonData = {
   walkthrough: { name: 'Walk-Through Video', price: 390, hours: 2 },
-  drohne: { name: 'Drohnenaufnahmen', price: 150, hours: 1 },
+  drohne: { name: 'Drohnenaufnahmen', price: 140, hours: 1 },
   express: { name: 'Express-Lieferung', pct: 30 },
   retusche: { name: 'Objektentfernung / Retusche', price: 0, note: true },
   homestaging: { name: 'Virtuelles Home Staging', price: 190 },
@@ -520,7 +520,7 @@ function PackageStep({ intent, objectCount, objects, onPick, valid }) {
           <div>
             <div style={GROUP_LABEL}>Fotografie</div>
             <div style={{ display: 'grid', gap: '10px' }}>
-              <OptCard selected={o.foto === 'basis'} name="Foto Basis" price="390 € netto" desc="Ca. 20 professionell bearbeitete Aufnahmen. Ideal für Wohnungen und klassische Immobilieninserate." onClick={() => onPick(idx, 'foto', 'basis')} />
+              <OptCard selected={o.foto === 'basis'} name="Foto Basis" price="350 € netto" desc="Ca. 20 professionell bearbeitete Aufnahmen. Ideal für Wohnungen und klassische Immobilieninserate." onClick={() => onPick(idx, 'foto', 'basis')} />
               <OptCard selected={o.foto === 'premium'} name="Foto Premium" price="590 € netto" desc="30–40 Aufnahmen inkl. Detail- und Atmosphärenbildern. Für eine emotionale, hochwertige Vermarktung." onClick={() => onPick(idx, 'foto', 'premium')} />
             </div>
           </div>
@@ -624,7 +624,7 @@ function AddonStep({ intent, objectCount, objects, onToggle }) {
           {!walkEligible && intent === 'video' && (
             <CheckLine disabled name="Walk-Through Video" price="–" note="Nur als Erweiterung bei Foto-Paketen buchbar." />
           )}
-          <CheckLine selected={!!o.addons.drohne} name="Drohnenaufnahmen" price="+150 €" note="Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und attraktiven Lagen." onClick={() => onToggle(idx, 'drohne')} />
+          <CheckLine selected={!!o.addons.drohne} name="Drohnenaufnahmen" price="+140 €" note="Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und attraktiven Lagen." onClick={() => onToggle(idx, 'drohne')} />
         </div>
         <div>
           <div style={GROUP_LABEL}>Bei der Bearbeitung</div>
