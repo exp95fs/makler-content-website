@@ -225,6 +225,31 @@ frühere Annahme „Brennweite = Bildbreite" lag um Faktor 2,25 daneben.
 Die Korrektur stürzender Linien bleibt bewusst zurückhaltend: Sie greift nur
 bei einem plausiblen Fluchtpunkt, den ein Konsensverfahren über alle
 Linienpaare bestimmt (Sofakanten und Dachschrägen sollen ihn nicht verziehen).
+An der echten Aufnahme schätzte das Verfahren eine Neigung von 26° – über dem
+Schwellwert und damit abgelehnt. Das ist der gewollte Fall: Lieber nur die
+sichere Kippung korrigieren als eine unsichere Entzerrung anwenden.
+
+### Objektivverzeichnung
+
+Innenaufnahmen entstehen mit sehr weitwinkligen Objektiven – bei der
+vermessenen Aufnahme einem Sigma 14–24 mm bei 16 mm. Solche Objektive
+verzeichnen tonnenförmig, und der Vergleich legt nahe, dass der kommerzielle
+Dienst das korrigiert.
+
+Zwei Wege stehen bereit:
+
+* `--lens-k1 WERT` – ein **fester** Koeffizient. Das ist der empfohlene Weg:
+  Wer immer dasselbe Objektiv benutzt, ermittelt den Wert einmal (mit einer
+  Aufnahme, die lange Geraden enthält) und verwendet ihn dauerhaft.
+* `--lens-correct` – **automatische** Schätzung aus den Bildkanten.
+
+Zur Automatik ehrlich: Sie funktioniert nur, wenn genügend lange, wirklich
+gerade Kanten im Bild sind. An der Testaufnahme fand sie 10 brauchbare
+Kantenzüge und schlug k1 = −0,17 vor, verbesserte die Geradheit damit aber nur
+um 6 % – unter der Sicherheitsschwelle von 10 %, also **nicht angewendet**.
+Der Vorschlag steht im Protokoll. In einem Wohnraum sehen Sofakanten und
+Teppichmuster fast wie Geraden aus; eine Profildatenbank wäre genauer, würde
+aber eine weitere Abhängigkeit bedeuten.
 
 ## Was das Werkzeug der Reihe nach macht
 
@@ -323,6 +348,7 @@ sind 0,11).
 | `--window-close` | `0.015` | Breite des Schließ-Kernels als Anteil der Bildbreite. Muss breiter sein als eine Fenstersprosse. |
 | `--window-ceiling` | `0.92` | Obergrenze für den Fensterinhalt. Niedriger = mehr Zeichnung, grauerer Himmel. |
 | `--window-rolloff` | `1.0` | Steilheit der Lichterkompression. Kleiner = mehr Zeichnung, dunklerer Himmel. |
+| `--window-range` | `0.50` | Mindestbreite des Tonwertbands für den Fensterinhalt. Größer = mehr Zeichnung im Fenster. |
 | `--window-blur` | `0.02` | Guided-Filter-Radius als Anteil der Bildbreite. |
 
 ### Tonale Normalisierung
@@ -337,13 +363,17 @@ sind 0,11).
 | `--white-percentile` | `99.5` | Perzentil für den Weißpunkt. |
 | `--black-percentile` | `0.2` | Perzentil für den Schwarzpunkt. |
 | `--wb-strength` | `0.7` | Stärke des globalen Weißabgleichs. `0` = aus. |
+| `--raw-wb` | `camera` | Weißabgleich der RAW-Entwicklung. `auto` berechnet ihn neu und liefert ein neutraleres Bild (gemessen: weiße Wand R/B 1,043 statt 1,114). |
+| `--highlight-ceiling` | `0.98` | Obergrenze für Spitzlichter im ganzen Bild (`0` = aus). Verhindert hartes Clipping. |
 
 ### Perspektive und Ausgabe
 
 | Parameter | Standard | Wirkung |
 |---|---|---|
-| `--straighten` | aus | Begradigt stürzende Linien. |
+| `--straighten` | aus | Richtet auf: korrigiert Kippung (Drehung) und Neigung (stürzende Linien). |
 | `--straighten-max-deg` | `8.0` | Darüber wird nicht korrigiert, sondern nur gewarnt. |
+| `--lens-k1` | `0.0` | Fester Verzeichnungskoeffizient. Negativ gleicht tonnenförmige Verzeichnung aus (Weitwinkel). Einmal für das eigene Objektiv ermitteln. |
+| `--lens-correct` | aus | Verzeichnung automatisch aus den Bildkanten schätzen. Experimentell – siehe Grenzen. |
 | `--preview` | aus | JPEG-Kontaktbogen je Reihe. |
 | `--compression` | `none` | `lzw` ist verlustfrei, benötigt aber `imagecodecs`. |
 | `--jobs` | `0` | Parallele Prozesse (`0` = Kerne minus 1). |

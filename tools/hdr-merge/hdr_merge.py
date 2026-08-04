@@ -358,7 +358,7 @@ def lies_aufnahmezeit(tags: dict, pfad: Path) -> float:
 # ---------------------------------------------------------------------------
 
 
-def entwickle_raw(pfad: Path) -> np.ndarray:
+def entwickle_raw(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
     """RAW neutral und deterministisch entwickeln.
 
     Keinerlei Auto-Korrekturen: ``no_auto_bright=True`` verhindert die
@@ -373,11 +373,12 @@ def entwickle_raw(pfad: Path) -> np.ndarray:
             "rawpy ist nicht installiert - RAW-Dateien koennen nicht "
             "entwickelt werden (pip install rawpy)."
         )
+    kamera_wb = weissabgleich != "auto"
     with rawpy.imread(str(pfad)) as raw:
         rgb = raw.postprocess(
             no_auto_bright=True,
-            use_camera_wb=True,
-            use_auto_wb=False,
+            use_camera_wb=kamera_wb,
+            use_auto_wb=not kamera_wb,
             output_bps=16,
             output_color=rawpy.ColorSpace.sRGB,
             gamma=(2.222, 4.5),          # Standard-sRGB-Kurve, keine Kreativkurve
@@ -405,11 +406,11 @@ def lade_tiff(pfad: Path) -> np.ndarray:
     return np.clip(bild.astype(np.float32), 0.0, 1.0)
 
 
-def lade_bild(pfad: Path) -> np.ndarray:
+def lade_bild(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
     """Laedt RAW oder TIFF als RGB-Float32 im Bereich 0..1."""
     endung = pfad.suffix.lower()
     if endung in RAW_ENDUNGEN:
-        return entwickle_raw(pfad)
+        return entwickle_raw(pfad, weissabgleich)
     if endung in TIFF_ENDUNGEN:
         return lade_tiff(pfad)
     raise ValueError(f"Nicht unterstuetztes Format: {pfad.name}")
@@ -1391,6 +1392,156 @@ def _groesstes_rechteck(maske: np.ndarray) -> tuple[int, int, int, int]:
     return bestes
 
 
+def _sammle_gerade_kantenzuege(bild: np.ndarray,
+                               mindestlaenge: float = 0.10,
+                               toleranz: float = 0.05) -> list[np.ndarray]:
+    """Sucht lange Kantenzuege, die in der Welt gerade Linien sein duerften.
+
+    Genommen werden nur Zuege, die bereits weitgehend gerade verlaufen: Was
+    stark gebogen ist, ist eine Sofakante oder eine Pflanze und keine durch
+    das Objektiv verbogene Gerade. Genau diese Vorauswahl macht die spaetere
+    Schaetzung ueberhaupt erst belastbar.
+    """
+    h, w = bild.shape[:2]
+    grau = np.clip(berechne_luminanz(bild) * 255.0, 0, 255).astype(np.uint8)
+    kanten = cv2.Canny(cv2.GaussianBlur(grau, (0, 0), 1.2), 50, 150)
+    konturen, _ = cv2.findContours(kanten, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
+    grenze = mindestlaenge * min(h, w)
+    zuege = []
+    for kontur in konturen:
+        punkte = kontur[:, 0, :].astype(np.float64)
+        if len(punkte) < grenze:
+            continue
+        mitte = punkte.mean(axis=0)
+        zentriert = punkte - mitte
+        _, _, vt = np.linalg.svd(zentriert, full_matrices=False)
+        laengs = zentriert @ vt[0]
+        quer = zentriert @ vt[1]
+        spanne = float(laengs.max() - laengs.min())
+        if spanne < grenze:
+            continue
+        # Nur Zuege, die schon weitgehend gerade sind.
+        if float(np.abs(quer).max()) > toleranz * spanne:
+            continue
+        # Ausduennen: gleichmaessig verteilte Stuetzstellen genuegen.
+        schritt = max(1, len(punkte) // 60)
+        zuege.append(punkte[::schritt])
+    return zuege
+
+
+def _restfehler_nach_entzerrung(zuege: list[np.ndarray], k1: float,
+                                breite: int, hoehe: int) -> float:
+    """Wie krumm die Kantenzuege nach einer Entzerrung mit k1 noch sind."""
+    cx, cy = breite / 2.0, hoehe / 2.0
+    norm = max(cx, cy)
+    fehler, gewicht = 0.0, 0.0
+    for punkte in zuege:
+        x = (punkte[:, 0] - cx) / norm
+        y = (punkte[:, 1] - cy) / norm
+        r2 = x * x + y * y
+        faktor = 1.0 + k1 * r2
+        px, py = x * faktor, y * faktor
+        stapel = np.stack([px, py], axis=1)
+        mitte = stapel.mean(axis=0)
+        zentriert = stapel - mitte
+        _, _, vt = np.linalg.svd(zentriert, full_matrices=False)
+        quer = zentriert @ vt[1]
+        laengs = zentriert @ vt[0]
+        spanne = float(laengs.max() - laengs.min())
+        if spanne < 1e-6:
+            continue
+        # Quadratische Abweichung, auf die Laenge bezogen und laengengewichtet.
+        fehler += float(np.sum(quer ** 2)) / len(quer) / (spanne ** 2) * spanne
+        gewicht += spanne
+    return fehler / max(gewicht, 1e-9)
+
+
+def schaetze_verzeichnung(bild: np.ndarray,
+                          protokoll: list[tuple[int, str]]) -> float:
+    """Schaetzt den radialen Verzeichnungskoeffizienten aus dem Bild selbst.
+
+    Innenaufnahmen entstehen mit sehr weitwinkligen Objektiven (in der
+    vermessenen Aufnahme 16 mm Kleinbild), die tonnenfoermig verzeichnen.
+    Ein Objektivprofil waere genauer, wuerde aber eine Profildatenbank als
+    weitere Abhaengigkeit erfordern. Stattdessen wird der Koeffizient
+    geschaetzt, der die vorhandenen geraden Kanten am besten geradebiegt.
+
+    Gesucht wird in zwei Durchgaengen (grob, dann fein) ueber ein festes
+    Raster - damit ohne Zufallsgenerator und exakt reproduzierbar.
+    """
+    zuege = _sammle_gerade_kantenzuege(bild)
+    if len(zuege) < 6:
+        protokoll.append((logging.DEBUG,
+                          f"Objektivkorrektur: nur {len(zuege)} brauchbare "
+                          f"Kantenzuege - uebersprungen."))
+        return 0.0
+
+    h, w = bild.shape[:2]
+    bester, bester_fehler = 0.0, _restfehler_nach_entzerrung(zuege, 0.0, w, h)
+    ausgang = bester_fehler
+    for spanne, schritte in ((0.30, 31), (0.02, 21)):
+        raster = np.linspace(bester - spanne, bester + spanne, schritte)
+        for k1 in raster:
+            if abs(k1) > 0.35:
+                continue
+            fehler = _restfehler_nach_entzerrung(zuege, float(k1), w, h)
+            if fehler < bester_fehler:
+                bester_fehler, bester = fehler, float(k1)
+
+    verbesserung = 1.0 - bester_fehler / max(ausgang, 1e-12)
+    # Nur uebernehmen, wenn die Kanten dadurch deutlich gerader werden.
+    # Die Schaetzung aus einem einzelnen Innenraumbild ist heikel: Es gibt
+    # dort wenige wirklich lange Geraden, und Moebelkanten sehen wie welche
+    # aus. Deshalb wird der Vorschlag protokolliert, aber nur bei klarer
+    # Verbesserung angewendet. Wer denselben Objektivtyp immer benutzt,
+    # faehrt mit einem einmal ermittelten festen Wert (--lens-k1) besser.
+    if verbesserung < 0.10 or abs(bester) < 0.005:
+        protokoll.append((logging.INFO,
+                          f"Objektivkorrektur: Vorschlag k1 = {bester:+.4f} "
+                          f"aus {len(zuege)} Kantenzuegen, verbessert die "
+                          f"Geradheit aber nur um {verbesserung * 100:.1f} % - "
+                          f"nicht angewendet. Fuer einen festen Wert: "
+                          f"--lens-k1 verwenden."))
+        return 0.0
+    protokoll.append((logging.DEBUG,
+                      f"Objektivkorrektur: {len(zuege)} Kantenzuege, k1 = "
+                      f"{bester:+.4f}, Restfehler -{verbesserung * 100:.1f} %"))
+    return bester
+
+
+def korrigiere_verzeichnung(bild: np.ndarray, k1: float) -> np.ndarray:
+    """Entzerrt radial und beschneidet auf den gueltigen Bereich."""
+    if abs(k1) < 1e-6:
+        return bild
+    h, w = bild.shape[:2]
+    norm = max(w, h) / 2.0
+    kamera = np.array([[norm, 0, w / 2.0], [0, norm, h / 2.0], [0, 0, 1]],
+                      dtype=np.float64)
+    # OpenCV entzerrt mit dem inversen Vorzeichen der hier verwendeten
+    # Konvention.
+    koeffizienten = np.array([-k1, 0.0, 0.0, 0.0], dtype=np.float64)
+    karte_x, karte_y = cv2.initUndistortRectifyMap(
+        kamera, koeffizienten, None, kamera, (w, h), cv2.CV_32FC1)
+    entzerrt = cv2.remap(bild, karte_x, karte_y, cv2.INTER_LINEAR,
+                         borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    gueltig = cv2.remap(np.ones((h, w), dtype=np.uint8), karte_x, karte_y,
+                        cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT,
+                        borderValue=0)
+    skala = 400.0 / max(w, 1)
+    klein = cv2.resize(gueltig, (max(int(w * skala), 8), max(int(h * skala), 8)),
+                       interpolation=cv2.INTER_NEAREST)
+    x, y, bw, bh = _groesstes_rechteck(klein)
+    if bw < 8 or bh < 8:
+        return entzerrt
+    faktor = 1.0 / skala
+    x0, y0 = int(x * faktor) + 1, int(y * faktor) + 1
+    x1, y1 = min(int((x + bw) * faktor) - 1, w), min(int((y + bh) * faktor) - 1, h)
+    if x1 - x0 < 16 or y1 - y0 < 16:
+        return entzerrt
+    return entzerrt[y0:y1, x0:x1]
+
+
 def begradige_perspektive(bild: np.ndarray, max_grad: float,
                           protokoll: list[tuple[int, str]],
                           tags: dict | None = None) -> np.ndarray:
@@ -1686,7 +1837,7 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
         return ReihenErgebnis(name, None, protokoll, False)
 
     try:
-        bilder = [lade_bild(a.pfad) for a in aufnahmen]
+        bilder = [lade_bild(a.pfad, args.raw_wb) for a in aufnahmen]
     except Exception as fehler:  # pragma: no cover - Dateisystem/Format
         protokoll.append((logging.ERROR, f"Laden fehlgeschlagen: {fehler}"))
         return ReihenErgebnis(name, None, protokoll, False)
@@ -1737,6 +1888,23 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
                           "- Ausgabe ist die flache Rohfusion."))
 
     referenz_tags = sortierte_aufnahmen[referenz_index].tags
+
+    if args.lens_k1:
+        vorher = ergebnis.shape[:2]
+        ergebnis = korrigiere_verzeichnung(ergebnis, args.lens_k1)
+        protokoll.append((logging.INFO,
+                          f"Objektivkorrektur mit festem k1 {args.lens_k1:+.4f}, "
+                          f"Ausschnitt {ergebnis.shape[1]}x{ergebnis.shape[0]} "
+                          f"von {vorher[1]}x{vorher[0]} px."))
+    elif args.lens_correct:
+        k1 = schaetze_verzeichnung(ergebnis, protokoll)
+        if k1:
+            vorher = ergebnis.shape[:2]
+            ergebnis = korrigiere_verzeichnung(ergebnis, k1)
+            protokoll.append((logging.INFO,
+                              f"Objektivkorrektur angewendet (k1 {k1:+.4f}), "
+                              f"Ausschnitt {ergebnis.shape[1]}x"
+                              f"{ergebnis.shape[0]} von {vorher[1]}x{vorher[0]} px."))
 
     if args.straighten:
         ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
@@ -1994,6 +2162,10 @@ def baue_parser() -> argparse.ArgumentParser:
                         "'exact' erzwingt den Zielwert in beide Richtungen")
     t.add_argument("--white-percentile", type=float, default=99.5)
     t.add_argument("--black-percentile", type=float, default=0.2)
+    t.add_argument("--raw-wb", choices=["camera", "auto"], default="camera",
+                   help="Weissabgleich der RAW-Entwicklung. 'camera' nimmt die "
+                        "Einstellung aus der Kamera, 'auto' berechnet ihn neu "
+                        "(neutraler, siehe README)")
     t.add_argument("--highlight-ceiling", type=float, default=0.98,
                    help="Obergrenze fuer Spitzlichter im gesamten Bild "
                         "(0 = aus). Verhindert hartes Clipping")
@@ -2001,6 +2173,13 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Staerke des globalen Weissabgleichs (0 = aus)")
 
     s = p.add_argument_group("Perspektive")
+    s.add_argument("--lens-k1", type=float, default=0.0,
+                   help="Fester Verzeichnungskoeffizient. Negativ = tonnen"
+                        "foermige Verzeichnung ausgleichen (Weitwinkel). "
+                        "Einmal fuer das eigene Objektiv ermitteln")
+    s.add_argument("--lens-correct", action="store_true",
+                   help="Objektivverzeichnung automatisch aus den Bildkanten "
+                        "schaetzen und korrigieren (Standard: aus)")
     s.add_argument("--straighten", action="store_true",
                    help="Stuerzende Linien begradigen (Standard: aus)")
     s.add_argument("--straighten-max-deg", type=float, default=8.0,

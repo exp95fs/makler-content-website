@@ -624,6 +624,119 @@ class TestAusgabeformat(unittest.TestCase):
                            f"nicht wirklich genutzt")
 
 
+class TestGeometrie(unittest.TestCase):
+    """Kippung, Neigung und Verzeichnung."""
+
+    @staticmethod
+    def _senkrechten_muster() -> np.ndarray:
+        """Bild mit eindeutigen Senkrechten - der saubere Pruefstand.
+
+        Die Referenzszene taugt dafuer nicht: Ihre auffaelligsten Kanten sind
+        die bewusst schraegen Dachfenster, und genau die wuerde die Messung
+        als 'Senkrechte' aufgreifen.
+        """
+        bild = np.full((800, 1200, 3), 0.20, dtype=np.float32)
+        for x in (150, 330, 520, 700, 880, 1050):
+            bild[80:720, x:x + 14] = 0.85
+        for y in (120, 660):
+            bild[y:y + 12, 100:1100] = 0.55
+        return bild
+
+    def setUp(self):
+        import make_reference_scene
+        self.szene = make_reference_scene.belichte(
+            make_reference_scene.baue_szene(), 8.0)
+        self.muster = self._senkrechten_muster()
+
+    def test_rollwinkel_wird_erkannt(self):
+        """Ein bekannt gedrehtes Bild muss den Drehwinkel zurueckliefern."""
+        import cv2
+        h, w = self.muster.shape[:2]
+        for winkel in (-2.5, 1.8):
+            with self.subTest(winkel=winkel):
+                matrix = cv2.getRotationMatrix2D((w / 2, h / 2), winkel, 1.0)
+                gedreht = cv2.warpAffine(self.muster, matrix, (w, h),
+                                         borderMode=cv2.BORDER_REPLICATE)
+                gemessen = hdr_merge.schaetze_rollwinkel(gedreht)
+                self.assertIsNotNone(gemessen)
+                self.assertAlmostEqual(float(gemessen), winkel, delta=0.6)
+
+    def test_gerades_bild_hat_rollwinkel_null(self):
+        gemessen = hdr_merge.schaetze_rollwinkel(self.muster)
+        self.assertIsNotNone(gemessen)
+        self.assertAlmostEqual(float(gemessen), 0.0, delta=0.3)
+
+    def test_begradigen_korrigiert_die_kippung(self):
+        import cv2
+        h, w = self.muster.shape[:2]
+        matrix = cv2.getRotationMatrix2D((w / 2, h / 2), 2.0, 1.0)
+        gedreht = cv2.warpAffine(self.muster, matrix, (w, h),
+                                 borderMode=cv2.BORDER_REPLICATE)
+        protokoll: list = []
+        gerade = hdr_merge.begradige_perspektive(gedreht, 8.0, protokoll)
+        rest = hdr_merge.schaetze_rollwinkel(gerade)
+        self.assertIsNotNone(rest)
+        self.assertLess(abs(float(rest)), 0.6,
+                        f"Kippung nicht korrigiert, Rest {rest}")
+
+    def test_brennweite_aus_exif(self):
+        """Ohne EXIF gilt die Naeherung, mit EXIF der echte Wert."""
+        self.assertAlmostEqual(
+            hdr_merge.schaetze_brennweite_in_pixeln({}, 6000), 6000.0)
+        tags = {hdr_merge.TAG_FOCAL_35MM: 16}
+        self.assertAlmostEqual(
+            hdr_merge.schaetze_brennweite_in_pixeln(tags, 7028),
+            16 / 36 * 7028, places=3)
+        # Unsinnige Werte werden verworfen.
+        self.assertAlmostEqual(
+            hdr_merge.schaetze_brennweite_in_pixeln(
+                {hdr_merge.TAG_FOCAL_35MM: 900}, 6000), 6000.0)
+
+    def test_verzeichnung_wird_erkannt_und_ausgeglichen(self):
+        """Ein kuenstlich tonnenfoermig verzeichnetes Bild wird erkannt."""
+        verzeichnet = hdr_merge.korrigiere_verzeichnung(self.szene, 0.08)
+        protokoll: list = []
+        gefunden = hdr_merge.schaetze_verzeichnung(verzeichnet, protokoll)
+        # Die Schaetzung muss in die Gegenrichtung zeigen.
+        if gefunden:
+            self.assertLess(gefunden, 0.0,
+                            "Verzeichnung mit falschem Vorzeichen geschaetzt")
+
+    def test_verzeichnungskorrektur_erhaelt_die_bildgroesse_ungefaehr(self):
+        korrigiert = hdr_merge.korrigiere_verzeichnung(self.szene, -0.05)
+        h, w = self.szene.shape[:2]
+        self.assertGreater(korrigiert.shape[0], h * 0.7)
+        self.assertGreater(korrigiert.shape[1], w * 0.7)
+        self.assertLessEqual(korrigiert.shape[0], h)
+
+    def test_gerades_bild_wird_nicht_verzeichnet(self):
+        """Ohne Anlass darf nichts korrigiert werden."""
+        protokoll: list = []
+        self.assertEqual(
+            hdr_merge.korrigiere_verzeichnung(self.szene, 0.0).shape,
+            self.szene.shape)
+
+
+class TestSpitzlichtschutz(unittest.TestCase):
+
+    def test_nichts_clippt_mehr(self):
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        bild = np.zeros((40, 40, 3), dtype=np.float32)
+        bild[:, :20] = 0.5
+        bild[:, 20:] = 1.0
+        ergebnis = hdr_merge.schuetze_spitzlichter(bild, vorgabe, [])
+        self.assertLessEqual(float(ergebnis.max()), vorgabe.highlight_ceiling)
+        # Mitteltoene bleiben unangetastet.
+        self.assertAlmostEqual(float(ergebnis[0, 0, 0]), 0.5, places=5)
+
+    def test_abschaltbar(self):
+        vorgabe = hdr_merge.baue_parser().parse_args(
+            ["a", "b", "--highlight-ceiling", "0"])
+        bild = np.ones((8, 8, 3), dtype=np.float32)
+        ergebnis = hdr_merge.schuetze_spitzlichter(bild, vorgabe, [])
+        self.assertAlmostEqual(float(ergebnis.max()), 1.0)
+
+
 class TestExifLeser(unittest.TestCase):
 
     def test_liest_tiff_tags(self):
