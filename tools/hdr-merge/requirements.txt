@@ -1,0 +1,17 @@
+# Abhaengigkeiten fuer hdr_merge.py (Python 3.11+)
+# Bewusst schlank gehalten. KEIN opencv-contrib - der Guided Filter ist in
+# hdr_merge.py selbst in NumPy implementiert.
+
+numpy>=1.26
+opencv-python>=4.9
+rawpy>=0.19
+tifffile>=2024.1.30
+
+# piexif steht bewusst NICHT hier: es liest keine RAW-Container (CR2, NEF,
+# ARW, RAF) und kann kein Exif-IFD in ein tifffile-TIFF einfuegen. Beides
+# loest hdr_merge.py selbst (Minimal-EXIF-Parser + XMP-Paket). Details in
+# der README unter "EXIF-Uebernahme".
+
+# Optional: nur noetig fuer --compression lzw (LZW-komprimierte TIFFs).
+# Ohne dieses Paket schreibt das Werkzeug unkomprimiert und weist darauf hin.
+# imagecodecs>=2024.1.1

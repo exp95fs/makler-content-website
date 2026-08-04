@@ -1,0 +1,5 @@
+# Testausgaben und lokale Umgebungen
+testszene/
+testobjekt/
+.venv/
+__pycache__/
