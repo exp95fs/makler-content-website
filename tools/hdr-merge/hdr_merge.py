@@ -188,15 +188,23 @@ def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
 def komprimiere_lichter_in_maske(bild: np.ndarray, maske_weich: np.ndarray,
                                  knie: float, obergrenze: float,
                                  rate: float = ROLLOFF_RATE) -> np.ndarray:
-    """Wendet den Rolloff luminanzbasiert auf den maskierten Bereich an.
+    """Wendet den Rolloff auf den maskierten Bereich an.
 
-    Gerechnet wird auf der Luminanz; die RGB-Kanaele werden anschliessend mit
-    demselben Faktor skaliert. Dadurch bleiben Farbton und Saettigung exakt
-    erhalten - der Himmel wird heller oder dunkler, aber nicht bunter.
+    Gerechnet wird auf dem **staerksten Kanal** je Pixel, nicht auf der
+    Luminanz. Die RGB-Kanaele werden anschliessend mit demselben Faktor
+    skaliert, wodurch Farbton und Saettigung exakt erhalten bleiben - der
+    Himmel wird heller oder dunkler, aber nicht bunter.
+
+    Warum der Maximalkanal und nicht die Luminanz: Ein blauer Himmel hat im
+    Blaukanal deutlich hoehere Werte als in der Luminanz. Wird auf die
+    Luminanz normiert, liegt Blau anschliessend ueber 1.0 und wird beim
+    Speichern abgeschnitten - genau dann verliert der Himmel seine Farbe und
+    wird milchig weiss. Ueber den Maximalkanal ist garantiert, dass kein
+    Kanal die Obergrenze reisst und nichts geclippt werden muss.
     """
-    lum = berechne_luminanz(bild)
-    ziel = weicher_rolloff(lum, knie, obergrenze, rate)
-    faktor = np.where(lum > 1e-5, ziel / np.maximum(lum, 1e-5), 1.0)
+    fuehrung = bild.max(axis=2)
+    ziel = weicher_rolloff(fuehrung, knie, obergrenze, rate)
+    faktor = np.where(fuehrung > 1e-5, ziel / np.maximum(fuehrung, 1e-5), 1.0)
     alpha = np.clip(maske_weich, 0.0, 1.0)
     faktor = 1.0 + (faktor - 1.0) * alpha
     return (bild * faktor[..., None]).astype(np.float32)
@@ -619,6 +627,10 @@ class WindowPullErgebnis:
     fenster_roh: np.ndarray | None = None
     ring: np.ndarray | None = None
     ring_luminanz: float = 0.0
+    # Wie stark das Referenzbild je Pixel ausgebrannt war (0..1).
+    ausbrenn_gewicht: np.ndarray | None = None
+    # Maske fuer die Lichterkompression (deckt die Fensterflaeche voll ab).
+    maske_ton: np.ndarray | None = None
 
 
 def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
@@ -626,7 +638,7 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
                          detail_schwelle: float, detail_anteil: float,
                          min_flaeche_anteil: float, blur_anteil: float,
                          protokoll: list[tuple[int, str]],
-                         schliess_anteil: float = 0.015) -> tuple[np.ndarray, np.ndarray]:
+                         schliess_anteil: float = 0.015) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Erzeugt die Fenstermaske (binaer und weich).
 
     Ablauf:
@@ -710,7 +722,35 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
     weich = guided_filter(fuehrung, maske.astype(np.float32), radius, 1e-4)
     weich = np.clip(weich, 0.0, 1.0).astype(np.float32)
 
-    return maske, weich
+    # Zweite, bewusst NICHT kantenbewusste Maske fuer die Lichterkompression.
+    # Der Guided Filter laesst die weiche Maske an dunklen Gegenstaenden im
+    # Fenster (Pendelleuchte, Rahmen) einbrechen - genau richtig fuers
+    # Ueberblenden, aber fatal fuer die Kompression: an diesen Stellen bliebe
+    # das ausgebrannte Grundbild unkomprimiert stehen und clippt auf reines
+    # Weiss, also ein Halo direkt neben dem dunklen Gegenstand. Die Tonmaske
+    # deckt die Fensterflaeche deshalb vollstaendig ab.
+    # Sie wird zusaetzlich kraeftig geschlossen: Ein Gegenstand, der von
+    # aussen in die Fensterflaeche hineinragt (eine Pendelleuchte vor dem
+    # Dachfenster), bildet eine Einbuchtung und kein geschlossenes Loch - das
+    # Loecherfuellen erreicht ihn nicht.
+    ton_kernel = ungerade(int(round(w * 0.03)))
+    ton_binaer = cv2.morphologyEx(
+        maske, cv2.MORPH_CLOSE,
+        cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                  (ton_kernel, ton_kernel)))
+    ton_binaer = fuelle_loecher(ton_binaer)
+    # Vor dem Weichzeichnen ausdehnen: Sonst faellt die Tonmaske genau auf der
+    # Fenstergrenze auf 0.5, die Kompression greift dort nur halb und das
+    # ausgebrannte Grundbild clippt zu einem duennen weissen Saum entlang der
+    # Fensterkante.
+    ausdehnung = ungerade(max(3, radius // 2))
+    ton_binaer = cv2.dilate(ton_binaer,
+                            cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                                      (ausdehnung, ausdehnung)))
+    ton = box_filter(ton_binaer.astype(np.float32), max(2, radius // 3))
+    ton = np.clip(np.maximum(weich, ton), 0.0, 1.0).astype(np.float32)
+
+    return maske, weich, ton
 
 
 def gleiche_helligkeit_am_rand_an(fusion: np.ndarray, dunkel: np.ndarray,
@@ -795,7 +835,7 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
                            dunkel: np.ndarray, args: argparse.Namespace,
                            protokoll: list[tuple[int, str]]) -> WindowPullErgebnis:
     """Holt die Fensteransicht aus der dunkelsten Belichtung zurueck."""
-    maske_binaer, maske_weich = erkenne_fenstermaske(
+    maske_binaer, maske_weich, maske_ton = erkenne_fenstermaske(
         referenz, dunkel, fusion,
         schwelle=args.window_threshold,
         detail_schwelle=args.window_detail,
@@ -812,7 +852,8 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
             protokoll.append((logging.INFO,
                               "Keine Fensterflaeche erkannt - Window Pull "
                               "uebersprungen."))
-        return WindowPullErgebnis(fusion, maske_weich, maske_binaer, anteil)
+        return WindowPullErgebnis(fusion, maske_weich, maske_binaer, anteil,
+                                  maske_ton=maske_ton)
 
     # Warnung: Dunkelbild brennt im Fensterbereich selbst schon aus.
     lum_dunkel = berechne_luminanz(dunkel)
@@ -837,30 +878,65 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
     fenster_roh = gleiche_fenster_weissabgleich_an(fenster_roh, fusion,
                                                    maske_binaer, args.window_wb)
 
-    fenster = setze_fensterinhalt(fenster_roh, ring_luminanz,
-                                  args.window_ceiling, args.window_rolloff)
+    ausbrenn_gewicht = berechne_ausbrenn_gewicht(referenz,
+                                                 args.window_threshold)
+    ergebnis = setze_fensterinhalt(fusion, fenster_roh, maske_weich, maske_ton,
+                                   ring_luminanz, args, ausbrenn_gewicht)
+    return WindowPullErgebnis(ergebnis, maske_weich, maske_binaer, anteil,
+                              fenster_roh, ring, ring_luminanz,
+                              ausbrenn_gewicht, maske_ton)
 
-    alpha = (maske_weich * float(args.window_strength))[..., None]
-    ergebnis = np.clip(fusion * (1.0 - alpha) + fenster * alpha, 0.0, 1.0)
-    return WindowPullErgebnis(ergebnis.astype(np.float32), maske_weich,
-                              maske_binaer, anteil, fenster_roh, ring,
-                              ring_luminanz)
+
+def berechne_ausbrenn_gewicht(referenz: np.ndarray, schwelle: float,
+                              rampe: float = 0.10) -> np.ndarray:
+    """Wie stark ein Pixel im Referenzbild tatsaechlich ausgebrannt ist (0..1).
+
+    Der Window Pull darf nur dort ersetzen, wo im Referenzbild wirklich
+    Information fehlt. Alles andere - der Fensterrahmen, die Sprossen, ein
+    dunkler Gegenstand vor dem Fenster wie eine Pendelleuchte - ist in der
+    Fusion bereits korrekt belichtet und muss unangetastet bleiben.
+
+    Ohne diese Gewichtung wird ein dunkles Objekt, das die Fenstergrenze
+    kreuzt, innerhalb der Maske mit dem Verstaerkungsfaktor des Himmels
+    angehoben und ausserhalb nicht - es entsteht ein sichtbarer
+    Helligkeitssprung mitten im Objekt.
+
+    Die Rampe ist weich, damit an der Grenze keine harte Kante entsteht.
+    """
+    lum = berechne_luminanz(referenz)
+    gewicht = (lum - (schwelle - rampe)) / max(rampe, 1e-4)
+    return np.clip(gewicht, 0.0, 1.0).astype(np.float32)
 
 
-def setze_fensterinhalt(fenster_roh: np.ndarray, knie_luminanz: float,
-                        obergrenze: float, rate: float) -> np.ndarray:
-    """Bringt den angeglichenen Fensterinhalt in den darstellbaren Bereich.
+def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
+                        maske_weich: np.ndarray, maske_ton: np.ndarray,
+                        knie_luminanz: float, args: argparse.Namespace,
+                        ausbrenn_gewicht: np.ndarray | None = None) -> np.ndarray:
+    """Setzt den Fensterinhalt ein und bringt ihn in den darstellbaren Bereich.
 
-    Die Angleichung am Rahmen setzt den Fensterrahmen richtig, hebt den
+    Wichtig ist die Reihenfolge: Erst wird ueberblendet, DANN komprimiert.
+    Umgekehrt waere der Fensterinhalt zwar sauber begrenzt, aber das
+    Grundbild traegt im Fensterbereich Werte weit ueber 1.0 bei (dort ist es
+    ja ausgebrannt). Bei einer Deckkraft von 0.8 schlaegt dieses Fuenftel
+    durch, das Ergebnis reisst wieder ueber 1.0 und clippt - der Himmel
+    wuerde trotz Kompression weiss.
+
+    Die Angleichung am Rahmen setzt die Fensterhelligkeit richtig, hebt den
     Himmel dabei aber weit ueber 1.0. Statt hart zu clippen (Zeichnung waere
     weg) wird oberhalb der Rahmenhelligkeit weich komprimiert; unterhalb des
     Knies bleibt alles unveraendert.
     """
-    knie = float(np.clip(knie_luminanz, 0.15, obergrenze - 0.05))
-    voll = np.ones(fenster_roh.shape[:2], dtype=np.float32)
-    fenster = komprimiere_lichter_in_maske(fenster_roh, voll, knie=knie,
-                                           obergrenze=obergrenze, rate=rate)
-    return np.clip(fenster, 0.0, 1.0).astype(np.float32)
+    deckkraft = np.clip(maske_weich, 0.0, 1.0) * float(args.window_strength)
+    if ausbrenn_gewicht is not None:
+        deckkraft = deckkraft * ausbrenn_gewicht
+    alpha = deckkraft[..., None]
+    zusammengesetzt = grundbild * (1.0 - alpha) + fenster_roh * alpha
+
+    knie = float(np.clip(knie_luminanz, 0.15, args.window_ceiling - 0.05))
+    ergebnis = komprimiere_lichter_in_maske(
+        zusammengesetzt, maske_ton, knie=knie,
+        obergrenze=args.window_ceiling, rate=args.window_rolloff)
+    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
 # ---------------------------------------------------------------------------
@@ -971,9 +1047,22 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
         if 1e-3 < median_norm < 0.999:
             gamma = float(np.clip(math.log(ziel_norm) / math.log(median_norm),
                                   0.3, 3.0))
-            protokoll.append((logging.DEBUG,
-                              f"Mittelton {median_norm:.3f} -> "
-                              f"{ziel_norm:.3f} (Gamma {gamma:.3f})"))
+            if args.mid_mode == "lift" and gamma > 1.0:
+                # Nur aufhellen, nie abdunkeln. Ein Raum mit weissen Waenden
+                # hat von Natur aus einen hohen Median; ihn zwanghaft auf den
+                # Zielwert herunterzuziehen, macht weisse Waende grau - genau
+                # das Gegenteil dessen, was in der Immobilienfotografie
+                # gebraucht wird. Mit --mid-mode exact laesst sich der
+                # Zielwert erzwingen.
+                protokoll.append((logging.DEBUG,
+                                  f"Mittelton {median_norm:.3f} liegt bereits "
+                                  f"ueber dem Zielwert {ziel_norm:.3f} - es "
+                                  f"wird nicht abgedunkelt (--mid-mode lift)."))
+                gamma = 1.0
+            else:
+                protokoll.append((logging.DEBUG,
+                                  f"Mittelton {median_norm:.3f} -> "
+                                  f"{ziel_norm:.3f} (Gamma {gamma:.3f})"))
         else:
             gamma = 1.0
             protokoll.append((logging.WARNING,
@@ -982,8 +1071,16 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                               f"Gamma-Korrektur uebersprungen."))
 
         positiv = np.maximum(normiert, 0.0)
-        ergebnis = (args.black_target
-                    + spanne * np.power(positiv, gamma, dtype=np.float32))
+        # Das Gamma wird ueber die LUMINANZ angewendet und als gemeinsamer
+        # Faktor auf R, G und B gelegt. Kanalweise gerechnet wuerde ein Gamma
+        # die Kanalverhaeltnisse verschieben und damit die Saettigung
+        # veraendern - bei Gamma 1.9 stieg die Saettigung eines Eichenbodens
+        # im Test von 0.29 auf 0.51. Genau das soll dieses Werkzeug nicht tun.
+        if abs(gamma - 1.0) > 1e-6:
+            lum_norm = np.maximum(berechne_luminanz(positiv), 1e-3)
+            faktor = np.clip(np.power(lum_norm, gamma - 1.0), 0.05, 20.0)
+            positiv = positiv * faktor[..., None]
+        ergebnis = args.black_target + spanne * positiv
 
     # 4. Globaler Weissabgleich ueber den Graupunkt der Wandflaechen.
     if args.wb_strength > 0.0:
@@ -1059,15 +1156,13 @@ def nimm_fenster_zurueck(bild: np.ndarray, window: WindowPullErgebnis,
 
     # Rohdaten auf die neue Tonskala bringen (der Innenraum wurde angehoben).
     skalierung = float(np.clip(ring_neu / window.ring_luminanz, 0.05, 40.0))
-    fenster = setze_fensterinhalt(window.fenster_roh * skalierung, ring_neu,
-                                  args.window_ceiling, args.window_rolloff)
     protokoll.append((logging.DEBUG,
                       f"Fenster neu aufgebaut (Rahmenluminanz "
                       f"{window.ring_luminanz:.3f} -> {ring_neu:.3f}, "
                       f"Skalierung {skalierung:.2f})"))
-
-    alpha = (window.maske_weich * float(args.window_strength))[..., None]
-    return (bild * (1.0 - alpha) + fenster * alpha).astype(np.float32)
+    return setze_fensterinhalt(bild, window.fenster_roh * skalierung,
+                               window.maske_weich, window.maske_ton, ring_neu,
+                               args, window.ausbrenn_gewicht)
 
 
 # ---------------------------------------------------------------------------
@@ -1518,8 +1613,10 @@ def baue_parser() -> argparse.ArgumentParser:
     w = p.add_argument_group("Window Pull")
     w.add_argument("--window-strength", type=float, default=0.8,
                    help="Deckkraft des Window Pull (0 = aus)")
-    w.add_argument("--window-wb", type=float, default=0.5,
-                   help="Lokaler Weissabgleich im Fenster (0 = aus, 1 = voll)")
+    w.add_argument("--window-wb", type=float, default=0.0,
+                   help="Lokaler Weissabgleich im Fenster (0 = aus, 1 = voll). "
+                        "Standard aus: bei Tageslichtfenstern zerstoert er "
+                        "die Himmelsfarbe (siehe README)")
     w.add_argument("--window-threshold", type=float, default=0.90,
                    help="Luminanzschwelle fuer ausgebrannte Bereiche")
     w.add_argument("--window-detail", type=float, default=0.010,
@@ -1547,6 +1644,10 @@ def baue_parser() -> argparse.ArgumentParser:
     t.add_argument("--white-target", type=float, default=0.95)
     t.add_argument("--black-target", type=float, default=0.02)
     t.add_argument("--mid-target", type=float, default=0.55)
+    t.add_argument("--mid-mode", choices=["lift", "exact"], default="lift",
+                   help="'lift' hellt nur auf, wenn das Bild dunkler als der "
+                        "Zielwert ist (weisse Waende bleiben weiss); "
+                        "'exact' erzwingt den Zielwert in beide Richtungen")
     t.add_argument("--white-percentile", type=float, default=99.5)
     t.add_argument("--black-percentile", type=float, default=0.2)
     t.add_argument("--wb-strength", type=float, default=0.7,

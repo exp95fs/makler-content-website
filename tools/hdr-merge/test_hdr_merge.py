@@ -109,7 +109,7 @@ class TestSynthetischeSzene(unittest.TestCase):
 
     # -- Fenstererkennung --------------------------------------------------
 
-    def _maske(self) -> tuple[np.ndarray, np.ndarray]:
+    def _maske(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         bilder = [self.lauf.belichtung(i) for i in (1, 2, 3)]
         fusion = hdr_merge.fusioniere_mertens(bilder, 1.0, 1.0, 1.0)
         return hdr_merge.erkenne_fenstermaske(
@@ -118,13 +118,13 @@ class TestSynthetischeSzene(unittest.TestCase):
             min_flaeche_anteil=0.001, blur_anteil=0.02, protokoll=[])
 
     def test_maske_enthaelt_fenster(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         y, x = _mitte(HIMMEL)
         self.assertEqual(binaer[y, x], 1, "Himmel im Fenster fehlt in der Maske")
 
     def test_maske_enthaelt_fenstersprossen(self):
         """Loecherfuellen: die Sprossen duerfen die Maske nicht zerreissen."""
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         y = (make_test_scene.SPROSSE_SENKRECHT[1]
              + make_test_scene.SPROSSE_SENKRECHT[3]) // 2
         x = (make_test_scene.SPROSSE_SENKRECHT[0]
@@ -132,26 +132,26 @@ class TestSynthetischeSzene(unittest.TestCase):
         self.assertEqual(binaer[y, x], 1, "Fenstersprosse fehlt in der Maske")
 
     def test_maske_verwirft_deckenleuchte(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         y, x = _mitte(DECKENLEUCHTE)
         self.assertEqual(binaer[y, x], 0,
                          "Deckenleuchte wurde faelschlich als Fenster erkannt")
 
     def test_maske_verwirft_weisse_wand(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         y, x = _mitte(WEISSE_WAND)
         self.assertEqual(binaer[y, x], 0,
                          "Weisse Wand wurde faelschlich als Fenster erkannt")
 
     def test_maske_verwirft_kleines_glanzlicht(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         y, x = _mitte(GLANZLICHT)
         self.assertEqual(binaer[y, x], 0,
                          "Kleines Glanzlicht haette der Groessenfilter "
                          "verwerfen muessen")
 
     def test_maskenanteil_plausibel(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         anteil = float(binaer.mean())
         self.assertGreater(anteil, 0.10)
         self.assertLess(anteil, 0.20)
@@ -215,7 +215,7 @@ class TestSynthetischeSzene(unittest.TestCase):
     # -- Tonale Normalisierung --------------------------------------------
 
     def test_normalisierung_trifft_zielwerte(self):
-        binaer, _ = self._maske()
+        binaer, _, _ = self._maske()
         innen = ~binaer.astype(bool)
         lum = self.lum_ergebnis[innen]
         self.assertAlmostEqual(float(np.median(lum)), 0.55, delta=0.05)
@@ -454,6 +454,94 @@ class TestPerspektive(unittest.TestCase):
         self.assertEqual(ergebnis.shape, schraeg.shape)
         self.assertTrue(any(stufe == 30 for stufe, _ in protokoll),
                         "Es haette gewarnt werden muessen")
+
+
+class TestRobustheit(unittest.TestCase):
+    """Fehlerhafte Eingaben duerfen nie zum Absturz fuehren."""
+
+    def setUp(self):
+        self.ordner = Path(tempfile.mkdtemp(prefix="hdrrob_"))
+        self.eingabe = self.ordner / "in"
+        self.eingabe.mkdir(parents=True)
+        self.ausgabe = self.ordner / "out"
+
+    def tearDown(self):
+        shutil.rmtree(self.ordner, ignore_errors=True)
+
+    def _lauf(self, *zusatz: str) -> int:
+        return hdr_merge.main([str(self.eingabe), str(self.ausgabe),
+                               "--jobs", "1", *zusatz])
+
+    def test_leerer_ordner(self):
+        self.assertEqual(self._lauf(), 2)
+
+    def test_nicht_vorhandener_ordner(self):
+        rueckgabe = hdr_merge.main([str(self.ordner / "gibtsnicht"),
+                                    str(self.ausgabe)])
+        self.assertEqual(rueckgabe, 2)
+
+    def test_defekte_datei_stoppt_den_lauf_nicht(self):
+        """Eine kaputte Datei darf nur ihre eigene Reihe kosten."""
+        make_test_scene.schreibe_reihe(self.eingabe, name="gut")
+        (self.eingabe / "kaputt_1.tif").write_bytes(b"kein gueltiges TIFF" * 50)
+        (self.eingabe / "kaputt_2.tif").write_bytes(b"auch nicht" * 50)
+        (self.eingabe / "kaputt_3.tif").write_bytes(b"ebenfalls nicht" * 50)
+        self._lauf("--bracket-size", "3", "--no-align")
+        # Die intakte Reihe muss trotzdem ein Ergebnis liefern.
+        self.assertTrue((self.ausgabe / "gut_1_hdr.tif").exists(),
+                        "Die intakte Reihe wurde nicht verarbeitet")
+
+    def test_unterschiedliche_bildgroessen(self):
+        import make_reference_scene
+        make_test_scene.schreibe_reihe(self.eingabe, name="klein")
+        make_reference_scene.schreibe_reihe(self.eingabe, name="gross")
+        # Bewusst falsch gruppiert, damit Bilder verschiedener Groesse
+        # in einer Reihe landen.
+        rueckgabe = self._lauf("--bracket-size", "6", "--no-align")
+        self.assertIn(rueckgabe, (0, 1))   # kein Absturz
+
+    def test_einzelne_datei(self):
+        make_test_scene.schreibe_reihe(self.eingabe, name="einzeln")
+        for nummer in (2, 3):
+            (self.eingabe / f"einzeln_{nummer}.tif").unlink()
+        self.assertIn(self._lauf(), (0, 1))
+
+    def test_ausgabeordner_wird_angelegt(self):
+        make_test_scene.schreibe_reihe(self.eingabe)
+        tief = self.ausgabe / "eine" / "tiefe" / "struktur"
+        rueckgabe = hdr_merge.main([str(self.eingabe), str(tief),
+                                    "--bracket-size", "3", "--no-align",
+                                    "--jobs", "1"])
+        self.assertEqual(rueckgabe, 0)
+        self.assertTrue((tief / "raum01_1_hdr.tif").exists())
+
+
+class TestAusgabeformat(unittest.TestCase):
+    """Die Ausgabe muss ohne Qualitaetsverlust weiterverarbeitbar sein."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.lauf = SzenenLauf()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.lauf.aufraeumen()
+
+    def test_unkomprimiert_und_16bit(self):
+        with tifffile.TiffFile(str(self.lauf.ergebnis_pfad)) as datei:
+            seite = datei.pages[0]
+            self.assertEqual(seite.dtype, np.uint16, "Kein 16-Bit")
+            self.assertEqual(int(seite.compression), 1, "Nicht unkomprimiert")
+            self.assertEqual(seite.samplesperpixel, 3)
+            self.assertEqual(int(seite.photometric), 2, "Kein RGB")
+
+    def test_voller_16bit_umfang_wird_genutzt(self):
+        """Es darf nicht faktisch nur 8 Bit Information drinstecken."""
+        roh = tifffile.imread(str(self.lauf.ergebnis_pfad))
+        stufen = len(np.unique(roh[..., 1]))
+        self.assertGreater(stufen, 5000,
+                           f"Nur {stufen} Tonwertstufen - die 16 Bit werden "
+                           f"nicht wirklich genutzt")
 
 
 class TestExifLeser(unittest.TestCase):

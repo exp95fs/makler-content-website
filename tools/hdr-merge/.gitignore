@@ -1,5 +1,8 @@
 # Testausgaben und lokale Umgebungen
 testszene/
 testobjekt/
+refszene/
+referenzszene/
+Beispiel/
 .venv/
 __pycache__/
