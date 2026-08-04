@@ -224,6 +224,7 @@ TAG_ISO = 0x8827
 TAG_DATETIME_ORIGINAL = 0x9003
 TAG_EXPOSURE_BIAS = 0x9204
 TAG_FOCAL_LENGTH = 0x920A
+TAG_FOCAL_35MM = 0xA405
 TAG_LENS_MODEL = 0xA434
 
 _TYP_GROESSE = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 6: 1, 7: 1, 8: 2, 9: 4, 10: 8,
@@ -1222,8 +1223,14 @@ def nimm_fenster_zurueck(bild: np.ndarray, window: WindowPullErgebnis,
 # ---------------------------------------------------------------------------
 
 
-def _schaetze_vertikalen_fluchtpunkt(bild: np.ndarray) -> tuple[float, float] | None:
-    """Schaetzt den vertikalen Fluchtpunkt ueber die Hough-Transformation."""
+def _finde_senkrechte_linien(bild: np.ndarray,
+                             max_abweichung: float = 30.0) -> np.ndarray:
+    """Findet Liniensegmente nahe der Senkrechten (Hough).
+
+    Rueckgabe: Array (N, 5) mit x1, y1, x2, y2 und Laenge. Die Laenge dient
+    spaeter als Gewicht - eine lange Fensterkante ist verlaesslicher als ein
+    kurzes Fragment.
+    """
     h, w = bild.shape[:2]
     grau = np.clip(berechne_luminanz(bild) * 255.0, 0, 255).astype(np.uint8)
     kanten = cv2.Canny(grau, 60, 160, apertureSize=3)
@@ -1231,20 +1238,61 @@ def _schaetze_vertikalen_fluchtpunkt(bild: np.ndarray) -> tuple[float, float] | 
     linien = cv2.HoughLinesP(kanten, 1, np.pi / 360.0, threshold=80,
                              minLineLength=min_laenge, maxLineGap=int(h * 0.02))
     if linien is None or len(linien) == 0:
-        return None
+        return np.zeros((0, 5), dtype=np.float64)
     # OpenCV 4 liefert (N, 1, 4), OpenCV 5 liefert (N, 4).
-    linien = np.asarray(linien).reshape(-1, 4)
+    linien = np.asarray(linien, dtype=np.float64).reshape(-1, 4)
 
-    # Nur Linien nahe der Senkrechten (< 30 Grad Abweichung) verwenden.
-    gesammelt = []
+    behalten = []
     for x1, y1, x2, y2 in linien:
-        dx, dy = float(x2 - x1), float(y2 - y1)
+        dx, dy = x2 - x1, y2 - y1
         if abs(dy) < 1e-6:
             continue
         winkel = abs(math.degrees(math.atan2(dx, dy)))
         winkel = min(winkel, 180.0 - winkel)
-        if winkel > 30.0:
+        if winkel > max_abweichung:
             continue
+        behalten.append((x1, y1, x2, y2, math.hypot(dx, dy)))
+    return np.array(behalten, dtype=np.float64) if behalten else np.zeros(
+        (0, 5), dtype=np.float64)
+
+
+def schaetze_rollwinkel(bild: np.ndarray) -> float | None:
+    """Kippung der Kamera um die optische Achse, in Grad.
+
+    Gemessen als laengengewichteter Median der Abweichung senkrechter Linien
+    von der Senkrechten. Anders als der Fluchtpunkt beschreibt der Rollwinkel
+    eine reine Drehung - beide Fehler treten unabhaengig voneinander auf und
+    muessen getrennt korrigiert werden.
+    """
+    linien = _finde_senkrechte_linien(bild, max_abweichung=20.0)
+    if len(linien) < 5:
+        return None
+    winkel, gewichte = [], []
+    for x1, y1, x2, y2, laenge in linien:
+        dx, dy = x2 - x1, y2 - y1
+        a = math.degrees(math.atan2(dx, dy))
+        if a > 90.0:
+            a -= 180.0
+        elif a < -90.0:
+            a += 180.0
+        winkel.append(a)
+        gewichte.append(laenge)
+    reihenfolge = np.argsort(winkel)
+    w_sortiert = np.array(gewichte)[reihenfolge]
+    kumuliert = np.cumsum(w_sortiert)
+    mitte = np.searchsorted(kumuliert, kumuliert[-1] / 2.0)
+    return float(np.array(winkel)[reihenfolge][min(mitte, len(winkel) - 1)])
+
+
+def _schaetze_vertikalen_fluchtpunkt(bild: np.ndarray) -> tuple[float, float] | None:
+    """Schaetzt den vertikalen Fluchtpunkt ueber die Hough-Transformation."""
+    h, w = bild.shape[:2]
+    linien = _finde_senkrechte_linien(bild)
+    if len(linien) < 6:
+        return None
+
+    gesammelt, gewichte = [], []
+    for x1, y1, x2, y2, laenge in linien:
         # Linie in homogenen Koordinaten, zentriert auf die Bildmitte.
         p1 = np.array([x1 - w / 2.0, y1 - h / 2.0, 1.0])
         p2 = np.array([x2 - w / 2.0, y2 - h / 2.0, 1.0])
@@ -1253,17 +1301,68 @@ def _schaetze_vertikalen_fluchtpunkt(bild: np.ndarray) -> tuple[float, float] | 
         if norm < 1e-9:
             continue
         gesammelt.append(linie / norm)
+        gewichte.append(math.sqrt(laenge))
 
     if len(gesammelt) < 6:
         return None
 
-    # Fluchtpunkt = Punkt mit minimalem Abstand zu allen Linien (SVD).
     matrix = np.array(gesammelt, dtype=np.float64)
-    _, _, vt = np.linalg.svd(matrix)
+    gewichte = np.array(gewichte, dtype=np.float64)
+
+    # Konsensverfahren statt reiner Ausgleichsrechnung.
+    #
+    # Ein Innenraum enthaelt viele Linien, die NICHT senkrecht sind und es
+    # nur zu sein scheinen: Sofakanten, Dachschraegen, Teppichmuster. Eine
+    # Ausgleichsrechnung ueber alle Linien wird von diesen Ausreissern
+    # verzogen. Deshalb wird zuerst der Punkt gesucht, auf den sich die
+    # meisten Linien einigen, und erst danach mit genau diesen Linien fein
+    # ausgeglichen.
+    #
+    # Durchprobiert werden alle Linienpaare (bei den hier auftretenden
+    # Anzahlen sind das wenige hundert) - damit ist das Ergebnis nicht von
+    # einem Zufallsgenerator abhaengig und exakt reproduzierbar.
+    anzahl = len(matrix)
+    bestes_gewicht, bester_punkt = -1.0, None
+    schranke = max(h, w) * 0.02   # zulaessiger Abstand einer Linie zum Punkt
+    for i in range(anzahl):
+        for j in range(i + 1, anzahl):
+            kandidat = np.cross(matrix[i], matrix[j])
+            if abs(kandidat[2]) < 1e-12:
+                continue
+            kandidat = kandidat / kandidat[2]
+            if abs(kandidat[1]) < h * 0.75:
+                continue          # Fluchtpunkt zu nah - unplausibel
+            abstand = np.abs(matrix @ kandidat)
+            treffer = abstand < schranke
+            summe = float(gewichte[treffer].sum())
+            if summe > bestes_gewicht:
+                bestes_gewicht, bester_punkt = summe, treffer
+
+    if bester_punkt is None or bester_punkt.sum() < 4:
+        return None
+
+    # Feinausgleich nur ueber die Linien des Konsenses.
+    auswahl = matrix[bester_punkt] * gewichte[bester_punkt][:, None]
+    _, _, vt = np.linalg.svd(auswahl)
     punkt = vt[-1]
     if abs(punkt[2]) < 1e-9:
         return None
     return float(punkt[0] / punkt[2]), float(punkt[1] / punkt[2])
+
+
+def schaetze_brennweite_in_pixeln(tags: dict, breite: int) -> float:
+    """Brennweite in Pixeln, wenn moeglich aus dem EXIF.
+
+    Die Kleinbild-aequivalente Brennweite (Tag 0xA405) laesst sich direkt
+    umrechnen: Kleinbild ist 36 mm breit. Ohne diese Angabe bleibt die
+    Naeherung "Brennweite entspricht der Bildbreite" - das entspricht rund
+    54 Grad Bildwinkel und ist fuer Innenaufnahmen eher zu lang, taugt aber
+    als konservative Schaetzung.
+    """
+    kleinbild = tags.get(TAG_FOCAL_35MM)
+    if kleinbild and 8.0 < float(kleinbild) < 400.0:
+        return float(kleinbild) / 36.0 * breite
+    return float(breite)
 
 
 def _groesstes_rechteck(maske: np.ndarray) -> tuple[int, int, int, int]:
@@ -1293,60 +1392,86 @@ def _groesstes_rechteck(maske: np.ndarray) -> tuple[int, int, int, int]:
 
 
 def begradige_perspektive(bild: np.ndarray, max_grad: float,
-                          protokoll: list[tuple[int, str]]) -> np.ndarray:
-    """Richtet stuerzende Linien auf und beschneidet auf gueltigen Bereich.
+                          protokoll: list[tuple[int, str]],
+                          tags: dict | None = None) -> np.ndarray:
+    """Richtet stuerzende und gekippte Linien auf, beschneidet danach.
+
+    Korrigiert zwei unabhaengige Fehler in einem Durchgang:
+
+      * den **Rollwinkel** - die Kamera war um die optische Achse gekippt,
+        Senkrechte stehen schraeg, laufen aber parallel;
+      * die **Neigung** - die Kamera war nach oben oder unten geneigt,
+        Senkrechte laufen auf einen Fluchtpunkt zu (stuerzende Linien).
 
     Sicherheitsregel: Nur ausfuehren, wenn die noetige Korrektur unter dem
     Schwellwert bleibt. Starke Korrekturen zerstoeren bei Dachschraegen und
     Mansarden mehr, als sie retten.
     """
     h, w = bild.shape[:2]
-    fluchtpunkt = _schaetze_vertikalen_fluchtpunkt(bild)
-    if fluchtpunkt is None:
+    tags = tags or {}
+    brennweite = schaetze_brennweite_in_pixeln(tags, w)
+
+    # --- Schritt 1: Rollwinkel -------------------------------------------
+    roll = schaetze_rollwinkel(bild)
+    if roll is None:
         protokoll.append((logging.WARNING,
-                          "Perspektivkorrektur: kein stabiler Fluchtpunkt "
+                          "Perspektivkorrektur: zu wenige senkrechte Linien "
                           "gefunden - Bild bleibt unveraendert."))
         return bild
-
-    _, vy = fluchtpunkt
-    if abs(vy) < h * 0.75:
+    if abs(roll) > max_grad:
         protokoll.append((logging.WARNING,
-                          "Perspektivkorrektur: Fluchtpunkt liegt zu nah am "
-                          "Bild (unplausibel) - Bild bleibt unveraendert."))
+                          f"Perspektivkorrektur: Kippung {roll:.1f} Grad "
+                          f"ueberschreitet den Schwellwert von "
+                          f"{max_grad:.1f} Grad - Bild bleibt unveraendert."))
         return bild
 
-    # Naeherung der Kameraneigung ueber eine angenommene Brennweite von 1.0*Breite.
-    brennweite = float(w)
-    neigung = abs(math.degrees(math.atan(brennweite / vy)))
-    if neigung > max_grad:
-        protokoll.append((logging.WARNING,
-                          f"Perspektivkorrektur: noetige Korrektur "
-                          f"{neigung:.1f} Grad ueberschreitet den Schwellwert "
-                          f"von {max_grad:.1f} Grad - Bild bleibt unveraendert."))
-        return bild
-    if neigung < 0.15:
+    bogen = math.radians(roll)
+    drehung = np.array([[math.cos(bogen), -math.sin(bogen), 0.0],
+                        [math.sin(bogen), math.cos(bogen), 0.0],
+                        [0.0, 0.0, 1.0]], dtype=np.float64)
+
+    # --- Schritt 2: Neigung ueber den Fluchtpunkt -------------------------
+    fluchtpunkt = _schaetze_vertikalen_fluchtpunkt(bild)
+    neigung = 0.0
+    keystone = np.eye(3, dtype=np.float64)
+    if fluchtpunkt is not None:
+        vx, vy = fluchtpunkt
+        # Den Fluchtpunkt in das gedrehte Koordinatensystem bringen.
+        gedreht = drehung @ np.array([vx, vy, 1.0])
+        if abs(gedreht[2]) > 1e-9:
+            vy = float(gedreht[1] / gedreht[2])
+            if abs(vy) > h * 0.75:
+                neigung = abs(math.degrees(math.atan(brennweite / vy)))
+                if neigung > max_grad:
+                    protokoll.append((logging.WARNING,
+                                      f"Perspektivkorrektur: Neigung "
+                                      f"{neigung:.1f} Grad ueberschreitet den "
+                                      f"Schwellwert von {max_grad:.1f} Grad - "
+                                      f"nur die Kippung wird korrigiert."))
+                    neigung = 0.0
+                else:
+                    keystone = np.array([[1.0, 0.0, 0.0],
+                                         [0.0, 1.0, 0.0],
+                                         [0.0, -1.0 / vy, 1.0]],
+                                        dtype=np.float64)
+
+    if abs(roll) < 0.10 and neigung < 0.15:
         protokoll.append((logging.DEBUG,
                           "Perspektivkorrektur: Abweichung vernachlaessigbar."))
         return bild
 
-    # Homographie in zentrierten Koordinaten: der Fluchtpunkt wandert ins
-    # Unendliche, senkrechte Linien werden dadurch parallel.
     zentrieren = np.array([[1, 0, -w / 2.0], [0, 1, -h / 2.0], [0, 0, 1]],
                           dtype=np.float64)
-    keystone = np.array([[1.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0],
-                         [0.0, -1.0 / vy, 1.0]], dtype=np.float64)
     zurueck = np.array([[1, 0, w / 2.0], [0, 1, h / 2.0], [0, 0, 1]],
                        dtype=np.float64)
-    homographie = zurueck @ keystone @ zentrieren
+    homographie = zurueck @ keystone @ drehung @ zentrieren
 
     korrigiert = cv2.warpPerspective(bild, homographie, (w, h),
                                      flags=cv2.INTER_LINEAR,
                                      borderMode=cv2.BORDER_CONSTANT,
                                      borderValue=(0, 0, 0))
 
-    # Groessten gueltigen Rechteckausschnitt bestimmen (auf verkleinerter
-    # Maske, aus Geschwindigkeitsgruenden) und beschneiden.
+    # --- Schritt 3: auf den groessten gueltigen Ausschnitt beschneiden ----
     gueltig = cv2.warpPerspective(np.ones((h, w), dtype=np.uint8), homographie,
                                   (w, h), flags=cv2.INTER_NEAREST,
                                   borderMode=cv2.BORDER_CONSTANT, borderValue=0)
@@ -1365,9 +1490,12 @@ def begradige_perspektive(bild: np.ndarray, max_grad: float,
     x1, y1 = min(x1, w), min(y1, h)
     if x1 - x0 < 16 or y1 - y0 < 16:
         return bild
+
+    verlust = 100.0 * (1.0 - ((x1 - x0) * (y1 - y0)) / float(w * h))
     protokoll.append((logging.INFO,
-                      f"Perspektivkorrektur angewendet ({neigung:.1f} Grad), "
-                      f"Ausschnitt {x1 - x0}x{y1 - y0} px."))
+                      f"Perspektivkorrektur: Kippung {roll:+.2f} Grad, "
+                      f"Neigung {neigung:.2f} Grad, Ausschnitt "
+                      f"{x1 - x0}x{y1 - y0} px ({verlust:.1f} % Verlust)."))
     return korrigiert[y0:y1, x0:x1]
 
 
@@ -1608,15 +1736,16 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
                           "Tonale Normalisierung deaktiviert (--base-tone off) "
                           "- Ausgabe ist die flache Rohfusion."))
 
+    referenz_tags = sortierte_aufnahmen[referenz_index].tags
+
     if args.straighten:
         ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
-                                         protokoll)
+                                         protokoll, referenz_tags)
 
     ergebnis = schuetze_spitzlichter(ergebnis, args, protokoll)
 
     ausgabe_ordner.mkdir(parents=True, exist_ok=True)
     ziel = ausgabe_ordner / f"{name}_hdr.tif"
-    referenz_tags = sortierte_aufnahmen[referenz_index].tags
     speichere_tiff(ziel, ergebnis, referenz_tags, args.compression, protokoll)
 
     if args.preview:

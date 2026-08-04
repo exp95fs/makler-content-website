@@ -127,57 +127,104 @@ spürbar.
 
 ## Qualitäts-Benchmark gegen den kommerziellen Dienst
 
-Die Verarbeitung wird nicht nach Augenmaß beurteilt, sondern gegen eine
-Referenzszene gemessen (`make_reference_scene.py`), die einer echten
-Dachgeschoss-Kücheaufnahme nachgebaut ist: zwei schräge Dachfenster mit
-blauem Himmel und Wolken, weiße Wände, warmer Eichenboden, schwarze
-Pendelleuchten vor dem Fenster, Marmorplatte mit feiner Aderung. Der Himmel
-liegt rund 6 Blendenstufen über dem Innenraum.
+Die Verarbeitung wird nicht nach Augenmaß beurteilt, sondern gemessen — gegen
+**fünf echte Ergebnisse des kommerziellen Dienstes** (Wohnräume, Küchen,
+Esszimmer) und gegen **echte Sony-ARW-Belichtungsreihen** derselben Objekte.
 
-Im Referenzbild (mittlere Belichtung) ist das Fenster **vollständig**
-ausgebrannt: Luminanz 1,000, Streuung 0,0000, Sättigung 0,000 – dort ist
-keinerlei Information mehr vorhanden. Gemessene Ergebnisse:
+### Die gemessenen Zielwerte
 
-| Kriterium | Quelle (dunkelste Belichtung) | Ergebnis |
+| Kennwert | Dienst | Dieses Werkzeug |
 |---|---|---|
-| Himmelsfarbe (Sättigung) | 0,184 | **0,183** |
-| Wolkenzeichnung (Streuung) | 0,042 | **0,032** (76 %) |
-| Weiße Wand (Luminanz) | 0,132 | **0,698**, Sättigung 0,008 |
-| Eichenboden (Sättigung) | 0,290 | **0,315** |
-| Marmoraderung (Streuung) | 0,006 | **0,029** |
-| Ausgebrannte Pixel | – | **0,02 %** |
+| Schwarzpunkt (p0,2) | 0,034 | **0,036** |
+| Median | 0,625 | **0,615** |
+| Weißpunkt (p99,5) | 0,836 | **0,827** |
+| Hellster Punkt | 0,963 | **0,939** |
+| Ausgebrannte Pixel | 0,000 % | **0,000 %** |
+| Hellste 5 % | 0,804 | 0,761 |
+| **Gesamtabweichung** | – | **0,088** (anfangs 0,416) |
 
-`test_reference.py` prüft genau diese Eigenschaften automatisch (15 Tests).
+Im **Fensterbereich derselben Szene** (Schiebetür mit Blick auf einen Hang):
 
-### Was diese Messung an Fehlern aufgedeckt hat
+| | Dienst | Dieses Werkzeug |
+|---|---|---|
+| Luminanz | 0,630 | **0,636** |
+| Zeichnung (lokale Streuung) | 0,033 | **0,049** |
 
-Vier Fehler wurden erst durch den Vergleich mit dem kommerziellen Ergebnis
-sichtbar – alle sind behoben:
+Also gleiche Fensterhelligkeit bei mehr erhaltener Struktur.
+
+`benchmark_fotello.py` misst ein beliebiges Ergebnis gegen diese Zielwerte:
+
+```bat
+python benchmark_fotello.py C:\Objekt\basis
+```
+
+### Was diese Messungen an Fehlern aufgedeckt haben
+
+Alles davon wurde erst durch den Vergleich sichtbar und ist behoben:
 
 1. **Der Himmel wurde milchig weiß.** Die Lichterkompression rechnete auf der
-   Luminanz. Ein blauer Himmel hat im Blaukanal aber deutlich höhere Werte als
-   in der Luminanz – Blau lief über 1,0 und wurde beim Speichern abgeschnitten.
-   Jetzt wird auf dem stärksten Kanal je Pixel gerechnet, dadurch clippt
-   garantiert nichts und die Sättigung bleibt exakt erhalten.
-2. **Der lokale Weißabgleich im Fenster zerstörte die Himmelsfarbe.** Er zog
-   die Fensterfarbe zum Innenraum – aus weißen Wolken wurden orange Flecken,
-   die Sättigung halbierte sich (0,152 → 0,073). Standard ist jetzt **aus**
-   (`--window-wb 0`).
-3. **Das Gamma hob die Sättigung an.** Kanalweise gerechnet verschiebt ein
-   Gamma die Kanalverhältnisse: die Sättigung eines Eichenbodens stieg von
-   0,29 auf 0,51. Jetzt wird das Gamma über die Luminanz gerechnet und als
-   gemeinsamer Faktor auf R, G und B gelegt.
-4. **Weiße Wände wurden grau.** Der feste Mittelton-Zielwert zog auch helle
-   Räume auf 0,55 herunter. Standard ist jetzt `--mid-mode lift`: es wird nur
-   aufgehellt, nie abgedunkelt.
+   Luminanz. Ein blauer Himmel hat im Blaukanal höhere Werte — Blau lief über
+   1,0 und wurde abgeschnitten. Jetzt wird auf dem stärksten Kanal je Pixel
+   gerechnet; die Sättigung bleibt exakt erhalten.
+2. **Der lokale Weißabgleich im Fenster zerstörte die Himmelsfarbe** (weiße
+   Wolken wurden orange, Sättigung halbiert). Standard ist jetzt aus.
+3. **Das Gamma hob die Sättigung an** — kanalweise gerechnet stieg die
+   Sättigung eines Eichenbodens von 0,29 auf 0,51. Jetzt über die Luminanz.
+4. **Weiße Wände wurden grau**, weil ein fester Mittelton-Zielwert auch helle
+   Räume herunterzog. Neuer Standard `--mid-mode lift`: nur aufhellen.
+5. **Die Gruppierung zerriss echte Belichtungsreihen.** Sony belichtet in der
+   Reihenfolge normal–dunkel–hell (gemessen: EV 10,2 / 12,3 / 8,2). Die alte
+   Regel setzte eine monotone EV-Folge voraus. Jetzt endet eine Reihe, wenn
+   sich ein EV-Wert wiederholt — unabhängig von der Reihenfolge.
+6. **Das Gamma verschob die verankerten Endpunkte wieder.** Bei kräftiger
+   Aufhellung landete der Schwarzpunkt statt bei 0,035 bei 0,059 — die Tiefen
+   grauten aus. Ein zweiter, rein linearer Durchgang setzt beide Endpunkte
+   jetzt exakt.
+7. **Die Lichterrücknahme hing an einer Heuristik.** In einer Messreihe sprang
+   die Fensterhelligkeit dadurch zwischen 0,80 und 0,97 (1,7 % geclippt), je
+   nachdem auf welcher Seite einer Schwelle eine Szene landete. Sie greift
+   jetzt immer.
+8. **Das Kompressionsknie saß auf der Rahmenhelligkeit.** Bei hellem
+   Fensterrahmen blieben nur vier Hundertstel bis zur Obergrenze — der
+   Fensterinhalt verlor zwei Drittel seiner Zeichnung. `--window-range` hält
+   jetzt immer ein ausreichendes Band frei.
+9. **Zwei Halo-Ursachen:** ein weißer Saum entlang der Fensterkante und ein
+   heller Schein um dunkle Gegenstände vor dem Fenster. Beides kam daher, dass
+   der Guided Filter die Maske an dunklen Kanten einbrechen lässt — richtig
+   fürs Überblenden, fatal für die Lichterkompression. Es gibt jetzt zwei
+   getrennte Masken, dazu eine Ausbrenn-Gewichtung, die nur dort ersetzt, wo im
+   Referenzbild wirklich Information fehlt.
 
-Dazu kamen zwei Halo-Ursachen: ein weißer Saum entlang der Fensterkante und
-ein heller Schein um dunkle Gegenstände vor dem Fenster (Pendelleuchte).
-Beides kam daher, dass der Guided Filter die Maske an dunklen Kanten
-einbrechen lässt – richtig fürs Überblenden, fatal für die Lichterkompression.
-Es gibt jetzt zwei getrennte Masken für die zwei Aufgaben.
+### Wo der Dienst bewusst nicht nachgebaut wird
 
----
+Zwei gemessene Unterschiede sind **Absicht**, keine Mängel:
+
+* **Sättigung** (Dienst 0,098, hier 0,157). Die Quelle selbst liegt bei 0,184 —
+  dieses Werkzeug fügt also keine Sättigung hinzu, der Dienst *nimmt* welche
+  weg. Laut Vorgabe bleibt Sättigung Sache des Presets.
+* **Kontrastkurve.** Beim Dienst liegen weiße Wände bei 0,76 bei einem Median
+  von 0,63 — die oberen Mitteltöne sind angehoben. Das ist eine S-Kurve; sie
+  gehört ins Preset, nicht ins Basisbild.
+
+Ein dritter Unterschied ist eine **echte Grenze**: Der Dienst macht weiße Wände
+*und* Decke exakt neutral (Sättigung 0,009 bzw. 0,000). In der vermessenen
+Aufnahme ist die Wand von warmem Sonnenlicht beschienen, die Decke nicht —
+beide gleichzeitig zu neutralisieren geht nur mit einem **lokalen**
+Weißabgleich. Der hier vorgegebene globale, zurückhaltende Weißabgleich kann
+das nicht und lässt die Wand leicht warm (0,084).
+
+### Aufrichten (Upright)
+
+Der Dienst richtet erkennbar auf: Seine Senkrechten haben eine gemessene
+Neigung von 0,00°. `--straighten` korrigiert beides getrennt — die **Kippung**
+um die optische Achse und die **Neigung** (stürzende Linien). An der echten
+Aufnahme: Kippung −0,81° → **0,00°**, Beschnitt 2,9 %. Die Brennweite kommt
+aus dem EXIF (Kleinbild-Äquivalent); bei der vermessenen Aufnahme 16 mm — die
+frühere Annahme „Brennweite = Bildbreite" lag um Faktor 2,25 daneben.
+
+Die Korrektur stürzender Linien bleibt bewusst zurückhaltend: Sie greift nur
+bei einem plausiblen Fluchtpunkt, den ein Konsensverfahren über alle
+Linienpaare bestimmt (Sofakanten und Dachschrägen sollen ihn nicht verziehen).
 
 ## Was das Werkzeug der Reihe nach macht
 
