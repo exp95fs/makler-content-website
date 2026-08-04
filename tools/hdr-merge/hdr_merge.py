@@ -2058,23 +2058,42 @@ def gleiche_saettigung_an(bild: np.ndarray, staerke: float, ziel: float,
     multiplikativ und laesst die Luminanz unangetastet - Farbton und
     Helligkeit bleiben, nur die Farbigkeit geht zurueck.
     """
+    def gemessen(feld: np.ndarray) -> float:
+        maximum = feld.max(axis=2)
+        minimum = feld.min(axis=2)
+        return float(np.mean((maximum - minimum) / np.maximum(maximum, 1e-6)))
+
     if staerke <= 0.0:
         return bild
-    maximum = bild.max(axis=2)
-    minimum = bild.min(axis=2)
-    ist = float(np.mean((maximum - minimum) / np.maximum(maximum, 1e-6)))
+    ist = gemessen(bild)
     if ist <= ziel or ist <= 1e-6:
         protokoll.append((logging.DEBUG,
                           f"Saettigungsangleich: bereits bei {ist:.3f} - "
                           f"nichts zu tun."))
         return bild
-    faktor = 1.0 - staerke * (1.0 - ziel / ist)
+
+    sollwert = ist - staerke * (ist - ziel)
     lum = berechne_luminanz(bild)[..., None]
-    ergebnis = lum + (bild - lum) * faktor
+    farbe = bild - lum
+
+    # Nachfuehren statt einmal rechnen: Beim Skalieren der Farbkomponente
+    # schrumpft auch der Nenner der Saettigung (max), die Kennzahl faellt
+    # deshalb nicht proportional zum Faktor. Wenige Schritte genuegen, um den
+    # Zielwert genau zu treffen; die Schleife ist fest begrenzt und damit
+    # reproduzierbar.
+    faktor = sollwert / ist
+    ergebnis = bild
+    for _ in range(6):
+        ergebnis = np.clip(lum + farbe * faktor, 0.0, 1.0)
+        aktuell = gemessen(ergebnis)
+        if abs(aktuell - sollwert) < 0.002 or aktuell <= 1e-6:
+            break
+        faktor *= sollwert / aktuell
+
     protokoll.append((logging.INFO,
                       f"Saettigungsangleich: {ist:.3f} -> "
-                      f"{ist * faktor:.3f} (Faktor {faktor:.2f})"))
-    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
+                      f"{gemessen(ergebnis):.3f} (Faktor {faktor:.2f})"))
+    return ergebnis.astype(np.float32)
 
 
 def schuetze_spitzlichter(bild: np.ndarray, args: argparse.Namespace,
