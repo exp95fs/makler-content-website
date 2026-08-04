@@ -440,6 +440,13 @@ python make_reference_scene.py refszene    :: Dachgeschoss-Benchmark
 * **Die Perspektivkorrektur setzt eine Brennweite von 1,0 × Bildbreite an**,
   weil die reale Brennweite nicht zuverlässig in Pixel umzurechnen ist. Der
   angezeigte Korrekturwinkel ist deshalb eine Näherung.
+* **Mischlicht bleibt Mischlicht.** In einer der vermessenen echten Aufnahmen
+  (Küche mit Fenster) liegt der Boden bei einem Rot/Blau-Verhältnis von 3,4
+  und die Decke bei 0,92 – warmes Kunstlicht unten, Tageslicht oben. Dieses
+  Werkzeug gibt das originalgetreu wieder (Ergebnis 3,19 und 0,96), fügt also
+  nichts hinzu. Wer es neutral will, braucht eine lokale Korrektur; global
+  heben sich die beiden Stiche gegenseitig auf, der Weißabgleich findet
+  korrekt nichts zu tun. In Lightroom ist das mit einem Pinsel schnell erledigt.
 * **Freihandreihen mit starker Rotation oder Parallaxe** kann
   `MOTION_EUCLIDEAN` nicht auflösen (nur Verschiebung und Drehung).
 * **Noch nicht an echten RAW-Dateien erprobt.** Alle `rawpy`-Parameter sind
