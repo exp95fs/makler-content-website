@@ -554,12 +554,14 @@ def richte_reihe_aus(bilder: list[np.ndarray], referenz_index: int,
     referenz_klein = _helligkeit_angleichen(referenz_klein, ziel_median)
 
     h, w = bilder[referenz_index].shape[:2]
-    ausgerichtet: list[np.ndarray] = []
     kriterien = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 200, 1e-6)
 
-    for i, bild in enumerate(bilder):
+    # Die Liste wird an Ort und Stelle ersetzt. Bei 24 Megapixeln belegt ein
+    # einzelnes Bild rund 290 MB; eine zweite komplette Liste waere bei einer
+    # Siebener-Reihe ein Gigabyte extra, das hier nicht noetig ist.
+    for i in range(len(bilder)):
+        bild = bilder[i]
         if i == referenz_index:
-            ausgerichtet.append(bild)
             continue
         klein = _helligkeit_angleichen(_graustufen_viertel(bild), ziel_median)
         warp = np.eye(2, 3, dtype=np.float32)
@@ -572,19 +574,18 @@ def richte_reihe_aus(bilder: list[np.ndarray], referenz_index: int,
                               f"Ausrichtung fehlgeschlagen (Bild {i + 1}) - "
                               f"ECC ist nicht konvergiert, Bild wird "
                               f"unausgerichtet verwendet."))
-            ausgerichtet.append(bild)
             continue
 
         # Translationsanteil auf volle Aufloesung hochskalieren.
         warp_voll = warp.copy()
         warp_voll[0, 2] *= 4.0
         warp_voll[1, 2] *= 4.0
-        ausgerichtet.append(
-            cv2.warpAffine(bild, warp_voll, (w, h),
-                           flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
-                           borderMode=cv2.BORDER_REPLICATE)
-        )
-    return ausgerichtet
+        bilder[i] = cv2.warpAffine(
+            bild, warp_voll, (w, h),
+            flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
+            borderMode=cv2.BORDER_REPLICATE)
+        del bild
+    return bilder
 
 
 # ---------------------------------------------------------------------------
@@ -605,7 +606,17 @@ def fusioniere_mertens(bilder: Sequence[np.ndarray], kontrast: float,
     # Bilder im Bereich 0..1 uebergeben, ist das Ergebnis um den Faktor 255
     # zu dunkel. Deshalb 0..255 hineingeben - und nicht etwa 8 Bit, damit
     # die volle Tiefe der 16-Bit-Entwicklung erhalten bleibt.
-    ergebnis = merger.process([(b * 255.0).astype(np.float32) for b in bilder])
+    #
+    # Die Skalierung passiert an Ort und Stelle und wird danach wieder
+    # zurueckgenommen: eine Kopie der ganzen Reihe waere bei 24 Megapixeln
+    # knapp ein Gigabyte, das hier nichts beitraegt.
+    for bild in bilder:
+        bild *= 255.0
+    try:
+        ergebnis = merger.process(list(bilder))
+    finally:
+        for bild in bilder:
+            bild *= 1.0 / 255.0
     return np.clip(ergebnis.astype(np.float32), 0.0, 1.0)
 
 
@@ -1418,23 +1429,34 @@ def speichere_tiff(pfad: Path, bild: np.ndarray, tags: dict,
     schreibe(None)
 
 
-def erzeuge_kontaktbogen(pfad: Path, einzelbilder: Sequence[np.ndarray],
+VORSCHAU_BREITE = 420
+
+
+def erzeuge_vorschaukachel(bild: np.ndarray) -> np.ndarray:
+    """Verkleinert ein Bild auf Kontaktbogen-Groesse (8 Bit).
+
+    Wird bewusst frueh im Ablauf aufgerufen, damit die grossen Bilddaten
+    danach freigegeben werden koennen.
+    """
+    h, w = bild.shape[:2]
+    neue_hoehe = max(1, int(round(h * VORSCHAU_BREITE / w)))
+    klein = cv2.resize(bild, (VORSCHAU_BREITE, neue_hoehe),
+                       interpolation=cv2.INTER_AREA)
+    return np.clip(klein * 255.0, 0, 255).astype(np.uint8)
+
+
+def erzeuge_kontaktbogen(pfad: Path, kacheln_einzelbilder: Sequence[np.ndarray],
                          fusion: np.ndarray, maske: np.ndarray,
                          ergebnis: np.ndarray, titel: str) -> None:
     """Schreibt einen JPEG-Kontaktbogen zur schnellen Sichtpruefung.
 
     Reihenfolge: Einzelbelichtungen | Maskenueberlagerung | Ergebnis.
+    Die Einzelbelichtungen werden bereits verkleinert uebergeben.
     """
-    ziel_breite = 420
-
     def thumb(bild: np.ndarray) -> np.ndarray:
-        h, w = bild.shape[:2]
-        neue_hoehe = max(1, int(round(h * ziel_breite / w)))
-        klein = cv2.resize(bild, (ziel_breite, neue_hoehe),
-                           interpolation=cv2.INTER_AREA)
-        return np.clip(klein * 255.0, 0, 255).astype(np.uint8)
+        return erzeuge_vorschaukachel(bild)
 
-    kacheln = [thumb(b) for b in einzelbilder]
+    kacheln = list(kacheln_einzelbilder)
 
     # Maskenueberlagerung: Fensterbereich rot markiert.
     ueberlagerung = fusion.copy()
@@ -1446,7 +1468,7 @@ def erzeuge_kontaktbogen(pfad: Path, einzelbilder: Sequence[np.ndarray],
     kacheln.append(thumb(ergebnis))
 
     hoehe = max(k.shape[0] for k in kacheln)
-    beschriftungen = ([f"EV {i + 1}" for i in range(len(einzelbilder))]
+    beschriftungen = ([f"EV {i + 1}" for i in range(len(kacheln_einzelbilder))]
                       + ["Maske", "Ergebnis"])
     kopf = 26
     tafel = np.full((hoehe + kopf, sum(k.shape[1] for k in kacheln) + 8 * len(kacheln), 3),
@@ -1522,8 +1544,20 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
     fusion = fusioniere_mertens(bilder, args.contrast, args.saturation,
                                 args.exposure)
 
-    window = fuehre_window_pull_aus(fusion, bilder[referenz_index], bilder[0],
-                                    args, protokoll)
+    # Fuer den Kontaktbogen reichen kleine Vorschaubilder. Sie werden jetzt
+    # erzeugt, damit anschliessend nur noch die beiden tatsaechlich
+    # benoetigten Belichtungen in voller Aufloesung im Speicher bleiben.
+    # Bei einer Siebener-Reihe mit 24 Megapixeln spart das ueber ein
+    # Gigabyte.
+    vorschau_kacheln = ([erzeuge_vorschaukachel(b) for b in bilder]
+                        if args.preview else [])
+    dunkel = bilder[0]
+    referenz = bilder[referenz_index]
+    bilder.clear()
+    del bilder
+
+    window = fuehre_window_pull_aus(fusion, referenz, dunkel, args, protokoll)
+    del dunkel, referenz
     ergebnis = window.bild
 
     if args.base_tone == "on":
@@ -1543,14 +1577,114 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
     speichere_tiff(ziel, ergebnis, referenz_tags, args.compression, protokoll)
 
     if args.preview:
-        erzeuge_kontaktbogen(ausgabe_ordner / f"{name}_preview.jpg", bilder,
-                             fusion, window.maske_weich, ergebnis,
-                             f"{name} ({len(bilder)} EV)")
+        erzeuge_kontaktbogen(ausgabe_ordner / f"{name}_preview.jpg",
+                             vorschau_kacheln, fusion, window.maske_weich,
+                             ergebnis,
+                             f"{name} ({len(vorschau_kacheln)} EV)")
 
     protokoll.append((logging.INFO,
                       f"Fertig: {ziel.name} "
                       f"(Fenstermaske {window.maskenanteil * 100:.1f} %)"))
     return ReihenErgebnis(name, ziel, protokoll, True)
+
+
+def verfuegbarer_arbeitsspeicher() -> int:
+    """Freier Arbeitsspeicher in Bytes, ohne zusaetzliche Abhaengigkeit.
+
+    Faellt auf 8 GB zurueck, wenn sich nichts ermitteln laesst.
+    """
+    if os.name == "nt":
+        try:
+            import ctypes
+
+            class Speicherstatus(ctypes.Structure):
+                _fields_ = [("dwLength", ctypes.c_ulong),
+                            ("dwMemoryLoad", ctypes.c_ulong),
+                            ("ullTotalPhys", ctypes.c_ulonglong),
+                            ("ullAvailPhys", ctypes.c_ulonglong),
+                            ("ullTotalPageFile", ctypes.c_ulonglong),
+                            ("ullAvailPageFile", ctypes.c_ulonglong),
+                            ("ullTotalVirtual", ctypes.c_ulonglong),
+                            ("ullAvailVirtual", ctypes.c_ulonglong),
+                            ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+            status = Speicherstatus()
+            status.dwLength = ctypes.sizeof(status)
+            ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status))
+            if status.ullAvailPhys:
+                return int(status.ullAvailPhys)
+        except Exception:
+            pass
+    else:
+        try:
+            with open("/proc/meminfo", "r", encoding="ascii") as datei:
+                for zeile in datei:
+                    if zeile.startswith("MemAvailable:"):
+                        return int(zeile.split()[1]) * 1024
+        except OSError:
+            pass
+    return 8 * 1024 ** 3
+
+
+def lies_bildgroesse(pfad: Path) -> tuple[int, int] | None:
+    """Bildmasse ermitteln, ohne die Datei vollstaendig zu entwickeln."""
+    endung = pfad.suffix.lower()
+    try:
+        if endung in TIFF_ENDUNGEN:
+            with tifffile.TiffFile(str(pfad)) as datei:
+                form = datei.pages[0].shape
+                return int(form[0]), int(form[1])
+        if endung in RAW_ENDUNGEN and rawpy is not None:
+            with rawpy.imread(str(pfad)) as roh:
+                masse = roh.sizes
+                return int(masse.height), int(masse.width)
+    except Exception:
+        return None
+    return None
+
+
+def schaetze_speicherbedarf(pixel: int, bilder_je_reihe: int) -> int:
+    """Geschaetzter Spitzenbedarf einer Reihe in Bytes.
+
+    Die Konstanten stammen aus einer Messung mit 24 Megapixeln und drei
+    Belichtungen (3,75 GB Spitze). Der Grundanteil deckt Fusion,
+    Fenstermaske und Normalisierung ab, der zweite Term die Einzelbilder.
+    """
+    return int(pixel * (110 + 15 * max(bilder_je_reihe, 1)))
+
+
+def waehle_prozessanzahl(gruppen: Sequence[Sequence[Aufnahme]],
+                         vorgabe: int) -> tuple[int, str]:
+    """Bestimmt die Anzahl paralleler Prozesse.
+
+    Wichtiger Praxispunkt: Eine Reihe mit 24 Megapixeln braucht in der
+    Spitze mehrere Gigabyte. Wuerde blind ueber alle Kerne parallelisiert,
+    liefe ein Rechner mit 16 GB beim ersten Objekt in den Swap oder ins Aus.
+    Deshalb wird der Bedarf vorab geschaetzt und die Prozessanzahl begrenzt.
+    """
+    kerne = max(1, (os.cpu_count() or 2) - 1)
+    if vorgabe > 0:
+        return min(vorgabe, max(len(gruppen), 1)), "vorgegeben"
+
+    groesse = None
+    for gruppe in gruppen:
+        if gruppe:
+            groesse = lies_bildgroesse(gruppe[0].pfad)
+            if groesse:
+                break
+    if not groesse:
+        return min(2, max(len(gruppen), 1)), "Bildgroesse unbekannt"
+
+    pixel = groesse[0] * groesse[1]
+    bilder = max((len(g) for g in gruppen), default=3)
+    bedarf = schaetze_speicherbedarf(pixel, bilder)
+    frei = verfuegbarer_arbeitsspeicher()
+    moeglich = max(1, int(frei * 0.75 / max(bedarf, 1)))
+    anzahl = max(1, min(kerne, moeglich, max(len(gruppen), 1)))
+    begruendung = (f"{pixel / 1e6:.1f} MP, geschaetzt "
+                   f"{bedarf / 1024 ** 3:.1f} GB je Reihe, "
+                   f"{frei / 1024 ** 3:.1f} GB frei")
+    return anzahl, begruendung
 
 
 def stelle_determinismus_sicher() -> None:
@@ -1714,11 +1848,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             LOG.warning("  Reihe %02d hat eine unerwartete Bildanzahl (%d).",
                         i, len(gruppe))
 
-    jobs = args.jobs if args.jobs > 0 else max(1, (os.cpu_count() or 2) - 1)
-    jobs = min(jobs, len(gruppen))
+    jobs, begruendung = waehle_prozessanzahl(gruppen, args.jobs)
     aufgaben = [(g, args.ausgabe, args) for g in gruppen]
 
-    LOG.info("Verarbeitung startet (%d Prozess(e)) ...", jobs)
+    LOG.info("Verarbeitung startet (%d Prozess(e), %s) ...", jobs, begruendung)
     if jobs <= 1:
         ergebnisse = [_arbeiter(t) for t in aufgaben]
     else:

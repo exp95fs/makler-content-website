@@ -81,6 +81,32 @@ python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --window-ceiling 0.88 --window
 
 ---
 
+## Geschwindigkeit und Arbeitsspeicher
+
+Gemessen an einer Dreierreihe mit 24 Megapixeln (6000 × 4000):
+
+| | Wert |
+|---|---|
+| Rechenzeit je Reihe | rund 60 Sekunden (ein Prozess, ohne Ausrichtung) |
+| Spitzenspeicher je Reihe | rund 3,5 GB |
+
+Der Speicherbedarf ist der Grund, warum **nicht blind über alle Kerne
+parallelisiert wird**: Acht gleichzeitige Prozesse bräuchten bei 24 Megapixeln
+fast 30 GB. Das Werkzeug schätzt vor dem Start den Bedarf aus Bildgröße und
+Reihenlänge, liest den freien Arbeitsspeicher aus und wählt die Prozessanzahl
+entsprechend. Im Protokoll steht die Entscheidung mit Begründung:
+
+```
+Verarbeitung startet (3 Prozess(e), 24.0 MP, geschaetzt 3.5 GB je Reihe, 15.7 GB frei) ...
+```
+
+Mit `--jobs N` lässt sich die Automatik überstimmen. Für ein Objekt mit 30
+Reihen à 24 Megapixeln ist mit rund 10 bis 30 Minuten zu rechnen, je nach
+Kernanzahl und Arbeitsspeicher. `--no-align` bei Stativaufnahmen spart davon
+spürbar.
+
+---
+
 ## Qualitäts-Benchmark gegen den kommerziellen Dienst
 
 Die Verarbeitung wird nicht nach Augenmaß beurteilt, sondern gegen eine
