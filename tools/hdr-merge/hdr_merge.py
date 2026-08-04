@@ -2309,7 +2309,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     if jobs <= 1:
         ergebnisse = [_arbeiter(t) for t in aufgaben]
     else:
-        with multiprocessing.Pool(processes=jobs) as pool:
+        # Bewusst 'spawn' statt des unter Linux ueblichen 'fork':
+        # Die RAW-Entwicklung nutzt intern OpenMP, und ein geforkter Prozess
+        # erbt dessen Threadzustand in einer Weise, die zuverlaessig zu
+        # Deadlocks fuehren kann - das Programm bliebe dann einfach stehen.
+        # Unter Windows ist 'spawn' ohnehin die einzige Betriebsart; damit
+        # verhaelt sich das Werkzeug auf allen Systemen gleich.
+        kontext = multiprocessing.get_context("spawn")
+        with kontext.Pool(processes=jobs) as pool:
             ergebnisse = pool.map(_arbeiter, aufgaben)
 
     fehler = 0
