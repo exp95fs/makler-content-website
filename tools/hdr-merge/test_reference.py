@@ -251,8 +251,9 @@ class TestHelligkeitsverhalten(unittest.TestCase):
     """Weisse Waende duerfen nicht heruntergedunkelt werden."""
 
     def test_lift_dunkelt_helle_raeume_nicht_ab(self):
-        hell = ReferenzLauf()
-        exakt = ReferenzLauf(["--mid-mode", "exact"])
+        """Mit einem niedrigen Zielwert darf 'lift' nicht abdunkeln."""
+        hell = ReferenzLauf(["--mid-target", "0.45"])
+        exakt = ReferenzLauf(["--mid-target", "0.45", "--mid-mode", "exact"])
         try:
             lum_lift = hdr_merge.berechne_luminanz(
                 bereich(hell.bild("ergebnis"), WAND)).mean()

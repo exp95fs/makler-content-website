@@ -459,12 +459,16 @@ def gruppiere_nach_exif(aufnahmen: Sequence[Aufnahme],
     """
     gruppen: list[list[Aufnahme]] = []
     aktuell: list[Aufnahme] = []
-    richtung = 0  # +1 = EV steigt (wird dunkler), -1 = EV faellt
+    gesehen: set[int] = set()
+
+    def schluessel(ev: float | None) -> int | None:
+        """EV auf ein Zwanzigstel gerundet - robust gegen Rundungsfehler."""
+        return None if ev is None else int(round(ev * 20))
 
     for a in aufnahmen:
         if not aktuell:
             aktuell = [a]
-            richtung = 0
+            gesehen = {schluessel(a.ev)} - {None}
             continue
 
         vorher = aktuell[-1]
@@ -472,24 +476,27 @@ def gruppiere_nach_exif(aufnahmen: Sequence[Aufnahme],
 
         if a.zeit - vorher.zeit > max_luecke:
             neue_reihe = True
-        elif a.ev is not None and vorher.ev is not None:
-            delta = a.ev - vorher.ev
-            if abs(delta) < 1e-6:
-                # Gleiche Belichtung zweimal -> das ist keine Fortsetzung.
-                neue_reihe = True
-            else:
-                schritt = 1 if delta > 0 else -1
-                if richtung == 0:
-                    richtung = schritt
-                elif schritt != richtung:
-                    neue_reihe = True  # EV-Muster springt zurueck
+        elif schluessel(a.ev) is not None and schluessel(a.ev) in gesehen:
+            # Wiederholt sich ein Belichtungswert, beginnt die naechste Reihe.
+            #
+            # Bewusst NICHT ueber eine monotone EV-Folge: Sony und Canon
+            # belichten in der Voreinstellung in der Reihenfolge
+            # normal - dunkel - hell (gemessen an einer echten Reihe:
+            # EV 10.2, 12.3, 8.2). Eine Regel, die auf Monotonie baut, haette
+            # genau dort mitten in der Reihe getrennt. Die Wiederholung eines
+            # EV-Wertes ist dagegen unabhaengig von der Reihenfolge.
+            neue_reihe = True
+        elif len(aktuell) >= max(ERWARTETE_REIHENLAENGEN):
+            neue_reihe = True
 
         if neue_reihe:
             gruppen.append(aktuell)
             aktuell = [a]
-            richtung = 0
+            gesehen = {schluessel(a.ev)} - {None}
         else:
             aktuell.append(a)
+            if schluessel(a.ev) is not None:
+                gesehen.add(schluessel(a.ev))
 
     if aktuell:
         gruppen.append(aktuell)
@@ -943,10 +950,21 @@ def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
     alpha = deckkraft[..., None]
     zusammengesetzt = grundbild * (1.0 - alpha) + fenster_roh * alpha
 
-    knie = float(np.clip(knie_luminanz, 0.15, args.window_ceiling - 0.05))
+    # Das Knie liegt normalerweise auf der Rahmenhelligkeit, damit der
+    # Uebergang am Fensterrahmen nicht springt. Es wird aber nach oben
+    # begrenzt: Sitzt der Rahmen sehr hoch (weisser Kunststoffrahmen bei
+    # angehobenem Innenraum, gemessen 0.82), blieben bis zur Obergrenze nur
+    # noch vier Hundertstel Spielraum - der gesamte Fensterinhalt wuerde in
+    # dieses Band gequetscht und verloere rund zwei Drittel seiner Zeichnung.
+    # Mit der Begrenzung steht immer ein Band von --window-range zur
+    # Verfuegung. Werte unterhalb des Knies bleiben unangetastet, der
+    # Fensterrahmen selbst wird also nicht veraendert.
+    obergrenze = args.window_ceiling
+    knie = float(np.clip(min(knie_luminanz, obergrenze - args.window_range),
+                         0.10, obergrenze - 0.05))
     ergebnis = komprimiere_lichter_in_maske(
         zusammengesetzt, maske_ton, knie=knie,
-        obergrenze=args.window_ceiling, rate=args.window_rolloff)
+        obergrenze=obergrenze, rate=args.window_rolloff)
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
@@ -1082,6 +1100,8 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                               f"Gamma-Korrektur uebersprungen."))
 
         positiv = np.maximum(normiert, 0.0)
+        # Der Merker fuer die Nachverankerung weiter unten.
+        verankern = True
         # Das Gamma wird ueber die LUMINANZ angewendet und als gemeinsamer
         # Faktor auf R, G und B gelegt. Kanalweise gerechnet wuerde ein Gamma
         # die Kanalverhaeltnisse verschieben und damit die Saettigung
@@ -1092,6 +1112,26 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
             faktor = np.clip(np.power(lum_norm, gamma - 1.0), 0.05, 20.0)
             positiv = positiv * faktor[..., None]
         ergebnis = args.black_target + spanne * positiv
+
+        # Nachverankerung: Das Gamma verschiebt die Endpunkte wieder. Bei
+        # einer kraeftigen Aufhellung (gemessen Gamma 0.51 an einer echten
+        # Aufnahme) landet der Schwarzpunkt statt bei 0.035 bei 0.059 - die
+        # Tiefen saufen nicht ab, sondern grauen aus. Ein zweiter, rein
+        # linearer Durchgang setzt beide Endpunkte exakt auf die Zielwerte.
+        if verankern:
+            lum_zwei = berechne_luminanz(np.clip(ergebnis, 0.0, 1.0))[innen]
+            schwarz_zwei = float(np.percentile(lum_zwei, args.black_percentile))
+            weiss_zwei = float(np.percentile(lum_zwei, args.white_percentile))
+            if weiss_zwei - schwarz_zwei > 1e-4:
+                faktor = ((args.white_target - args.black_target)
+                          / (weiss_zwei - schwarz_zwei))
+                ergebnis = ((ergebnis - schwarz_zwei) * faktor
+                            + args.black_target)
+                protokoll.append((logging.DEBUG,
+                                  f"Nachverankerung: Schwarz {schwarz_zwei:.3f} "
+                                  f"-> {args.black_target:.3f}, Weiss "
+                                  f"{weiss_zwei:.3f} -> "
+                                  f"{args.white_target:.3f}"))
 
     # 4. Globaler Weissabgleich ueber den Graupunkt der Wandflaechen.
     if args.wb_strength > 0.0:
@@ -1108,38 +1148,39 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                               f"{faktor[0]:.3f}/{faktor[1]:.3f}/{faktor[2]:.3f}"))
 
     # 5. Highlight-Schutz im Fensterbereich.
+    #
+    # Der Fensterbereich wird IMMER neu aufgebaut, nicht nur wenn eine
+    # Heuristik anschlaegt. Frueher entschied ein Schwellwertvergleich
+    # darueber - mit dem Ergebnis, dass winzige Parameteraenderungen das
+    # Verhalten umkippen liessen: In einer Messreihe sprang die
+    # Fensterhelligkeit zwischen 0.80 (sauber) und 0.97 (ausgebrannt, 1,7 %
+    # der Pixel geclippt), je nachdem auf welcher Seite der Schwelle eine
+    # Szene landete. Ein Werkzeug, dessen Qualitaet von einem Muenzwurf
+    # abhaengt, ist nicht brauchbar.
+    #
+    # Der Vergleich der Streuung bleibt erhalten - aber nur noch als
+    # Diagnose fuer das Protokoll.
     fenster_bool = fenstermaske_binaer.astype(bool)
-    if fenster_bool.sum() > 100:
+    if fenster_bool.sum() > 100 and window.fenster_roh is not None:
         std_vorher = float(np.std(berechne_luminanz(bild)[fenster_bool]))
-        std_nachher = float(np.std(
+        ergebnis = nimm_fenster_zurueck(ergebnis, window, args, protokoll)
+        std_final = float(np.std(
             berechne_luminanz(np.clip(ergebnis, 0.0, 1.0))[fenster_bool]))
-        if std_nachher < std_vorher * 0.98:
-            # Regelfall: Das Anheben des Innenraums drueckt den Fensterinhalt
-            # nach oben. Der Fensterbereich wird deshalb neu aufgebaut.
+        # Ein gewisser Rueckgang ist unvermeidbar: Wird der Innenraum
+        # angehoben, steigt das Knie und der Spielraum bis zur Obergrenze
+        # wird kleiner. Gewarnt wird erst, wenn kaum noch Zeichnung uebrig
+        # ist - sonst waere die Warnung bei jedem Bild da und damit wertlos.
+        if std_final < std_vorher * 0.5 or std_final < 0.01:
+            protokoll.append((logging.WARNING,
+                              f"Fensterzeichnung bleibt deutlich unter dem "
+                              f"Ausgangswert (Streuung {std_vorher:.4f} -> "
+                              f"{std_final:.4f}). Der Innenraum-Zielwert "
+                              f"(--mid-target) ist fuer diese Szene "
+                              f"vermutlich zu hoch."))
+        else:
             protokoll.append((logging.DEBUG,
-                              f"Fensterzeichnung faellt durch die Anhebung ab "
-                              f"(Streuung {std_vorher:.4f} -> "
-                              f"{std_nachher:.4f}) - Rolloff wird angewendet."))
-            ergebnis = nimm_fenster_zurueck(ergebnis, window, args, protokoll)
-            std_final = float(np.std(
-                berechne_luminanz(np.clip(ergebnis, 0.0, 1.0))[fenster_bool]))
-            # Gewarnt wird nur, wenn die Rolloff-Kurve die Zeichnung NICHT
-            # retten konnte - sonst waere die Warnung bei jedem Bild da und
-            # damit wertlos. Ein gewisser Rueckgang ist unvermeidbar: wird
-            # der Innenraum angehoben, steigt das Knie und der verbleibende
-            # Spielraum bis zur Obergrenze wird kleiner.
-            if std_final < std_vorher * 0.5 or std_final < 0.01:
-                protokoll.append((logging.WARNING,
-                                  f"Fensterzeichnung bleibt nach dem Rolloff "
-                                  f"deutlich unter dem Ausgangswert "
-                                  f"(Streuung {std_vorher:.4f} -> "
-                                  f"{std_final:.4f}). Der Innenraum-Zielwert "
-                                  f"(--mid-target) ist fuer diese Szene "
-                                  f"vermutlich zu hoch."))
-            else:
-                protokoll.append((logging.DEBUG,
-                                  f"Streuung im Fenster nach Rolloff: "
-                                  f"{std_final:.4f}"))
+                              f"Streuung im Fenster: {std_vorher:.4f} -> "
+                              f"{std_final:.4f}"))
 
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
@@ -1571,6 +1612,8 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
         ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
                                          protokoll)
 
+    ergebnis = schuetze_spitzlichter(ergebnis, args, protokoll)
+
     ausgabe_ordner.mkdir(parents=True, exist_ok=True)
     ziel = ausgabe_ordner / f"{name}_hdr.tif"
     referenz_tags = sortierte_aufnahmen[referenz_index].tags
@@ -1701,6 +1744,40 @@ def stelle_determinismus_sicher() -> None:
     cv2.setRNGSeed(0)
 
 
+def schuetze_spitzlichter(bild: np.ndarray, args: argparse.Namespace,
+                          protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Faengt die letzten harten Spitzlichter weich ab.
+
+    Der Window Pull begrenzt den Fensterinhalt, aber Spitzlichter im
+    Innenraum - eine Leuchtenkuppel, eine Reflexion auf einer Armatur -
+    liegen ausserhalb der Fenstermaske und koennen nach dem Anheben auf
+    exakt 1.0 laufen. In einem Basisbild, das noch weiterbearbeitet wird,
+    sollte nichts hart anstehen: Was auf 1.0 clippt, ist unwiederbringlich.
+
+    Gemessen am kommerziellen Vorbild liegt dessen hellster Punkt bei 0.963,
+    nicht bei 1.0 - dort wird ebenfalls abgefangen.
+
+    Gerechnet wird wie bei der Fensterkompression auf dem staerksten Kanal,
+    damit sich die Farbe nicht verschiebt. Unterhalb des Knies bleibt alles
+    unveraendert; betroffen ist nur der oberste Rand des Tonwertumfangs.
+    """
+    if args.highlight_ceiling <= 0.0 or args.highlight_ceiling >= 1.0:
+        return bild
+    knie = max(0.5, args.highlight_ceiling - 0.05)
+    fuehrung = bild.max(axis=2)
+    betroffen = float((fuehrung > knie).mean())
+    if betroffen <= 0.0:
+        return bild
+    voll = np.ones(bild.shape[:2], dtype=np.float32)
+    ergebnis = komprimiere_lichter_in_maske(bild, voll, knie=knie,
+                                            obergrenze=args.highlight_ceiling,
+                                            rate=3.0)
+    protokoll.append((logging.DEBUG,
+                      f"Spitzlichter abgefangen: {betroffen * 100:.2f} % der "
+                      f"Pixel lagen ueber {knie:.2f}"))
+    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
+
+
 def _arbeiter(argumente: tuple) -> ReihenErgebnis:
     """Einstiegspunkt fuer die Prozesspool-Worker (muss importierbar sein)."""
     aufnahmen, ausgabe_ordner, args = argumente
@@ -1745,7 +1822,7 @@ def baue_parser() -> argparse.ArgumentParser:
     f.add_argument("--exposure", type=float, default=1.0)
 
     w = p.add_argument_group("Window Pull")
-    w.add_argument("--window-strength", type=float, default=0.8,
+    w.add_argument("--window-strength", type=float, default=1.0,
                    help="Deckkraft des Window Pull (0 = aus)")
     w.add_argument("--window-wb", type=float, default=0.0,
                    help="Lokaler Weissabgleich im Fenster (0 = aus, 1 = voll). "
@@ -1763,10 +1840,14 @@ def baue_parser() -> argparse.ArgumentParser:
     w.add_argument("--window-close", type=float, default=0.015,
                    help="Breite des Schliess-Kernels als Anteil der "
                         "Bildbreite (muss breiter sein als eine Sprosse)")
-    w.add_argument("--window-ceiling", type=float, default=0.92,
+    w.add_argument("--window-range", type=float, default=0.50,
+                   help="Mindestbreite des Tonwertbands, das dem "
+                        "Fensterinhalt zur Verfuegung steht. Groesser = mehr "
+                        "Zeichnung im Fenster")
+    w.add_argument("--window-ceiling", type=float, default=0.90,
                    help="Obergrenze, auf die der Fensterinhalt weich "
                         "komprimiert wird (Zeichnung statt Weiss)")
-    w.add_argument("--window-rolloff", type=float, default=ROLLOFF_RATE,
+    w.add_argument("--window-rolloff", type=float, default=1.6,
                    help="Steilheit der Lichterkompression im Fenster. "
                         "Kleiner = mehr Zeichnung, dunklerer Himmel")
     w.add_argument("--window-blur", type=float, default=0.02,
@@ -1775,15 +1856,18 @@ def baue_parser() -> argparse.ArgumentParser:
     t = p.add_argument_group("Tonale Normalisierung")
     t.add_argument("--base-tone", choices=["on", "off"], default="on",
                    help="'off' liefert die flache Rohfusion")
-    t.add_argument("--white-target", type=float, default=0.95)
-    t.add_argument("--black-target", type=float, default=0.02)
-    t.add_argument("--mid-target", type=float, default=0.55)
+    t.add_argument("--white-target", type=float, default=0.82)
+    t.add_argument("--black-target", type=float, default=0.035)
+    t.add_argument("--mid-target", type=float, default=0.62)
     t.add_argument("--mid-mode", choices=["lift", "exact"], default="lift",
                    help="'lift' hellt nur auf, wenn das Bild dunkler als der "
                         "Zielwert ist (weisse Waende bleiben weiss); "
                         "'exact' erzwingt den Zielwert in beide Richtungen")
     t.add_argument("--white-percentile", type=float, default=99.5)
     t.add_argument("--black-percentile", type=float, default=0.2)
+    t.add_argument("--highlight-ceiling", type=float, default=0.98,
+                   help="Obergrenze fuer Spitzlichter im gesamten Bild "
+                        "(0 = aus). Verhindert hartes Clipping")
     t.add_argument("--wb-strength", type=float, default=0.7,
                    help="Staerke des globalen Weissabgleichs (0 = aus)")
 

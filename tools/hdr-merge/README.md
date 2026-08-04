@@ -41,6 +41,24 @@ markiert – so fällt eine falsche Gruppierung sofort auf, bevor gerechnet wird
 
 ---
 
+### Wenn bei der Einrichtung etwas klemmt
+
+Das Programm richtet die Bausteine **einzeln** ein, damit ein einzelnes
+Problem nicht alles blockiert.
+
+* **„Python wurde nicht gefunden"** – bei der Python-Installation wurde der
+  Haken „Add python.exe to PATH" vergessen. Python noch einmal installieren,
+  diesmal mit Haken.
+* **„RAW-Entwicklung nicht verfügbar"** – für sehr neue Python-Versionen gibt
+  es zeitweise noch kein fertiges `rawpy`-Paket. 16-Bit-TIFFs funktionieren
+  dann trotzdem; für RAW-Dateien zusätzlich **Python 3.12** installieren und
+  das Programm damit starten. Das Programm sagt das von sich aus und arbeitet
+  weiter, statt abzubrechen.
+* **„Einrichtung fehlgeschlagen"** bei numpy/opencv/tifffile – gleiche
+  Ursache, gleiche Abhilfe (Python 3.12).
+
+---
+
 ## Einrichtung für die Kommandozeile
 
 ```bat

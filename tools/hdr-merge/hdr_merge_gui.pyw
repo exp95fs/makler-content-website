@@ -42,11 +42,17 @@ TESTSZENE_SKRIPT = ORDNER / "make_reference_scene.py"
 BEISPIEL_EINGABE = ORDNER / "Beispiel" / "aufnahmen"
 BEISPIEL_AUSGABE = ORDNER / "Beispiel" / "ergebnis"
 
+# Ohne diese drei laeuft gar nichts.
 BENOETIGTE_PAKETE = {
-    "numpy": "Rechenkern (numpy)",
-    "cv2": "Bildverarbeitung (opencv-python)",
-    "tifffile": "TIFF-Dateien (tifffile)",
-    "rawpy": "RAW-Entwicklung (rawpy)",
+    "numpy": ("Rechenkern", "numpy"),
+    "cv2": ("Bildverarbeitung", "opencv-python"),
+    "tifffile": ("TIFF-Dateien", "tifffile"),
+}
+# rawpy wird nur fuer RAW-Dateien gebraucht. Fuer sehr neue Python-Versionen
+# gibt es manchmal noch kein fertiges Paket - dann funktioniert die
+# Verarbeitung von TIFFs trotzdem, und das Programm sagt das auch.
+OPTIONALE_PAKETE = {
+    "rawpy": ("RAW-Entwicklung (CR2, NEF, ARW, DNG, RAF)", "rawpy"),
 }
 
 # Erkennt im Protokoll der Verarbeitung, dass eine Reihe fertig ist.
@@ -76,8 +82,39 @@ def ohne_konsolenfenster() -> dict:
 
 
 def fehlende_pakete() -> list[str]:
+    """Pflichtpakete, die noch fehlen."""
     return [name for name in BENOETIGTE_PAKETE
             if importlib.util.find_spec(name) is None]
+
+
+def fehlende_optionale_pakete() -> list[str]:
+    return [name for name in OPTIONALE_PAKETE
+            if importlib.util.find_spec(name) is None]
+
+
+def installiere_pakete(namen: dict, meldung) -> list[str]:
+    """Installiert Pakete EINZELN und meldet, was nicht geklappt hat.
+
+    Einzeln deshalb, weil ein einziges nicht verfuegbares Paket sonst den
+    gesamten Aufruf abbricht und damit auch die Pakete blockiert, die
+    problemlos installierbar waeren.
+    """
+    gescheitert = []
+    for modul, (beschreibung, paket) in namen.items():
+        if importlib.util.find_spec(modul) is not None:
+            continue
+        meldung(f"--- {beschreibung} wird eingerichtet ({paket}) ...")
+        ergebnis = subprocess.run(
+            [python_programm(), "-m", "pip", "install", paket],
+            capture_output=True, text=True, encoding="utf-8",
+            errors="replace", **ohne_konsolenfenster())
+        for zeile in (ergebnis.stdout or "").splitlines()[-6:]:
+            meldung(zeile)
+        if ergebnis.returncode != 0:
+            gescheitert.append(modul)
+            for zeile in (ergebnis.stderr or "").splitlines()[-4:]:
+                meldung("ERROR " + zeile)
+    return gescheitert
 
 
 class Anwendung(tk.Tk):
@@ -293,6 +330,8 @@ class Anwendung(tk.Tk):
                     self._verarbeitung_beendet(nutzlast)
                 elif art == "analyse":
                     self._zeige_analyse(nutzlast)
+                elif art == "einrichtung":
+                    self._einrichtung_beendet(nutzlast)
         except queue.Empty:
             pass
         self.after(100, self._verarbeite_meldungen)
@@ -330,25 +369,72 @@ class Anwendung(tk.Tk):
     # -----------------------------------------------------------------
 
     def _pruefe_pakete(self) -> None:
-        fehlend = fehlende_pakete()
-        if not fehlend:
+        pflicht = fehlende_pakete()
+        optional = fehlende_optionale_pakete()
+        if not pflicht and not optional:
             self._schreibe("Alle benoetigten Bausteine sind vorhanden.",
                            "erfolg")
             return
-        beschreibung = "\n".join(f"  - {BENOETIGTE_PAKETE[n]}" for n in fehlend)
+
+        zeilen = [f"  - {BENOETIGTE_PAKETE[n][0]}" for n in pflicht]
+        zeilen += [f"  - {OPTIONALE_PAKETE[n][0]}" for n in optional]
         if not messagebox.askyesno(
                 "Einrichtung noetig",
                 "Beim ersten Start fehlen noch diese Bausteine:\n\n"
-                f"{beschreibung}\n\n"
-                "Sollen sie jetzt heruntergeladen und eingerichtet werden?\n"
-                "Das dauert ein bis zwei Minuten und ist nur einmal noetig."):
+                + "\n".join(zeilen) +
+                "\n\nSollen sie jetzt heruntergeladen und eingerichtet "
+                "werden?\nDas dauert ein bis zwei Minuten und ist nur "
+                "einmal noetig."):
             self._schreibe("Einrichtung abgelehnt - die Verarbeitung kann noch "
                            "nicht starten.", "warnung")
             return
-        self._starte_prozesskette(
-            [([python_programm(), "-m", "pip", "install", "-r",
-               str(ORDNER / "requirements.txt")],
-              "Bausteine werden eingerichtet ...")], gesamt=1)
+
+        self.start_knopf.configure(state="disabled")
+        self.status.configure(text="Bausteine werden eingerichtet ...")
+        threading.Thread(target=self._richte_ein, daemon=True).start()
+
+    def _richte_ein(self) -> None:
+        """Installiert die fehlenden Pakete im Hintergrund."""
+        def melde(text: str) -> None:
+            self.meldungen.put(("zeile", text))
+
+        gescheitert = installiere_pakete(BENOETIGTE_PAKETE, melde)
+        gescheitert += installiere_pakete(OPTIONALE_PAKETE, melde)
+        self.meldungen.put(("einrichtung", gescheitert))
+
+    def _einrichtung_beendet(self, gescheitert: list[str]) -> None:
+        pflicht = [n for n in gescheitert if n in BENOETIGTE_PAKETE]
+        if pflicht:
+            namen = ", ".join(BENOETIGTE_PAKETE[n][1] for n in pflicht)
+            self._schreibe(f"ERROR Diese Bausteine liessen sich nicht "
+                           f"einrichten: {namen}", "fehler")
+            messagebox.showerror(
+                "Einrichtung fehlgeschlagen",
+                f"Diese Bausteine liessen sich nicht einrichten:\n\n{namen}"
+                "\n\nHaeufigste Ursache: eine sehr neue Python-Version, fuer "
+                "die es noch keine fertigen Pakete gibt.\n\nAbhilfe: Python "
+                "3.12 zusaetzlich installieren und das Programm damit starten.")
+            self.status.configure(text="Einrichtung fehlgeschlagen.")
+            return
+
+        if "rawpy" in gescheitert:
+            self._schreibe(
+                "WARNING Die RAW-Entwicklung (rawpy) liess sich nicht "
+                "einrichten. 16-Bit-TIFFs funktionieren, RAW-Dateien nicht. "
+                "Meist liegt das an einer sehr neuen Python-Version - mit "
+                "Python 3.12 klappt es.", "warnung")
+            messagebox.showwarning(
+                "RAW-Entwicklung nicht verfuegbar",
+                "Alles Wichtige ist eingerichtet, nur die RAW-Entwicklung "
+                "nicht.\n\nDas Programm verarbeitet damit 16-Bit-TIFFs, aber "
+                "keine CR2-, NEF-, ARW-, DNG- oder RAF-Dateien.\n\n"
+                "Haeufigste Ursache ist eine sehr neue Python-Version. Mit "
+                "Python 3.12 laesst sich rawpy nachinstallieren.")
+        else:
+            self._schreibe("Einrichtung abgeschlossen.", "erfolg")
+        self.status.configure(text="Bereit.")
+        if self.gruppen:
+            self.start_knopf.configure(state="normal")
 
     # -----------------------------------------------------------------
     # Analyse der Belichtungsreihen

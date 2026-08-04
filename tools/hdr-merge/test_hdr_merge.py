@@ -215,12 +215,17 @@ class TestSynthetischeSzene(unittest.TestCase):
     # -- Tonale Normalisierung --------------------------------------------
 
     def test_normalisierung_trifft_zielwerte(self):
+        """Die Zielwerte stammen aus der Messung am kommerziellen Ergebnis."""
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
         binaer, _, _ = self._maske()
         innen = ~binaer.astype(bool)
         lum = self.lum_ergebnis[innen]
-        self.assertAlmostEqual(float(np.median(lum)), 0.55, delta=0.05)
-        self.assertAlmostEqual(float(np.percentile(lum, 99.5)), 0.95, delta=0.05)
-        self.assertAlmostEqual(float(np.percentile(lum, 0.2)), 0.02, delta=0.05)
+        self.assertAlmostEqual(float(np.percentile(lum, 0.2)),
+                               vorgabe.black_target, delta=0.02)
+        self.assertAlmostEqual(float(np.percentile(lum, 99.5)),
+                               vorgabe.white_target, delta=0.03)
+        self.assertAlmostEqual(float(np.median(lum)), vorgabe.mid_target,
+                               delta=0.06)
 
     def test_base_tone_off_liefert_flachere_rohfusion(self):
         lauf = SzenenLauf(["--base-tone", "off"])
@@ -514,6 +519,81 @@ class TestRobustheit(unittest.TestCase):
                                     "--jobs", "1"])
         self.assertEqual(rueckgabe, 0)
         self.assertTrue((tief / "raum01_1_hdr.tif").exists())
+
+
+class TestOhneRawpy(unittest.TestCase):
+    """Ohne rawpy muessen TIFFs weiterhin laufen.
+
+    Fuer sehr neue Python-Versionen gibt es zeitweise kein fertiges
+    rawpy-Paket. Dann darf nur die RAW-Entwicklung ausfallen, nicht das
+    ganze Werkzeug.
+    """
+
+    def setUp(self):
+        self.ordner = Path(tempfile.mkdtemp(prefix="hdrnoraw_"))
+        self.original = hdr_merge.rawpy
+        hdr_merge.rawpy = None
+
+    def tearDown(self):
+        hdr_merge.rawpy = self.original
+        shutil.rmtree(self.ordner, ignore_errors=True)
+
+    def test_tiff_reihe_laeuft_weiterhin(self):
+        eingabe = self.ordner / "in"
+        make_test_scene.schreibe_reihe(eingabe)
+        rueckgabe = hdr_merge.main([str(eingabe), str(self.ordner / "out"),
+                                    "--bracket-size", "3", "--no-align",
+                                    "--jobs", "1"])
+        self.assertEqual(rueckgabe, 0)
+        self.assertTrue((self.ordner / "out" / "raum01_1_hdr.tif").exists())
+
+    def test_raw_datei_meldet_klaren_fehler(self):
+        eingabe = self.ordner / "in"
+        eingabe.mkdir(parents=True)
+        for nummer in (1, 2, 3):
+            (eingabe / f"bild_{nummer}.cr2").write_bytes(b"platzhalter" * 100)
+        protokoll: list = []
+        aufnahmen = hdr_merge.sammle_aufnahmen(eingabe)
+        ergebnis = hdr_merge.verarbeite_reihe(aufnahmen, self.ordner / "out",
+                                              hdr_merge.baue_parser().parse_args(
+                                                  [str(eingabe),
+                                                   str(self.ordner / "out")]))
+        self.assertFalse(ergebnis.erfolgreich)
+        texte = " ".join(text for _, text in ergebnis.protokoll)
+        self.assertIn("rawpy", texte)
+
+    def test_bildgroesse_ohne_rawpy(self):
+        eingabe = self.ordner / "in"
+        make_test_scene.schreibe_reihe(eingabe)
+        self.assertEqual(hdr_merge.lies_bildgroesse(eingabe / "raum01_1.tif"),
+                         (make_test_scene.HOEHE, make_test_scene.BREITE))
+        self.assertIsNone(hdr_merge.lies_bildgroesse(eingabe / "gibtsnicht.cr2"))
+
+
+class TestSpeicherplanung(unittest.TestCase):
+    """Die Parallelitaet muss sich am freien Arbeitsspeicher orientieren."""
+
+    def test_grosse_bilder_begrenzen_die_prozesse(self):
+        klein = hdr_merge.schaetze_speicherbedarf(900 * 600, 3)
+        gross = hdr_merge.schaetze_speicherbedarf(6000 * 4000, 3)
+        self.assertGreater(gross, klein * 40)
+        # Eine Dreierreihe mit 24 MP wurde mit rund 3,5 GB gemessen.
+        self.assertGreater(gross, 2.5 * 1024 ** 3)
+        self.assertLess(gross, 5.0 * 1024 ** 3)
+
+    def test_vorgabe_hat_vorrang(self):
+        gruppen = [[] for _ in range(8)]
+        anzahl, grund = hdr_merge.waehle_prozessanzahl(gruppen, 3)
+        self.assertEqual(anzahl, 3)
+        self.assertEqual(grund, "vorgegeben")
+
+    def test_nie_mehr_prozesse_als_reihen(self):
+        anzahl, _ = hdr_merge.waehle_prozessanzahl([[]], 0)
+        self.assertEqual(anzahl, 1)
+
+    def test_freier_speicher_ist_plausibel(self):
+        frei = hdr_merge.verfuegbarer_arbeitsspeicher()
+        self.assertGreater(frei, 128 * 1024 ** 2)
 
 
 class TestAusgabeformat(unittest.TestCase):
