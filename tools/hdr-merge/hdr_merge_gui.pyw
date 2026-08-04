@@ -227,12 +227,14 @@ class Anwendung(tk.Tk):
                         variable=self.basiston).grid(row=1, column=1,
                                                      sticky="w", padx=(16, 0),
                                                      pady=(6, 0))
-        self.neutral_wb = tk.BooleanVar(value=False)
+        self.dienst_look = tk.BooleanVar(value=False)
         ttk.Checkbutton(schritt3,
-                        text="Neutralerer Weissabgleich (statt Kamerawert)",
-                        variable=self.neutral_wb).grid(row=1, column=2,
-                                                       sticky="w", padx=(16, 0),
-                                                       pady=(6, 0))
+                        text="Farbgebung an den Dienst angleichen "
+                             "(fuer ein darauf kalibriertes Preset)",
+                        variable=self.dienst_look).grid(row=1, column=2,
+                                                        sticky="w",
+                                                        padx=(16, 0),
+                                                        pady=(6, 0))
 
         regler = ttk.Frame(schritt3)
         regler.grid(row=2, column=0, columnspan=4, sticky="ew", pady=(10, 0))
@@ -549,8 +551,11 @@ class Anwendung(tk.Tk):
             argumente.append("--straighten")
         if not self.basiston.get():
             argumente += ["--base-tone", "off"]
-        if self.neutral_wb.get():
-            argumente += ["--raw-wb", "auto"]
+        if self.dienst_look.get():
+            # Gemessene Kombination, die dem kommerziellen Ergebnis am
+            # naechsten kommt: neutralerer Weissabgleich plus Angleich der
+            # Saettigung.
+            argumente += ["--raw-wb", "auto", "--color-match", "1.0"]
         return argumente
 
     def _starte_verarbeitung(self) -> None:

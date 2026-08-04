@@ -1910,6 +1910,8 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
         ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
                                          protokoll, referenz_tags)
 
+    ergebnis = gleiche_saettigung_an(ergebnis, args.color_match,
+                                     args.color_match_target, protokoll)
     ergebnis = schuetze_spitzlichter(ergebnis, args, protokoll)
 
     ausgabe_ordner.mkdir(parents=True, exist_ok=True)
@@ -2041,6 +2043,40 @@ def stelle_determinismus_sicher() -> None:
     cv2.setRNGSeed(0)
 
 
+def gleiche_saettigung_an(bild: np.ndarray, staerke: float, ziel: float,
+                          protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Zieht die Gesamtsaettigung anteilig auf den Wert des Vorbilds.
+
+    Standardmaessig AUS. Grundregel dieses Werkzeugs ist, den Look dem Preset
+    zu ueberlassen - und gemessen fuegt es keine Saettigung hinzu: Die Quelle
+    liegt bei 0.184, das Ergebnis bei 0.157, der kommerzielle Dienst bei
+    0.098. Der Dienst entsaettigt also.
+
+    Wer ein Preset benutzt, das auf die Ausgabe dieses Dienstes eingestellt
+    ist, bekommt mit unveraendertem Material zu kraeftige Farben. Genau
+    dafuer gibt es diesen Schalter. Er senkt die Saettigung rein
+    multiplikativ und laesst die Luminanz unangetastet - Farbton und
+    Helligkeit bleiben, nur die Farbigkeit geht zurueck.
+    """
+    if staerke <= 0.0:
+        return bild
+    maximum = bild.max(axis=2)
+    minimum = bild.min(axis=2)
+    ist = float(np.mean((maximum - minimum) / np.maximum(maximum, 1e-6)))
+    if ist <= ziel or ist <= 1e-6:
+        protokoll.append((logging.DEBUG,
+                          f"Saettigungsangleich: bereits bei {ist:.3f} - "
+                          f"nichts zu tun."))
+        return bild
+    faktor = 1.0 - staerke * (1.0 - ziel / ist)
+    lum = berechne_luminanz(bild)[..., None]
+    ergebnis = lum + (bild - lum) * faktor
+    protokoll.append((logging.INFO,
+                      f"Saettigungsangleich: {ist:.3f} -> "
+                      f"{ist * faktor:.3f} (Faktor {faktor:.2f})"))
+    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
+
+
 def schuetze_spitzlichter(bild: np.ndarray, args: argparse.Namespace,
                           protokoll: list[tuple[int, str]]) -> np.ndarray:
     """Faengt die letzten harten Spitzlichter weich ab.
@@ -2162,6 +2198,13 @@ def baue_parser() -> argparse.ArgumentParser:
                         "'exact' erzwingt den Zielwert in beide Richtungen")
     t.add_argument("--white-percentile", type=float, default=99.5)
     t.add_argument("--black-percentile", type=float, default=0.2)
+    t.add_argument("--color-match", type=float, default=0.0,
+                   help="Saettigung anteilig an den kommerziellen Dienst "
+                        "angleichen (0 = aus, 1 = vollstaendig). Nur sinnvoll, "
+                        "wenn das Preset auf dessen Ausgabe eingestellt ist")
+    t.add_argument("--color-match-target", type=float, default=0.098,
+                   help="Zielsaettigung fuer --color-match (gemessen am "
+                        "Vorbild)")
     t.add_argument("--raw-wb", choices=["camera", "auto"], default="camera",
                    help="Weissabgleich der RAW-Entwicklung. 'camera' nimmt die "
                         "Einstellung aus der Kamera, 'auto' berechnet ihn neu "

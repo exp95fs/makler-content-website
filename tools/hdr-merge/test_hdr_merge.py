@@ -717,6 +717,49 @@ class TestGeometrie(unittest.TestCase):
             self.szene.shape)
 
 
+class TestFarbangleich(unittest.TestCase):
+    """--color-match senkt die Saettigung, ohne Helligkeit zu veraendern."""
+
+    @staticmethod
+    def _buntes_bild() -> np.ndarray:
+        rng = np.random.default_rng(3)
+        bild = rng.random((60, 60, 3)).astype(np.float32) * 0.7 + 0.15
+        return bild
+
+    def _saettigung(self, bild: np.ndarray) -> float:
+        mx, mn = bild.max(axis=2), bild.min(axis=2)
+        return float(np.mean((mx - mn) / np.maximum(mx, 1e-6)))
+
+    def test_standard_aendert_nichts(self):
+        bild = self._buntes_bild()
+        ergebnis = hdr_merge.gleiche_saettigung_an(bild, 0.0, 0.098, [])
+        np.testing.assert_array_equal(bild, ergebnis)
+
+    def test_saettigung_sinkt_zum_zielwert(self):
+        bild = self._buntes_bild()
+        vorher = self._saettigung(bild)
+        self.assertGreater(vorher, 0.098, "Testbild ist nicht bunt genug")
+        ergebnis = hdr_merge.gleiche_saettigung_an(bild, 1.0, 0.098, [])
+        self.assertAlmostEqual(self._saettigung(ergebnis), 0.098, delta=0.02)
+
+    def test_luminanz_bleibt_erhalten(self):
+        """Nur die Farbigkeit darf sich aendern, nicht die Helligkeit."""
+        bild = self._buntes_bild()
+        ergebnis = hdr_merge.gleiche_saettigung_an(bild, 1.0, 0.098, [])
+        np.testing.assert_allclose(hdr_merge.berechne_luminanz(bild),
+                                   hdr_merge.berechne_luminanz(ergebnis),
+                                   atol=1e-5)
+
+    def test_haelfte_liegt_dazwischen(self):
+        bild = self._buntes_bild()
+        voll = self._saettigung(hdr_merge.gleiche_saettigung_an(bild, 1.0,
+                                                                0.098, []))
+        halb = self._saettigung(hdr_merge.gleiche_saettigung_an(bild, 0.5,
+                                                                0.098, []))
+        self.assertGreater(halb, voll)
+        self.assertLess(halb, self._saettigung(bild))
+
+
 class TestSpitzlichtschutz(unittest.TestCase):
 
     def test_nichts_clippt_mehr(self):

@@ -195,6 +195,24 @@ Alles davon wurde erst durch den Vergleich sichtbar und ist behoben:
    getrennte Masken, dazu eine Ausbrenn-Gewichtung, die nur dort ersetzt, wo im
    Referenzbild wirklich Information fehlt.
 
+### Wenn das Preset auf den Dienst kalibriert ist
+
+Das bestehende Lightroom-Preset erwartet die Ausgabe des kommerziellen
+Dienstes. Die kommt gemessen **entsättigter** heraus als ein neutrales
+Basisbild. Zwei Schalter gleichen das an – in der Oberfläche als
+„Farbgebung an den Dienst angleichen", auf der Kommandozeile:
+
+```bat
+python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --raw-wb auto --color-match 1.0
+```
+
+Gemessen an der echten Aufnahme: Sättigung 0,160 → **0,105** (Dienst: 0,098),
+weiße Wand R/B 1,114 → 1,043 (Dienst: 1,004). Im direkten Bildvergleich ist
+das die sichtbar nächste Annäherung.
+
+Beides ist **standardmäßig aus**, weil die Grundregel gilt: der Look gehört
+ins Preset, nicht ins Basisbild.
+
 ### Wo der Dienst bewusst nicht nachgebaut wird
 
 Zwei gemessene Unterschiede sind **Absicht**, keine Mängel:
