@@ -20,6 +20,7 @@ verlassen:
 
 from __future__ import annotations
 
+import logging
 import pathlib
 import re
 import shutil
@@ -1094,6 +1095,57 @@ class TestFarbprofil(unittest.TestCase):
                 roh = (eintrag.value if isinstance(eintrag.value, bytes)
                        else bytes(eintrag.value))
                 self.assertEqual(roh, hdr_merge.SRGB_PROFIL)
+
+
+class TestPruefliste(unittest.TestCase):
+    """Bei dreissig Reihen ist die Pruefliste der eigentliche Zeitgewinn.
+
+    Ohne sie muss jedes Ergebnis geoeffnet werden, weil nicht bekannt ist,
+    welches ein Problem hat.
+    """
+
+    def _lauf(self, name, eintraege):
+        return hdr_merge.ReihenErgebnis(name, None, eintraege, True)
+
+    def _ausgabe(self, ergebnisse):
+        import io
+        import contextlib
+        strom = io.StringIO()
+        behandler = logging.StreamHandler(strom)
+        hdr_merge.LOG.addHandler(behandler)
+        stufe = hdr_merge.LOG.level
+        hdr_merge.LOG.setLevel(logging.INFO)
+        try:
+            hdr_merge.berichte_pruefliste(ergebnisse)
+        finally:
+            hdr_merge.LOG.removeHandler(behandler)
+            hdr_merge.LOG.setLevel(stufe)
+        return strom.getvalue()
+
+    def test_nennt_nur_die_auffaelligen(self):
+        ergebnisse = [
+            self._lauf("sauber_01", [(logging.INFO, "Fertig: sauber_01.tif")]),
+            self._lauf("problem_02", [(logging.WARNING, "Dunkelbild ausgebrannt")]),
+            self._lauf("sauber_03", [(logging.DEBUG, "Mittelton 0.5")]),
+        ]
+        text = self._ausgabe(ergebnisse)
+        self.assertIn("problem_02", text)
+        self.assertIn("Dunkelbild ausgebrannt", text)
+        self.assertNotIn("sauber_01", text)
+        self.assertNotIn("sauber_03", text)
+        self.assertIn("1 von 3", text)
+
+    def test_meldet_wenn_nichts_auffaellt(self):
+        ergebnisse = [self._lauf("a", [(logging.INFO, "Fertig")]),
+                      self._lauf("b", [(logging.DEBUG, "egal")])]
+        text = self._ausgabe(ergebnisse)
+        self.assertIn("nichts auffaellig", text)
+
+    def test_fehler_zaehlen_auch_als_auffaellig(self):
+        ergebnisse = [self._lauf("kaputt", [(logging.ERROR, "zu wenig Bilder")])]
+        text = self._ausgabe(ergebnisse)
+        self.assertIn("kaputt", text)
+        self.assertIn("zu wenig Bilder", text)
 
 
 class TestExifLeser(unittest.TestCase):

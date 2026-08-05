@@ -67,6 +67,10 @@ OPTIONALE_PAKETE = {
 }
 
 FERTIG_MUSTER = re.compile(r"\[(?P<name>[^\]]+)\]\s+Fertig:")
+# Die Pruefliste am Ende des Laufs - sie sagt, welche Reihen eine
+# Sichtpruefung verdienen. Bei dreissig Reihen ist das der Unterschied
+# zwischen "alle durchsehen" und "drei durchsehen".
+PRUEFLISTE_MUSTER = re.compile(r"Pruefliste: (?P<text>.+)$")
 
 # Breite, in der die Vorschau gerechnet wird. Der Kompromiss ist bewusst
 # gewaehlt: Bei 1100 px dauert ein Durchlauf rund zwei Sekunden, das Bild
@@ -253,6 +257,7 @@ class Anwendung(tk.Tk):
         self.foto = None                      # Referenz halten, sonst leer
         self.roh_vorschau = None              # letztes gerechnetes Bild
         self.zeige_original = False
+        self.pruefliste = ""
         self.werte: dict[str, tk.DoubleVar] = {}
 
         self._setze_stil()
@@ -611,6 +616,9 @@ class Anwendung(tk.Tk):
         elif zeile.startswith("WARNING"):
             kennzeichen = "warnung"
         self._schreibe(zeile, kennzeichen)
+        pruefung = PRUEFLISTE_MUSTER.search(zeile)
+        if pruefung:
+            self.pruefliste = pruefung.group("text")
         treffer = FERTIG_MUSTER.search(zeile)
         if treffer:
             self.fortschritt["value"] = self.fortschritt["value"] + 1
@@ -819,8 +827,14 @@ class Anwendung(tk.Tk):
         self.laeuft = False
         self.knopf_start.configure(state="normal", text="Alle Reihen verarbeiten")
         self.knopf_ausgabe.configure(state="normal")
-        self.status.set("Fertig." if erfolgreich
-                        else "Mit Fehlern beendet – siehe Protokoll.")
+        if not erfolgreich:
+            self.status.set("Mit Fehlern beendet – siehe Protokoll.")
+        elif self.pruefliste:
+            # Nicht nur "fertig": Der Fotograf soll sofort sehen, ob und
+            # welche Bilder er anschauen muss.
+            self.status.set(self.pruefliste + "  (Details im Protokoll)")
+        else:
+            self.status.set("Fertig – nichts auffaellig.")
 
     def _oeffne_ausgabe(self) -> None:
         ziel = Path(self.ausgabe_pfad.get())

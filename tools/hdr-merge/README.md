@@ -186,6 +186,24 @@ Im **Fensterbereich derselben Szene** (Schiebetür mit Blick auf einen Hang):
 
 Also gleiche Fensterhelligkeit bei mehr erhaltener Struktur.
 
+### Die Prüfliste am Ende
+
+Der eigentliche Zeitfresser bei einem Objekt mit dreißig Reihen ist nicht das
+Rechnen, sondern das Durchsehen. Am Ende jedes Laufs steht deshalb:
+
+```
+Pruefliste: 2 von 30 Reihen bitte ansehen, der Rest ist unauffaellig.
+  DSC03613
+      Dunkelbild ist im Fensterbereich zu 2.6 % selbst ausgebrannt - die
+      Belichtungsreihe war zu knapp gestuft, mehr Blendenstufen nach unten.
+  DSC03701
+      Fenstermaske umfasst 31.2 % des Bildes - das ist meist eine
+      Fehlerkennung.
+```
+
+Alles, was nicht aufgeführt ist, kann ungesehen weiterverarbeitet werden. Die
+Oberfläche zeigt dieselbe Aussage nach dem Lauf in der Statuszeile.
+
 ### Tests
 
 ```bat

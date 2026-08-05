@@ -2908,6 +2908,41 @@ def protokolliere(name: str, eintraege: Iterable[tuple[int, str]]) -> None:
         LOG.log(stufe, "[%s] %s", name, text)
 
 
+def berichte_pruefliste(ergebnisse: Sequence[ReihenErgebnis]) -> None:
+    """Nennt am Ende die Reihen, die eine Sichtpruefung verdienen.
+
+    Der eigentliche Zeitfresser bei einem Objekt mit dreissig Reihen ist
+    nicht das Rechnen, sondern das Durchsehen. Ohne diese Liste muss der
+    Fotograf jedes Ergebnis oeffnen, weil er nicht weiss, welches ein
+    Problem hat - die Warnungen sind zwar im Protokoll, stehen dort aber
+    zwischen hunderten Zeilen Ablauf.
+
+    Aufgefuehrt wird deshalb am Stueck, was auffiel, und zwar mit dem
+    Dateinamen davor. Alles andere kann ungesehen weiterverarbeitet
+    werden.
+    """
+    auffaellig: list[tuple[str, list[str]]] = []
+    for ergebnis in ergebnisse:
+        gruende = [text for stufe, text in ergebnis.protokoll
+                   if stufe >= logging.WARNING]
+        if gruende:
+            auffaellig.append((ergebnis.name, gruende))
+
+    if not auffaellig:
+        if ergebnisse:
+            LOG.info("Pruefliste: nichts auffaellig - alle %d Reihen koennen "
+                     "ungesehen weiterverarbeitet werden.", len(ergebnisse))
+        return
+
+    LOG.info("")
+    LOG.info("Pruefliste: %d von %d Reihen bitte ansehen, der Rest ist "
+             "unauffaellig.", len(auffaellig), len(ergebnisse))
+    for name, gruende in auffaellig:
+        LOG.info("  %s", name)
+        for grund in gruende:
+            LOG.info("      %s", grund)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = baue_parser().parse_args(argv)
 
@@ -2988,6 +3023,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     LOG.info("Zusammenfassung: %d/%d Reihen verarbeitet, %d Warnung(en).",
              len(ergebnisse) - fehler, len(ergebnisse), warnungen)
+    berichte_pruefliste(ergebnisse)
     return 1 if fehler else 0
 
 
