@@ -212,6 +212,14 @@ REGLER = [
     Regler("fensterhelligkeit", "--window-ceiling", "Fensterhelligkeit",
            "Heller = luftiger, dunkler = mehr Zeichnung draussen.",
            0.55, 0.92, 0.75),
+    # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
+    # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
+    # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,
+    # hier 0.343). Voreingestellt bleibt 0 - wer ein eigenes Preset fahrt,
+    # will die Farben unangetastet.
+    Regler("zurueckhaltung", "--color-match", "Farbzurueckhaltung",
+           "0 = Farben wie aufgenommen. 1 = so zurueckhaltend wie der "
+           "kommerzielle Dienst.", 0.0, 1.0, 0.0),
 ]
 
 

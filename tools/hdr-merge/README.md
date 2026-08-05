@@ -456,7 +456,17 @@ sind 0,11).
 | `--local-wb-radius` | `0.15` | Radius der Schätzung als Anteil der Bildbreite. Groß, damit großflächige Lichtstimmungen erfasst werden und nicht die Farbe einzelner Gegenstände. |
 | `--local-wb-limit` | `0.35` | Obergrenze der Korrektur je Kanal. |
 | `--highlight-ceiling` | `0.98` | Obergrenze für Spitzlichter im ganzen Bild (`0` = aus). Verhindert hartes Clipping. |
-| `--color-match` | `0.0` | Sättigung anteilig an den kommerziellen Dienst angleichen (`0` = aus, `1` = vollständig). Nur sinnvoll, wenn das Preset auf dessen Ausgabe eingestellt ist – der Dienst entsättigt, dieses Werkzeug nicht. |
+| `--color-match` | `0.0` | Sättigung anteilig an den kommerziellen Dienst angleichen (`0` = aus, `1` = vollständig). In der Oberfläche der Regler **Farbzurückhaltung**. Der Dienst entsättigt deutlich, dieses Werkzeug nicht — nachgemessen über drei Szenen liegt er über den ganzen Bereich um Faktor 1,5 bis 2,5 niedriger. Bei `1` trifft dieser Schalter dessen Profil fast genau: |
+
+| Sättigungs-Perzentil | p50 | p75 | p90 | p95 | p99 |
+|---|---|---|---|---|---|
+| Dienst | 0,066 | 0,107 | 0,354 | 0,442 | 0,500 |
+| ohne | 0,077 | 0,180 | 0,529 | 0,602 | 0,716 |
+| mit `--color-match 1.0` | 0,046 | **0,110** | **0,343** | 0,395 | **0,481** |
+
+Voreingestellt bleibt `0`: Wer ein eigenes Preset fährt, will die Farben
+unangetastet. Wer den zurückhaltenden Look des Dienstes will, zieht den Regler
+auf 1 und sieht die Wirkung sofort in der Vorschau.
 | `--color-match-target` | `0.098` | Zielwert der Sättigung, am Dienst gemessen. Wirkt nur zusammen mit `--color-match`. |
 
 ### Zeichnung und Schärfe
