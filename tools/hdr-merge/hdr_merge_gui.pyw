@@ -331,6 +331,28 @@ class Anwendung(tk.Tk):
                                        command=self._waehle_eingabe)
         self.knopf_ordner.pack(side="right")
 
+        # --- Pfadzeile ----------------------------------------------------
+        # Beide Ordner immer sichtbar. Wer dreissig Reihen rechnen laesst,
+        # will vorher sehen, wohin sie geschrieben werden - und den Ort
+        # aendern koennen, ohne die Kommandozeile zu bemuehen.
+        pfade = ttk.Frame(self, padding=(20, 0, 20, 10))
+        pfade.pack(fill="x")
+        pfade.columnconfigure(1, weight=1)
+        for zeile, (beschriftung, variable, befehl) in enumerate((
+                ("Aufnahmen", self.eingabe_pfad, self._waehle_eingabe),
+                ("Zielordner", self.ausgabe_pfad, self._waehle_ausgabe))):
+            ttk.Label(pfade, text=beschriftung,
+                      foreground=Farben.text_leise).grid(
+                          row=zeile, column=0, sticky="w", padx=(0, 10),
+                          pady=(0, 4))
+            feld = tk.Entry(pfade, textvariable=variable,
+                            bg=Farben.flaeche, fg=Farben.text,
+                            insertbackground=Farben.text, relief="flat",
+                            font=schrift(9))
+            feld.grid(row=zeile, column=1, sticky="ew", ipady=5, pady=(0, 4))
+            ttk.Button(pfade, text="…", width=3, command=befehl).grid(
+                row=zeile, column=2, padx=(8, 0), pady=(0, 4))
+
         # --- Hauptbereich -------------------------------------------------
         haupt = ttk.Frame(self, padding=(20, 0, 20, 8))
         haupt.pack(fill="both", expand=True)
@@ -622,6 +644,18 @@ class Anwendung(tk.Tk):
             self.eingabe_pfad.set(ordner)
             self._analysiere()
 
+    def _zaehle_vorhandene(self, ausgabe) -> int:
+        """Wie viele der erkannten Reihen schon ein Ergebnis haben."""
+        if not ausgabe.is_dir():
+            return 0
+        return sum(1 for reihe in self.reihen
+                   if (ausgabe / f"{reihe[0].pfad.stem}_hdr.tif").exists())
+
+    def _waehle_ausgabe(self) -> None:
+        ordner = filedialog.askdirectory(title="Zielordner fuer die TIFFs")
+        if ordner:
+            self.ausgabe_pfad.set(ordner)
+
     def _analysiere(self) -> None:
         eingabe = Path(self.eingabe_pfad.get())
         if not eingabe.is_dir():
@@ -727,6 +761,23 @@ class Anwendung(tk.Tk):
                 "Die Verarbeitung braucht numpy, opencv und tifffile. "
                 "Bitte zuerst einrichten lassen.")
             return
+        # Liegen schon Ergebnisse im Zielordner, wird gefragt statt still
+        # entschieden. Beides waere sonst eine boese Ueberraschung: stumm
+        # ueberspringen laesst geaenderte Regler wirkungslos verpuffen,
+        # stumm neu rechnen kostet bei dreissig Reihen eine Stunde.
+        schon_da = self._zaehle_vorhandene(ausgabe)
+        ueberspringen = False
+        if schon_da:
+            antwort = messagebox.askyesnocancel(
+                "Ergebnisse vorhanden",
+                f"Im Zielordner liegen bereits {schon_da} von "
+                f"{len(self.reihen)} Ergebnissen.\n\n"
+                "Ja  – nur die fehlenden rechnen (schnell)\n"
+                "Nein – alles neu rechnen (mit den jetzigen Reglern)")
+            if antwort is None:
+                return
+            ueberspringen = bool(antwort)
+
         self.ausgabe_pfad.set(str(ausgabe))
         self.laeuft = True
         self.knopf_start.configure(state="disabled", text="Verarbeitung laeuft …")
@@ -734,8 +785,10 @@ class Anwendung(tk.Tk):
         self.fortschritt.configure(maximum=max(len(self.reihen), 1), value=0)
         self.status.set(f"0 von {len(self.reihen)} Reihen fertig")
         self._schreibe(f"--- Start: {eingabe} -> {ausgabe}", "hinweis")
-        threading.Thread(target=self._arbeite_ab,
-                         args=(self._baue_argumente(eingabe, ausgabe),),
+        argumente = self._baue_argumente(eingabe, ausgabe)
+        if ueberspringen:
+            argumente.append("--skip-existing")
+        threading.Thread(target=self._arbeite_ab, args=(argumente,),
                          daemon=True).start()
 
     def _arbeite_ab(self, argumente: list[str]) -> None:

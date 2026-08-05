@@ -2131,6 +2131,96 @@ def _xmp_paket(tags: dict) -> bytes:
     return "\n".join(zeilen).encode("utf-8")
 
 
+def _icc_xyz(x: float, y: float, z: float) -> bytes:
+    """XYZType-Tag: drei Festkommazahlen s15Fixed16."""
+    return b"XYZ " + b"\x00" * 4 + struct.pack(
+        ">iii", *(int(round(w * 65536.0)) for w in (x, y, z)))
+
+
+def _icc_srgb_kurve(stuetzstellen: int = 1024) -> bytes:
+    """curveType mit der echten sRGB-Kennlinie.
+
+    Bewusst als Wertetabelle und nicht als einzelner Gamma-Wert: sRGB ist
+    kein reines Gamma 2.2, sondern hat unten ein lineares Stueck. Mit einem
+    Gamma-Wert allein waeren die Tiefen um bis zu einem Prozent daneben -
+    genau der Bereich, in dem eine Immobilienaufnahme ihre Schattenzeichnung
+    hat.
+    """
+    x = np.linspace(0.0, 1.0, stuetzstellen, dtype=np.float64)
+    linear = np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+    werte = np.clip(np.round(linear * 65535.0), 0, 65535).astype(">u2")
+    return (b"curv" + b"\x00" * 4 + struct.pack(">I", stuetzstellen)
+            + werte.tobytes())
+
+
+def _icc_text(inhalt: str) -> bytes:
+    """textDescriptionType, wie ICC v2 ihn fuer 'desc' verlangt."""
+    roh = inhalt.encode("ascii", "replace") + b"\x00"
+    return (b"desc" + b"\x00" * 4 + struct.pack(">I", len(roh)) + roh
+            + struct.pack(">II", 0, 0)          # Unicode: keine Sprache, leer
+            + struct.pack(">HB", 0, 0) + b"\x00" * 67)   # ScriptCode, leer
+
+
+def baue_srgb_profil() -> bytes:
+    """Erzeugt ein gueltiges sRGB-ICC-Profil (v2, Matrix/TRC).
+
+    Warum ueberhaupt: Ohne eingebettetes Profil ist ein TIFF farblich
+    mehrdeutig. Photoshop fragt dann nach oder weist stillschweigend den
+    eingestellten Arbeitsfarbraum zu - ist der Adobe RGB oder ProPhoto,
+    werden dieselben Zahlen deutlich anders interpretiert und das Bild
+    sieht kraeftiger aus, als es ist. Genau das darf einer Vorlage fuer ein
+    Lightroom-Preset nicht passieren.
+
+    Selbst gebaut, weil das Werkzeug ohne zusaetzliche Abhaengigkeit
+    auskommen soll und auf einem Windows-Rechner keine ICC-Bibliothek
+    vorausgesetzt werden kann. Die Primaervalenzen sind die offiziellen,
+    auf D50 adaptierten sRGB-Werte - dieselben, die auch im Profil von
+    Adobe und der ICC stehen.
+    """
+    tags: list[tuple[bytes, bytes]] = [
+        (b"desc", _icc_text("sRGB IEC61966-2.1")),
+        (b"wtpt", _icc_xyz(0.96420, 1.00000, 0.82491)),     # D50
+        (b"rXYZ", _icc_xyz(0.43607, 0.22249, 0.01392)),
+        (b"gXYZ", _icc_xyz(0.38515, 0.71687, 0.09708)),
+        (b"bXYZ", _icc_xyz(0.14307, 0.06061, 0.71410)),
+        (b"cprt", b"text" + b"\x00" * 4 + b"Public Domain\x00"),
+    ]
+    kurve = _icc_srgb_kurve()
+    # Alle drei Kanaele teilen sich dieselbe Kennlinie; ICC erlaubt
+    # ausdruecklich, dass mehrere Tags auf denselben Datenblock zeigen.
+    tags += [(b"rTRC", kurve), (b"gTRC", kurve), (b"bTRC", kurve)]
+
+    kopf_laenge = 128 + 4 + 12 * len(tags)
+    daten = bytearray()
+    tabelle = bytearray()
+    bekannt: dict[bytes, tuple[int, int]] = {}
+    for name, inhalt in tags:
+        if inhalt not in bekannt:
+            beginn = kopf_laenge + len(daten)
+            daten += inhalt
+            daten += b"\x00" * (-len(inhalt) % 4)     # 4-Byte-Ausrichtung
+            bekannt[inhalt] = (beginn, len(inhalt))
+        beginn, groesse = bekannt[inhalt]
+        tabelle += name + struct.pack(">II", beginn, groesse)
+
+    gesamt = kopf_laenge + len(daten)
+    kopf = bytearray(128)
+    struct.pack_into(">I", kopf, 0, gesamt)
+    struct.pack_into(">I", kopf, 8, 0x02100000)        # Version 2.1
+    kopf[12:16] = b"mntr"                              # Display-Geraet
+    kopf[16:20] = b"RGB "
+    kopf[20:24] = b"XYZ "
+    kopf[36:40] = b"acsp"
+    struct.pack_into(">I", kopf, 64, 0)                # Rendering Intent
+    struct.pack_into(">iii", kopf, 68,
+                     int(round(0.96420 * 65536)), 65536,
+                     int(round(0.82491 * 65536)))      # PCS-Lichtart D50
+    return bytes(kopf) + struct.pack(">I", len(tags)) + bytes(tabelle) + bytes(daten)
+
+
+SRGB_PROFIL = baue_srgb_profil()
+
+
 def speichere_tiff(pfad: Path, bild: np.ndarray, tags: dict,
                    kompression: str,
                    protokoll: list[tuple[int, str]] | None = None) -> None:
@@ -2155,6 +2245,9 @@ def speichere_tiff(pfad: Path, bild: np.ndarray, tags: dict,
             compression=verfahren,
             software="hdr_merge.py",
             extratags=extratags,
+            # Ohne eingebettetes Profil ist die Datei farblich mehrdeutig -
+            # Photoshop weist dann den eingestellten Arbeitsfarbraum zu.
+            iccprofile=SRGB_PROFIL,
             metadata=None,
         )
 
@@ -2787,6 +2880,10 @@ def baue_parser() -> argparse.ArgumentParser:
     o.add_argument("--compression", choices=["lzw", "none"], default="none",
                    help="'lzw' verkleinert die Datei, benoetigt aber das "
                         "optionale Paket 'imagecodecs'")
+    o.add_argument("--skip-existing", action="store_true",
+                   help="Reihen ueberspringen, deren Ergebnis schon im "
+                        "Zielordner liegt. Fuer Nachzuegler-Aufnahmen: nur "
+                        "das Neue wird gerechnet.")
     o.add_argument("--jobs", type=int, default=0,
                    help="Parallele Prozesse (0 = automatisch)")
     o.add_argument("--verbose", action="store_true",
@@ -2835,6 +2932,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         if len(gruppe) not in ERWARTETE_REIHENLAENGEN:
             LOG.warning("  Reihe %02d hat eine unerwartete Bildanzahl (%d).",
                         i, len(gruppe))
+
+    if args.skip_existing:
+        # Ein Objekt hat schnell dreissig Reihen. Wer nach dem Durchlauf
+        # noch Aufnahmen nachlegt, soll nicht alles neu rechnen muessen -
+        # eine Stunde Wartezeit fuer drei neue Bilder waere absurd.
+        vorher = len(gruppen)
+        gruppen = [g for g in gruppen
+                   if not (args.ausgabe / f"{g[0].pfad.stem}_hdr.tif").exists()]
+        uebersprungen = vorher - len(gruppen)
+        if uebersprungen:
+            LOG.info("%d Reihen uebersprungen, weil das Ergebnis schon im "
+                     "Zielordner liegt (--skip-existing).", uebersprungen)
+        if not gruppen:
+            LOG.info("Alle Reihen sind bereits verarbeitet - nichts zu tun.")
+            return 0
 
     jobs, begruendung = waehle_prozessanzahl(gruppen, args.jobs)
     aufgaben = [(g, args.ausgabe, args) for g in gruppen]

@@ -1013,6 +1013,89 @@ class TestOberflaecheStimmtMitDemProgramm(unittest.TestCase):
                         f"das Programm nutzt {getattr(vorgabe, name)}")
 
 
+class TestFarbprofil(unittest.TestCase):
+    """Ohne eingebettetes Profil ist ein TIFF farblich mehrdeutig.
+
+    Photoshop weist dann den eingestellten Arbeitsfarbraum zu - ist der
+    Adobe RGB oder ProPhoto, sieht dasselbe Bild deutlich kraeftiger aus,
+    als es ist. Das Profil wird selbst erzeugt, deshalb pruefen diese Tests
+    seine Struktur und nicht nur seine Anwesenheit.
+    """
+
+    def _tags(self, profil: bytes) -> dict[bytes, tuple[int, int]]:
+        import struct
+        anzahl = struct.unpack(">I", profil[128:132])[0]
+        gefunden = {}
+        for i in range(anzahl):
+            stelle = 132 + 12 * i
+            name = profil[stelle:stelle + 4]
+            gefunden[name] = struct.unpack(">II", profil[stelle + 4:stelle + 12])
+        return gefunden
+
+    def test_kopf_ist_stimmig(self):
+        import struct
+        profil = hdr_merge.SRGB_PROFIL
+        self.assertEqual(struct.unpack(">I", profil[0:4])[0], len(profil),
+                         "Groessenangabe im Kopf passt nicht zur Datei")
+        self.assertEqual(profil[36:40], b"acsp", "ICC-Signatur fehlt")
+        self.assertEqual(profil[12:16], b"mntr")
+        self.assertEqual(profil[16:20], b"RGB ")
+        self.assertEqual(profil[20:24], b"XYZ ")
+
+    def test_pflicht_tags_sind_da_und_ausgerichtet(self):
+        profil = hdr_merge.SRGB_PROFIL
+        tags = self._tags(profil)
+        for name in (b"desc", b"wtpt", b"rXYZ", b"gXYZ", b"bXYZ",
+                     b"rTRC", b"gTRC", b"bTRC", b"cprt"):
+            with self.subTest(tag=name):
+                self.assertIn(name, tags)
+                versatz, groesse = tags[name]
+                self.assertLessEqual(versatz + groesse, len(profil),
+                                     "Tag zeigt ueber das Dateiende hinaus")
+                self.assertEqual(versatz % 4, 0,
+                                 "ICC verlangt 4-Byte-Ausrichtung")
+
+    def test_kennlinie_ist_wirklich_srgb(self):
+        """Kein reines Gamma 2.2 - sRGB hat unten ein lineares Stueck."""
+        import struct
+        profil = hdr_merge.SRGB_PROFIL
+        versatz, _ = self._tags(profil)[b"rTRC"]
+        anzahl = struct.unpack(">I", profil[versatz + 8:versatz + 12])[0]
+        tabelle = np.frombuffer(profil[versatz + 12:versatz + 12 + 2 * anzahl],
+                                dtype=">u2").astype(np.float64) / 65535.0
+        x = np.linspace(0.0, 1.0, anzahl)
+        soll = np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+        self.assertLess(float(np.abs(tabelle - soll).max()), 1e-4)
+
+    def test_primaervalenzen_ergeben_den_weisspunkt(self):
+        """Die Probe aufs Exempel fuer eine Matrix im Farbprofil."""
+        import struct
+        profil = hdr_merge.SRGB_PROFIL
+        tags = self._tags(profil)
+
+        def xyz(name: bytes) -> np.ndarray:
+            versatz = tags[name][0]
+            return np.array(struct.unpack(
+                ">iii", profil[versatz + 8:versatz + 20])) / 65536.0
+
+        summe = xyz(b"rXYZ") + xyz(b"gXYZ") + xyz(b"bXYZ")
+        self.assertLess(float(np.abs(summe - xyz(b"wtpt")).max()), 0.001)
+
+    def test_profil_steht_im_geschriebenen_tiff(self):
+        import tempfile
+        import tifffile as tf
+        with tempfile.TemporaryDirectory() as ordner:
+            ziel = Path(ordner) / "p.tif"
+            hdr_merge.speichere_tiff(
+                ziel, np.zeros((8, 8, 3), dtype=np.float32), {}, "none", [])
+            with tf.TiffFile(str(ziel)) as datei:
+                eintrag = datei.pages[0].tags.get(34675)
+                self.assertIsNotNone(eintrag, "TIFF traegt kein Farbprofil")
+                roh = (eintrag.value if isinstance(eintrag.value, bytes)
+                       else bytes(eintrag.value))
+                self.assertEqual(roh, hdr_merge.SRGB_PROFIL)
+
+
 class TestExifLeser(unittest.TestCase):
 
     def test_liest_tiff_tags(self):

@@ -118,6 +118,14 @@ python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --tone-contrast 0
   Qualitätsverlust in Photoshop und Lightroom weiterverarbeitbar. Die
   Oberfläche schreibt grundsätzlich unkomprimiert; auf der Kommandozeile ist
   `--compression lzw` möglich (verlustfrei, aber benötigt `imagecodecs`).
+* **Mit eingebettetem sRGB-Farbprofil.** Ohne Profil ist ein TIFF farblich
+  mehrdeutig: Photoshop fragt beim Öffnen nach oder weist stillschweigend den
+  eingestellten Arbeitsfarbraum zu – ist der Adobe RGB oder ProPhoto, werden
+  dieselben Zahlen anders interpretiert und das Bild wirkt kräftiger, als es
+  ist. Genau das darf einer Vorlage für ein Lightroom-Preset nicht passieren.
+  Das Profil wird ohne zusätzliche Abhängigkeit selbst erzeugt; vier Tests
+  prüfen seine Struktur (Kopf, Pflicht-Tags, Ausrichtung, Kennlinie) statt
+  nur seine Anwesenheit.
 * Dateiname `<erste Datei der Reihe>_hdr.tif`.
 * EXIF der Referenzaufnahme wird übernommen, soweit möglich (siehe unten).
 * Mit `--preview` zusätzlich ein JPEG-Kontaktbogen je Reihe:
@@ -465,6 +473,7 @@ Ergebnis mit diesen Werten bei 0,78 bis 1,20 des Vorbilds.
 | `--straighten-max-deg` | `8.0` | Darüber wird nicht korrigiert, sondern nur gewarnt. |
 | `--lens-k1` | `0.0` | Fester Verzeichnungskoeffizient. Negativ gleicht tonnenförmige Verzeichnung aus (Weitwinkel). Einmal für das eigene Objektiv ermitteln. |
 | `--lens-correct` | aus | Verzeichnung automatisch aus den Bildkanten schätzen. Experimentell – siehe Grenzen. |
+| `--skip-existing` | aus | Reihen überspringen, deren Ergebnis schon im Zielordner liegt. Für Nachzügler-Aufnahmen: Nach dem Nachlegen weiterer Reihen wird nur das Neue gerechnet, statt eine Stunde lang alles zu wiederholen. Die Oberfläche fragt von sich aus, sobald sie Ergebnisse im Zielordner findet. |
 | `--preview` | aus | JPEG-Kontaktbogen je Reihe. |
 | `--compression` | `none` | `lzw` ist verlustfrei, benötigt aber `imagecodecs`. |
 | `--jobs` | `0` | Parallele Prozesse (`0` = Kerne minus 1). |
