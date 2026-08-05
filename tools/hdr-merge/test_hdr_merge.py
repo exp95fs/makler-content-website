@@ -111,7 +111,7 @@ class TestSynthetischeSzene(unittest.TestCase):
 
     # -- Fenstererkennung --------------------------------------------------
 
-    def _maske(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _maske(self) -> tuple[np.ndarray, np.ndarray]:
         bilder = [self.lauf.belichtung(i) for i in (1, 2, 3)]
         fusion = hdr_merge.fusioniere_mertens(bilder, 1.0, 1.0, 1.0)
         return hdr_merge.erkenne_fenstermaske(
@@ -120,13 +120,13 @@ class TestSynthetischeSzene(unittest.TestCase):
             min_flaeche_anteil=0.001, blur_anteil=0.02, protokoll=[])
 
     def test_maske_enthaelt_fenster(self):
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         y, x = _mitte(HIMMEL)
         self.assertEqual(binaer[y, x], 1, "Himmel im Fenster fehlt in der Maske")
 
     def test_maske_enthaelt_fenstersprossen(self):
         """Loecherfuellen: die Sprossen duerfen die Maske nicht zerreissen."""
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         y = (make_test_scene.SPROSSE_SENKRECHT[1]
              + make_test_scene.SPROSSE_SENKRECHT[3]) // 2
         x = (make_test_scene.SPROSSE_SENKRECHT[0]
@@ -134,26 +134,26 @@ class TestSynthetischeSzene(unittest.TestCase):
         self.assertEqual(binaer[y, x], 1, "Fenstersprosse fehlt in der Maske")
 
     def test_maske_verwirft_deckenleuchte(self):
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         y, x = _mitte(DECKENLEUCHTE)
         self.assertEqual(binaer[y, x], 0,
                          "Deckenleuchte wurde faelschlich als Fenster erkannt")
 
     def test_maske_verwirft_weisse_wand(self):
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         y, x = _mitte(WEISSE_WAND)
         self.assertEqual(binaer[y, x], 0,
                          "Weisse Wand wurde faelschlich als Fenster erkannt")
 
     def test_maske_verwirft_kleines_glanzlicht(self):
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         y, x = _mitte(GLANZLICHT)
         self.assertEqual(binaer[y, x], 0,
                          "Kleines Glanzlicht haette der Groessenfilter "
                          "verwerfen muessen")
 
     def test_maskenanteil_plausibel(self):
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         anteil = float(binaer.mean())
         self.assertGreater(anteil, 0.10)
         self.assertLess(anteil, 0.20)
@@ -228,7 +228,7 @@ class TestSynthetischeSzene(unittest.TestCase):
         lauf = SzenenLauf(["--tone-contrast", "0"])
         try:
             # Die Maske haengt allein an den Belichtungen, nicht am Ergebnis.
-            binaer, _, _ = self._maske()
+            binaer, _ = self._maske()
             innen = ~binaer.astype(bool)
             lum = hdr_merge.berechne_luminanz(lauf.ergebnis)[innen]
             self.assertAlmostEqual(float(np.percentile(lum, 0.2)),
@@ -247,7 +247,7 @@ class TestSynthetischeSzene(unittest.TestCase):
         gemessene Weisspunkt: Die drei vermessenen Ergebnisse des Dienstes
         liegen bei p99.5 = 0.918 / 0.873 / 0.900, im Mittel also bei 0.897.
         """
-        binaer, _, _ = self._maske()
+        binaer, _ = self._maske()
         innen = ~binaer.astype(bool)
         lum = self.lum_ergebnis[innen]
         vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])

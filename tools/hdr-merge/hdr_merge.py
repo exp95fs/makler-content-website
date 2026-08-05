@@ -199,6 +199,12 @@ AUSBRENN_CLOSE_ANTEIL = 0.005
 # einem Insektengitter bei 1.7, freie Aussicht bei 3.5).
 AUSSICHT_RAMPE = 0.5
 
+# Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
+# Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
+# sonst clippen wuerde. Alles darunter - helle Waende, Arbeitsplatten,
+# Sonnenflecken auf weisser Laibung - bleibt exakt unveraendert.
+GRUNDBILD_KNIE = 0.95
+
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
                     rate: float = ROLLOFF_RATE) -> np.ndarray:
@@ -732,8 +738,6 @@ class WindowPullErgebnis:
     ring_luminanz: float = 0.0
     # Wie sicher ein Pixel echte Aussicht zeigt statt Inventar davor (0..1).
     aussicht_gewicht: np.ndarray | None = None
-    # Maske fuer die Lichterkompression (deckt die Fensterflaeche voll ab).
-    maske_ton: np.ndarray | None = None
 
 
 def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
@@ -741,7 +745,7 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
                          detail_schwelle: float, detail_anteil: float,
                          min_flaeche_anteil: float, blur_anteil: float,
                          protokoll: list[tuple[int, str]],
-                         schliess_anteil: float = 0.015) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+                         schliess_anteil: float = 0.015) -> tuple[np.ndarray, np.ndarray]:
     """Erzeugt die Fenstermaske (binaer und weich).
 
     Ablauf:
@@ -825,35 +829,15 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
     weich = guided_filter(fuehrung, maske.astype(np.float32), radius, 1e-4)
     weich = np.clip(weich, 0.0, 1.0).astype(np.float32)
 
-    # Zweite, bewusst NICHT kantenbewusste Maske fuer die Lichterkompression.
-    # Der Guided Filter laesst die weiche Maske an dunklen Gegenstaenden im
-    # Fenster (Pendelleuchte, Rahmen) einbrechen - genau richtig fuers
-    # Ueberblenden, aber fatal fuer die Kompression: an diesen Stellen bliebe
-    # das ausgebrannte Grundbild unkomprimiert stehen und clippt auf reines
-    # Weiss, also ein Halo direkt neben dem dunklen Gegenstand. Die Tonmaske
-    # deckt die Fensterflaeche deshalb vollstaendig ab.
-    # Sie wird zusaetzlich kraeftig geschlossen: Ein Gegenstand, der von
-    # aussen in die Fensterflaeche hineinragt (eine Pendelleuchte vor dem
-    # Dachfenster), bildet eine Einbuchtung und kein geschlossenes Loch - das
-    # Loecherfuellen erreicht ihn nicht.
-    ton_kernel = ungerade(int(round(w * 0.03)))
-    ton_binaer = cv2.morphologyEx(
-        maske, cv2.MORPH_CLOSE,
-        cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                  (ton_kernel, ton_kernel)))
-    ton_binaer = fuelle_loecher(ton_binaer)
-    # Vor dem Weichzeichnen ausdehnen: Sonst faellt die Tonmaske genau auf der
-    # Fenstergrenze auf 0.5, die Kompression greift dort nur halb und das
-    # ausgebrannte Grundbild clippt zu einem duennen weissen Saum entlang der
-    # Fensterkante.
-    ausdehnung = ungerade(max(3, radius // 2))
-    ton_binaer = cv2.dilate(ton_binaer,
-                            cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
-                                                      (ausdehnung, ausdehnung)))
-    ton = box_filter(ton_binaer.astype(np.float32), max(2, radius // 3))
-    ton = np.clip(np.maximum(weich, ton), 0.0, 1.0).astype(np.float32)
-
-    return maske, weich, ton
+    # Frueher entstand hier eine zweite, kraeftig geschlossene und
+    # ausgedehnte Maske fuer die Lichterkompression. Sie ist ersatzlos
+    # entfallen: Seit Fensterinhalt und Grundbild EINZELN komprimiert werden
+    # (siehe setze_fensterinhalt), gibt es keinen maskierten
+    # Kompressionsschritt mehr, dessen Rand sichtbar werden koennte. Genau
+    # dieser Rand - gemessene 206 Pixel ueber die Fensterkante hinaus auf
+    # Decke und Laibung - war die Ursache der weichen, polygonfoermigen
+    # Flecken neben den Fenstern.
+    return maske, weich
 
 
 def gleiche_helligkeit_am_rand_an(fusion: np.ndarray, dunkel: np.ndarray,
@@ -938,7 +922,7 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
                            dunkel: np.ndarray, args: argparse.Namespace,
                            protokoll: list[tuple[int, str]]) -> WindowPullErgebnis:
     """Holt die Fensteransicht aus der dunkelsten Belichtung zurueck."""
-    maske_binaer, maske_weich, maske_ton = erkenne_fenstermaske(
+    maske_binaer, maske_weich = erkenne_fenstermaske(
         referenz, dunkel, fusion,
         schwelle=args.window_threshold,
         detail_schwelle=args.window_detail,
@@ -955,8 +939,7 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
             protokoll.append((logging.INFO,
                               "Keine Fensterflaeche erkannt - Window Pull "
                               "uebersprungen."))
-        return WindowPullErgebnis(fusion, maske_weich, maske_binaer, anteil,
-                                  maske_ton=maske_ton)
+        return WindowPullErgebnis(fusion, maske_weich, maske_binaer, anteil)
 
     # Warnung: Dunkelbild brennt im Fensterbereich selbst schon aus.
     lum_dunkel = berechne_luminanz(dunkel)
@@ -987,11 +970,11 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
     protokoll.append((logging.DEBUG,
                       f"Aussichtsanteil in der Fenstermaske: "
                       f"{float(aussicht_gewicht[maske_binaer.astype(bool)].mean()) * 100:.1f} %"))
-    ergebnis = setze_fensterinhalt(fusion, fenster_roh, maske_weich, maske_ton,
+    ergebnis = setze_fensterinhalt(fusion, fenster_roh, maske_weich,
                                    ring_luminanz, args, aussicht_gewicht)
     return WindowPullErgebnis(ergebnis, maske_weich, maske_binaer, anteil,
                               fenster_roh, ring, ring_luminanz,
-                              aussicht_gewicht, maske_ton)
+                              aussicht_gewicht)
 
 
 def berechne_aussicht_gewicht(fenster_roh: np.ndarray, ring_luminanz: float,
@@ -1064,17 +1047,43 @@ def berechne_aussicht_gewicht(fenster_roh: np.ndarray, ring_luminanz: float,
 
 
 def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
-                        maske_weich: np.ndarray, maske_ton: np.ndarray,
+                        maske_weich: np.ndarray,
                         knie_luminanz: float, args: argparse.Namespace,
                         aussicht_gewicht: np.ndarray | None = None) -> np.ndarray:
     """Setzt den Fensterinhalt ein und bringt ihn in den darstellbaren Bereich.
 
-    Wichtig ist die Reihenfolge: Erst wird ueberblendet, DANN komprimiert.
-    Umgekehrt waere der Fensterinhalt zwar sauber begrenzt, aber das
-    Grundbild traegt im Fensterbereich Werte weit ueber 1.0 bei (dort ist es
-    ja ausgebrannt). Bei einer Deckkraft von 0.8 schlaegt dieses Fuenftel
-    durch, das Ergebnis reisst wieder ueber 1.0 und clippt - der Himmel
-    wuerde trotz Kompression weiss.
+    Komprimiert werden die beiden Bilder EINZELN, danach wird ueberblendet.
+    Das ist der Kern der Sache und der Grund, warum vorher sichtbare Flecken
+    entstanden.
+
+    Frueher wurde erst ueberblendet und dann das Ergebnis innerhalb einer
+    eigenen Tonmaske komprimiert. Diese Maske war zwangslaeufig grob: Sie
+    musste die Fensterflaeche auch hinter dunklen Gegenstaenden vollstaendig
+    abdecken, wurde dafuer kraeftig geschlossen, ausgedehnt und
+    weichgezeichnet - und lief dadurch gemessene 206 Pixel ueber die
+    Fensterkante hinaus auf Decke und Laibung. Dort senkte die Kompression
+    alles oberhalb des Knies ab, und weil das Knie auf der Rahmenhelligkeit
+    sitzt (typisch 0.25 bis 0.48), traf das jede helle Flaeche. Aus einem
+    sonnenbeschienenen Fleck auf weisser Laibung bei 0.89 wurde so ein
+    sichtbar dunklerer Fleck mit weicher, polygonfoermiger Kante - der
+    "Schatten", der wie eine ueber die Kante hinausgelaufene Maske aussah,
+    weil er genau das war.
+
+    Getrennt komprimiert braucht es diese Maske nicht mehr:
+
+      * Der Fensterinhalt wird fuer sich in das Band [knie, obergrenze]
+        gebracht. Ihm steht der volle Tonwertumfang zur Verfuegung,
+        unabhaengig davon, wo er spaeter eingeblendet wird.
+      * Das Grundbild wird nur dort angetastet, wo es tatsaechlich ueber die
+        Anzeigegrenze laeuft. Unterhalb von GRUNDBILD_KNIE bleibt es exakt
+        unveraendert - eine helle Wand, eine Arbeitsplatte, ein Sonnenfleck
+        werden nicht mehr abgedunkelt.
+
+    Damit entscheidet allein die Deckkraft, wo etwas passiert. Wird die
+    Maske einmal zu gross geschaetzt, blendet sich dort der an den Rahmen
+    angeglichene Dunkelauszug derselben Szene ein - gleiche Helligkeit,
+    gleiche Farbe, praktisch unsichtbar. Ein Fehler in der Maske ergibt
+    keinen Fleck mehr, sondern faellt nicht auf.
 
     Die Angleichung am Rahmen setzt die Fensterhelligkeit richtig, hebt den
     Himmel dabei aber weit ueber 1.0. Statt hart zu clippen (Zeichnung waere
@@ -1085,7 +1094,6 @@ def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
     if aussicht_gewicht is not None:
         deckkraft = deckkraft * aussicht_gewicht
     alpha = deckkraft[..., None]
-    zusammengesetzt = grundbild * (1.0 - alpha) + fenster_roh * alpha
 
     # Das Knie liegt normalerweise auf der Rahmenhelligkeit, damit der
     # Uebergang am Fensterrahmen nicht springt. Es wird aber nach oben
@@ -1099,10 +1107,16 @@ def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
     obergrenze = args.window_ceiling
     knie = float(np.clip(min(knie_luminanz, obergrenze - args.window_range),
                          0.10, obergrenze - 0.05))
-    ergebnis = komprimiere_lichter_in_maske(
-        zusammengesetzt, maske_ton, knie=knie,
-        obergrenze=obergrenze, rate=args.window_rolloff,
-        detail_erhalt=args.window_texture)
+
+    voll = np.ones(maske_weich.shape, dtype=np.float32)
+    fenster_kompr = komprimiere_lichter_in_maske(
+        fenster_roh, voll, knie=knie, obergrenze=obergrenze,
+        rate=args.window_rolloff, detail_erhalt=args.window_texture)
+    grund_sicher = komprimiere_lichter_in_maske(
+        grundbild, voll, knie=GRUNDBILD_KNIE, obergrenze=1.0,
+        rate=args.window_rolloff, detail_erhalt=args.window_texture)
+
+    ergebnis = grund_sicher * (1.0 - alpha) + fenster_kompr * alpha
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
@@ -1575,7 +1589,7 @@ def nimm_fenster_zurueck(bild: np.ndarray, window: WindowPullErgebnis,
                       f"{window.ring_luminanz:.3f} -> {ring_neu:.3f}, "
                       f"Skalierung {skalierung:.2f})"))
     return setze_fensterinhalt(bild, window.fenster_roh * skalierung,
-                               window.maske_weich, window.maske_ton, ring_neu,
+                               window.maske_weich, ring_neu,
                                args, window.aussicht_gewicht)
 
 
