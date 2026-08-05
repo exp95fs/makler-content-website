@@ -27,6 +27,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import cv2
 import numpy as np
 import tifffile
 
@@ -911,6 +912,105 @@ class TestZeichnung(unittest.TestCase):
         dunkle_seite = ergebnis[:, 30:39, 1]
         self.assertLess(float(dunkle_seite.min()), 0.26)
         self.assertLess(abs(float(dunkle_seite.mean()) - 0.25), 0.02)
+
+
+class TestVorschauEntsprichtErgebnis(unittest.TestCase):
+    """Die wichtigste Zusage der Oberflaeche.
+
+    Wer an einem Regler dreht und die Vorschau beurteilt, muss sich darauf
+    verlassen koennen, dass der Endlauf genau das liefert. Deshalb rufen
+    beide denselben Rechenkern auf - und dieser Test haelt das fest: Auf
+    identischer Eingabe muss die Vorschau bitgleich zum Endergebnis sein.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.lauf = SzenenLauf()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.lauf.aufraeumen()
+
+    def test_vorschau_ist_bitgleich_zum_endergebnis(self):
+        bilder = [self.lauf.belichtung(i) for i in (1, 2, 3)]
+        vorgabe = hdr_merge.baue_parser().parse_args(
+            [str(self.lauf.eingabe), str(self.lauf.ausgabe),
+             "--bracket-size", "3", "--no-align", "--jobs", "1"])
+        vorschau = hdr_merge.berechne_vorschau(bilder, vorgabe)
+        endergebnis = self.lauf.ergebnis
+        self.assertEqual(vorschau.shape, endergebnis.shape)
+        # Der Unterschied darf nur aus der 16-Bit-Quantisierung beim
+        # Speichern stammen.
+        self.assertLess(float(np.abs(vorschau - endergebnis).max()), 1.0 / 65535.0 * 2)
+
+    def test_vorschau_ueberlebt_verkleinerung(self):
+        """Auf halber Kantenlaenge muss derselbe Look herauskommen.
+
+        Alle Radien im Programm sind Anteile der Bildbreite. Ein Regler
+        muss deshalb auf dem kleinen Vorschaubild massstabsgetreu dasselbe
+        bewirken - sonst waere die Vorschau wertlos.
+        """
+        bilder = [self.lauf.belichtung(i) for i in (1, 2, 3)]
+        klein = [cv2.resize(b, (b.shape[1] // 2, b.shape[0] // 2),
+                            interpolation=cv2.INTER_AREA) for b in bilder]
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b", "--no-align"])
+        gross = hdr_merge.berechne_vorschau(bilder, vorgabe)
+        winzig = hdr_merge.berechne_vorschau(klein, vorgabe)
+        lum_gross = hdr_merge.berechne_luminanz(gross)
+        lum_klein = hdr_merge.berechne_luminanz(winzig)
+        for name, wert in (("Median", 50), ("Weisspunkt", 99.5),
+                           ("Schwarzpunkt", 0.2)):
+            with self.subTest(kennwert=name):
+                a = float(np.percentile(lum_gross, wert))
+                b = float(np.percentile(lum_klein, wert))
+                self.assertLess(abs(a - b), 0.04,
+                                f"{name} weicht zwischen gross und klein ab")
+
+
+class TestOberflaecheStimmtMitDemProgramm(unittest.TestCase):
+    """Die Regler der Oberflaeche duerfen nicht vom Programm abdriften.
+
+    Gelesen wird die Oberflaeche als Quelltext, nicht importiert - tkinter
+    ist auf Rechnern ohne Fenstersystem nicht vorhanden, der Test soll aber
+    ueberall laufen.
+    """
+
+    def _regler(self) -> list[tuple[str, float]]:
+        import ast
+        quelle = (Path(__file__).parent / "hdr_merge_gui.pyw").read_text(
+            encoding="utf-8")
+        baum = ast.parse(quelle)
+        for knoten in baum.body:
+            ziel = getattr(knoten, "targets", [None])[0]
+            if isinstance(ziel, ast.Name) and ziel.id == "REGLER":
+                return [(ast.literal_eval(a.args[1]),
+                         float(ast.literal_eval(a.args[6])))
+                        for a in knoten.value.elts]
+        self.fail("REGLER-Liste in der Oberflaeche nicht gefunden")
+
+    def test_jeder_regler_hat_einen_schalter(self):
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        for schalter, _ in self._regler():
+            with self.subTest(schalter=schalter):
+                name = schalter.lstrip("-").replace("-", "_")
+                self.assertTrue(hasattr(vorgabe, name),
+                                f"{schalter} gibt es im Programm nicht")
+
+    def test_reglerstellung_entspricht_der_voreinstellung(self):
+        """Sonst zeigt die Oberflaeche beim Start etwas anderes als sie tut.
+
+        Die Oberflaeche uebergibt nur Werte, die vom Standard abweichen. Ein
+        falsch eingetragener Standardwert wuerde also stillschweigend die
+        Voreinstellung des Programms uebergehen.
+        """
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        for schalter, standard in self._regler():
+            with self.subTest(schalter=schalter):
+                name = schalter.lstrip("-").replace("-", "_")
+                self.assertAlmostEqual(
+                    float(getattr(vorgabe, name)), standard, places=6,
+                    msg=f"{schalter}: Oberflaeche zeigt {standard}, "
+                        f"das Programm nutzt {getattr(vorgabe, name)}")
 
 
 class TestExifLeser(unittest.TestCase):

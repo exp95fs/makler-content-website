@@ -5,19 +5,32 @@ hdr_merge_gui.pyw -- Fenster-Oberflaeche fuer hdr_merge.py.
 
 Ablauf aus Sicht des Anwenders:
 
-    Ordner waehlen  ->  Reihen werden automatisch erkannt und angezeigt
-                    ->  Verarbeitung laeuft automatisch los
+    Ordner waehlen  ->  Reihen werden erkannt und angezeigt
+                    ->  eine Reihe erscheint als Vorschau
+                    ->  an den Reglern justieren, bis es passt
+                    ->  "Alle Reihen verarbeiten"
                     ->  fertige 16-Bit-TIFFs im Zielordner
 
-Die Oberflaeche ist bewusst nur eine Huelle: Die Bildverarbeitung laeuft
-unveraendert in hdr_merge.py als eigener Prozess. Damit ist das Ergebnis
-identisch, egal ob ueber die Kommandozeile oder ueber dieses Fenster
-gestartet wird - und ein Absturz der Verarbeitung kann die Oberflaeche
-nicht mitreissen.
+Zwei Dinge sind an der Aufteilung wichtig:
+
+  * Die **Vorschau** rechnet im Programm selbst, auf verkleinerten Bildern.
+    Sie nimmt dabei exakt denselben Weg wie der spaetere Endlauf
+    (``hdr_merge.berechne_vorschau`` ruft denselben Rechenkern auf). Waeren
+    es zwei Implementierungen, koennte die Vorschau etwas zeigen, das das
+    Ergebnis nicht einloest - und genau darauf muss man sich beim Justieren
+    verlassen koennen. Alle Radien im Programm sind Anteile der Bildbreite,
+    deshalb wirkt jeder Regler auf dem kleinen Bild massstabsgetreu.
+
+  * Der **Endlauf** laeuft unveraendert als eigener Prozess. Damit ist das
+    Ergebnis identisch, egal ob ueber die Kommandozeile oder ueber dieses
+    Fenster gestartet wird - und ein Absturz der Verarbeitung kann die
+    Oberflaeche nicht mitreissen.
 
 Verwendet ausschliesslich tkinter aus der Standardbibliothek, also keine
-zusaetzliche Abhaengigkeit. Die Endung .pyw sorgt unter Windows dafuer, dass
-kein schwarzes Konsolenfenster mitstartet.
+zusaetzliche Abhaengigkeit. Auch die Bildanzeige kommt ohne Pillow aus: Das
+Vorschaubild wird als PPM im Speicher erzeugt und direkt an tk.PhotoImage
+uebergeben. Die Endung .pyw sorgt unter Windows dafuer, dass kein schwarzes
+Konsolenfenster mitstartet.
 
 Ein Ordner kann auch direkt auf das Programmsymbol gezogen werden - er wird
 dann als Argument uebergeben und sofort analysiert.
@@ -25,6 +38,7 @@ dann als Argument uebergeben und sofort analysiert.
 
 from __future__ import annotations
 
+import base64
 import importlib.util
 import os
 import queue
@@ -38,9 +52,6 @@ from tkinter import filedialog, messagebox, ttk
 
 ORDNER = Path(__file__).resolve().parent
 HDR_MERGE = ORDNER / "hdr_merge.py"
-TESTSZENE_SKRIPT = ORDNER / "make_reference_scene.py"
-BEISPIEL_EINGABE = ORDNER / "Beispiel" / "aufnahmen"
-BEISPIEL_AUSGABE = ORDNER / "Beispiel" / "ergebnis"
 
 # Ohne diese drei laeuft gar nichts.
 BENOETIGTE_PAKETE = {
@@ -55,9 +66,50 @@ OPTIONALE_PAKETE = {
     "rawpy": ("RAW-Entwicklung (CR2, NEF, ARW, DNG, RAF)", "rawpy"),
 }
 
-# Erkennt im Protokoll der Verarbeitung, dass eine Reihe fertig ist.
 FERTIG_MUSTER = re.compile(r"\[(?P<name>[^\]]+)\]\s+Fertig:")
 
+# Breite, in der die Vorschau gerechnet wird. Der Kompromiss ist bewusst
+# gewaehlt: Bei 1100 px dauert ein Durchlauf rund zwei Sekunden, das Bild
+# ist aber gross genug, um Zeichnung und Fenster wirklich beurteilen zu
+# koennen.
+VORSCHAU_BREITE = 1100
+
+
+# ---------------------------------------------------------------------------
+# Farben und Schrift
+# ---------------------------------------------------------------------------
+
+class Farben:
+    """Dunkles, ruhiges Schema - damit die Bilder die Aufmerksamkeit haben.
+
+    Eine Bildoberflaeche muss neutral sein: Jede kraeftige Flaeche daneben
+    verschiebt die Wahrnehmung von Helligkeit und Farbe des Bildes. Die
+    Toene sind deshalb bewusst unbunt gehalten, der einzige Akzent ist ein
+    gedaempftes Blau fuer bedienbare Elemente.
+    """
+    grund = "#1c1e22"
+    flaeche = "#24272c"
+    erhoben = "#2c3036"
+    linie = "#383d45"
+    text = "#e8eaed"
+    text_leise = "#9aa1ab"
+    akzent = "#5b9dd9"
+    akzent_hell = "#7fb5e6"
+    warnung = "#d9a55b"
+    fehler = "#d97a7a"
+    gut = "#7fbf8a"
+    # Neutrales Grau als Bildumfeld - siehe oben.
+    buehne = "#15171a"
+
+
+def schrift(groesse: int = 10, fett: bool = False) -> tuple:
+    familie = "Segoe UI" if os.name == "nt" else "DejaVu Sans"
+    return (familie, groesse, "bold" if fett else "normal")
+
+
+# ---------------------------------------------------------------------------
+# Einrichtung
+# ---------------------------------------------------------------------------
 
 def python_programm() -> str:
     """Pfad zum Python-Programm fuer die Unterprozesse.
@@ -82,7 +134,6 @@ def ohne_konsolenfenster() -> dict:
 
 
 def fehlende_pakete() -> list[str]:
-    """Pflichtpakete, die noch fehlen."""
     return [name for name in BENOETIGTE_PAKETE
             if importlib.util.find_spec(name) is None]
 
@@ -117,216 +168,384 @@ def installiere_pakete(namen: dict, meldung) -> list[str]:
     return gescheitert
 
 
+# ---------------------------------------------------------------------------
+# Die Regler
+# ---------------------------------------------------------------------------
+
+class Regler:
+    """Ein Regler mit Klartext-Beschriftung und dem zugehoerigen Schalter.
+
+    ``schalter`` ist der Name auf der Kommandozeile. Die Oberflaeche gibt
+    ausschliesslich Werte weiter, die vom Standard abweichen - so bleibt
+    der Aufruf lesbar und die Voreinstellungen bleiben die eine Wahrheit
+    im Programm.
+    """
+
+    def __init__(self, schluessel, schalter, titel, erklaerung,
+                 minimum, maximum, standard, schritt=0.01, nachkomma=2):
+        self.schluessel = schluessel
+        self.schalter = schalter
+        self.titel = titel
+        self.erklaerung = erklaerung
+        self.minimum = minimum
+        self.maximum = maximum
+        self.standard = standard
+        self.schritt = schritt
+        self.nachkomma = nachkomma
+
+
+# Bewusst nur die Regler, die den Look bestimmen und die man am Bild
+# beurteilen kann. Alles Weitere bleibt der Kommandozeile vorbehalten -
+# eine Oberflaeche mit vierzig Reglern hilft niemandem.
+REGLER = [
+    Regler("helligkeit", "--mid-target", "Helligkeit",
+           "Wie hell der Raum insgesamt wird.", 0.42, 0.74, 0.58),
+    Regler("kontrast", "--tone-contrast", "Kontrast",
+           "Die am Vorbild gemessene Kennlinie. 0 = flach.", 0.0, 1.5, 1.0),
+    Regler("zeichnung", "--clarity", "Zeichnung",
+           "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 1.0),
+    Regler("schaerfe", "--sharpen", "Schaerfe",
+           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 1.5, 0.6),
+    Regler("fenster", "--window-strength", "Fenster zurueckholen",
+           "Wie stark die Aussicht aus der dunklen Aufnahme kommt.",
+           0.0, 1.0, 1.0),
+    Regler("fensterhelligkeit", "--window-ceiling", "Fensterhelligkeit",
+           "Heller = luftiger, dunkler = mehr Zeichnung draussen.",
+           0.55, 0.92, 0.75),
+]
+
+
+# ---------------------------------------------------------------------------
+# Anwendung
+# ---------------------------------------------------------------------------
+
 class Anwendung(tk.Tk):
 
     def __init__(self, startordner: str | None = None) -> None:
         super().__init__()
-        self.title("HDR Merge - Basisbilder fuer Lightroom")
-        self.minsize(900, 720)
+        self.title("HDR Merge")
+        self.geometry("1500x900")
+        self.minsize(1150, 700)
+        self.configure(bg=Farben.grund)
 
-        self.prozess: subprocess.Popen | None = None
+        symbol = ORDNER / "hdr_merge.ico"
+        if symbol.exists() and os.name == "nt":
+            try:
+                self.iconbitmap(str(symbol))
+            except Exception:
+                pass
+
         self.meldungen: queue.Queue = queue.Queue()
-        self.letzter_ausgabeordner: Path | None = None
-        self.gruppen: list[list] = []
-        self.fertige_reihen = 0
-        self.abgebrochen = False
+        self.prozess: subprocess.Popen | None = None
+        self.laeuft = False
+        self.reihen: list = []
+        self.vorschau_bilder: list = []       # verkleinerte Belichtungen
+        self.vorschau_reihe = -1              # welche Reihe geladen ist
+        self.vorschau_marke = 0               # verwirft veraltete Ergebnisse
+        self.foto = None                      # Referenz halten, sonst leer
+        self.roh_vorschau = None              # letztes gerechnetes Bild
+        self.zeige_original = False
+        self.werte: dict[str, tk.DoubleVar] = {}
 
+        self._setze_stil()
         self._baue_oberflaeche()
-        self.after(100, self._verarbeite_meldungen)
         self.protocol("WM_DELETE_WINDOW", self._beim_schliessen)
-
-        if startordner:
-            self.eingabe_feld.insert(0, startordner)
-            self.after(400, self._analysiere)
+        self.after(100, self._verarbeite_meldungen)
         self.after(300, self._pruefe_pakete)
 
-    # -----------------------------------------------------------------
-    # Aufbau
-    # -----------------------------------------------------------------
+        if startordner:
+            self.eingabe_pfad.set(startordner)
+            self.after(700, self._analysiere)
+
+    # -- Aussehen ---------------------------------------------------------
+
+    def _setze_stil(self) -> None:
+        stil = ttk.Style(self)
+        stil.theme_use("clam")
+        stil.configure("TFrame", background=Farben.grund)
+        stil.configure("Flaeche.TFrame", background=Farben.flaeche)
+        stil.configure("Buehne.TFrame", background=Farben.buehne)
+        stil.configure("TLabel", background=Farben.grund,
+                       foreground=Farben.text, font=schrift(10))
+        stil.configure("Flaeche.TLabel", background=Farben.flaeche,
+                       foreground=Farben.text, font=schrift(10))
+        stil.configure("Leise.TLabel", background=Farben.flaeche,
+                       foreground=Farben.text_leise, font=schrift(9))
+        stil.configure("Titel.TLabel", background=Farben.grund,
+                       foreground=Farben.text, font=schrift(17, True))
+        stil.configure("Abschnitt.TLabel", background=Farben.flaeche,
+                       foreground=Farben.text_leise, font=schrift(9, True))
+        stil.configure("Wert.TLabel", background=Farben.flaeche,
+                       foreground=Farben.akzent_hell, font=schrift(10, True))
+
+        stil.configure("TButton", background=Farben.erhoben,
+                       foreground=Farben.text, font=schrift(10),
+                       borderwidth=0, focuscolor=Farben.erhoben, padding=(14, 9))
+        stil.map("TButton",
+                 background=[("active", Farben.linie),
+                             ("disabled", Farben.flaeche)],
+                 foreground=[("disabled", Farben.text_leise)])
+        stil.configure("Start.TButton", background=Farben.akzent,
+                       foreground="#10141a", font=schrift(11, True),
+                       padding=(16, 12))
+        stil.map("Start.TButton",
+                 background=[("active", Farben.akzent_hell),
+                             ("disabled", Farben.linie)],
+                 foreground=[("disabled", Farben.text_leise)])
+
+        stil.configure("TScale", background=Farben.flaeche,
+                       troughcolor=Farben.grund, borderwidth=0)
+        stil.configure("Horizontal.TScale", background=Farben.flaeche,
+                       troughcolor=Farben.grund, borderwidth=0, lightcolor=Farben.akzent,
+                       darkcolor=Farben.akzent)
+        stil.configure("TCheckbutton", background=Farben.flaeche,
+                       foreground=Farben.text, font=schrift(10),
+                       focuscolor=Farben.flaeche)
+        stil.map("TCheckbutton", background=[("active", Farben.flaeche)])
+        stil.configure("TCombobox", fieldbackground=Farben.erhoben,
+                       background=Farben.erhoben, foreground=Farben.text,
+                       arrowcolor=Farben.text_leise, borderwidth=0)
+        stil.configure("TProgressbar", background=Farben.akzent,
+                       troughcolor=Farben.grund, borderwidth=0)
+        stil.configure("Treeview", background=Farben.flaeche,
+                       fieldbackground=Farben.flaeche, foreground=Farben.text,
+                       borderwidth=0, font=schrift(9), rowheight=24)
+        stil.configure("Treeview.Heading", background=Farben.erhoben,
+                       foreground=Farben.text_leise, font=schrift(9, True),
+                       borderwidth=0)
+        stil.map("Treeview", background=[("selected", Farben.akzent)],
+                 foreground=[("selected", "#10141a")])
 
     def _baue_oberflaeche(self) -> None:
-        rahmen = ttk.Frame(self, padding=12)
-        rahmen.pack(fill="both", expand=True)
-        rahmen.columnconfigure(0, weight=1)
-        rahmen.rowconfigure(3, weight=3)
-        rahmen.rowconfigure(7, weight=2)
+        self.eingabe_pfad = tk.StringVar()
+        self.ausgabe_pfad = tk.StringVar()
+        self.status = tk.StringVar(value="Ordner mit Belichtungsreihen waehlen.")
 
-        # --- Schritt 1: Ordner --------------------------------------------
-        schritt1 = ttk.LabelFrame(rahmen, padding=10,
-                                  text="1. Ordner mit den Aufnahmen")
-        schritt1.grid(row=0, column=0, sticky="ew")
-        schritt1.columnconfigure(0, weight=1)
+        # --- Kopfzeile ----------------------------------------------------
+        kopf = ttk.Frame(self, padding=(20, 16, 20, 12))
+        kopf.pack(fill="x")
+        ttk.Label(kopf, text="HDR Merge", style="Titel.TLabel").pack(side="left")
+        ttk.Label(kopf, text="   Belichtungsreihen zu neutralen Basisbildern",
+                  foreground=Farben.text_leise).pack(side="left", pady=(6, 0))
+        self.knopf_ordner = ttk.Button(kopf, text="Ordner waehlen …",
+                                       command=self._waehle_eingabe)
+        self.knopf_ordner.pack(side="right")
 
-        self.eingabe_feld = ttk.Entry(schritt1)
-        self.eingabe_feld.grid(row=0, column=0, sticky="ew")
-        ttk.Button(schritt1, text="Ordner waehlen ...",
-                   command=self._waehle_eingabe).grid(row=0, column=1,
-                                                      padx=(8, 0))
-        ttk.Button(schritt1, text="Neu einlesen",
-                   command=self._analysiere).grid(row=0, column=2, padx=(8, 0))
-        ttk.Label(schritt1, foreground="#5a5a5a",
-                  text="RAW (CR2, NEF, ARW, DNG, RAF) oder 16-Bit-TIFF. "
-                       "Unterordner werden nicht durchsucht.").grid(
-            row=1, column=0, columnspan=3, sticky="w", pady=(6, 0))
+        # --- Hauptbereich -------------------------------------------------
+        haupt = ttk.Frame(self, padding=(20, 0, 20, 8))
+        haupt.pack(fill="both", expand=True)
+        haupt.columnconfigure(0, weight=0, minsize=340)
+        haupt.columnconfigure(1, weight=1)
+        haupt.rowconfigure(0, weight=1)
 
-        # --- Schritt 2: erkannte Reihen -----------------------------------
-        schritt2 = ttk.LabelFrame(rahmen, padding=10,
-                                  text="2. Erkannte Belichtungsreihen")
-        schritt2.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
-        rahmen.rowconfigure(1, weight=3)
-        schritt2.columnconfigure(0, weight=1)
-        schritt2.rowconfigure(0, weight=1)
+        self._baue_seitenleiste(haupt)
+        self._baue_buehne(haupt)
 
-        spalten = ("reihe", "anzahl", "dateien", "ev", "status")
-        self.tabelle = ttk.Treeview(schritt2, columns=spalten, show="headings",
-                                    height=8)
-        for spalte, text, breite in (("reihe", "Reihe", 60),
-                                     ("anzahl", "Bilder", 60),
-                                     ("dateien", "Dateien", 380),
-                                     ("ev", "EV-Muster", 150),
-                                     ("status", "Status", 120)):
-            self.tabelle.heading(spalte, text=text)
-            self.tabelle.column(spalte, width=breite,
-                                anchor="w" if spalte == "dateien" else "center")
-        self.tabelle.grid(row=0, column=0, sticky="nsew")
-        leiste = ttk.Scrollbar(schritt2, orient="vertical",
-                               command=self.tabelle.yview)
-        leiste.grid(row=0, column=1, sticky="ns")
-        self.tabelle.configure(yscrollcommand=leiste.set)
-        self.tabelle.tag_configure("warnung", background="#fff4d6")
-        self.tabelle.tag_configure("fertig", background="#e4f6e4")
-
-        self.zusammenfassung = ttk.Label(schritt2, text="Noch kein Ordner "
-                                                        "eingelesen.")
-        self.zusammenfassung.grid(row=1, column=0, columnspan=2, sticky="w",
-                                  pady=(8, 0))
-
-        # --- Schritt 3: Einstellungen --------------------------------------
-        schritt3 = ttk.LabelFrame(rahmen, padding=10, text="3. Einstellungen")
-        schritt3.grid(row=2, column=0, sticky="ew", pady=(10, 0))
-        schritt3.columnconfigure(3, weight=1)
-
-        self.stativ = tk.BooleanVar(value=False)
-        ttk.Checkbutton(schritt3, text="Vom Stativ (Ausrichtung ueberspringen)",
-                        variable=self.stativ).grid(row=0, column=0, sticky="w")
-        self.vorschau = tk.BooleanVar(value=True)
-        ttk.Checkbutton(schritt3, text="Kontaktbogen zum Pruefen",
-                        variable=self.vorschau).grid(row=0, column=1,
-                                                     sticky="w", padx=(16, 0))
-        self.begradigen = tk.BooleanVar(value=False)
-        ttk.Checkbutton(schritt3, text="Stuerzende Linien begradigen",
-                        variable=self.begradigen).grid(row=0, column=2,
-                                                       sticky="w", padx=(16, 0))
-        self.sofort_starten = tk.BooleanVar(value=True)
-        ttk.Checkbutton(schritt3, text="Nach dem Einlesen sofort starten",
-                        variable=self.sofort_starten).grid(row=1, column=0,
-                                                           sticky="w",
-                                                           pady=(6, 0))
-        self.basiston = tk.BooleanVar(value=True)
-        ttk.Checkbutton(schritt3, text="Auf einheitliche Helligkeit bringen",
-                        variable=self.basiston).grid(row=1, column=1,
-                                                     sticky="w", padx=(16, 0),
-                                                     pady=(6, 0))
-        self.dienst_look = tk.BooleanVar(value=False)
-        ttk.Checkbutton(schritt3,
-                        text="Farbgebung an den Dienst angleichen "
-                             "(fuer ein darauf kalibriertes Preset)",
-                        variable=self.dienst_look).grid(row=1, column=2,
-                                                        sticky="w",
-                                                        padx=(16, 0),
-                                                        pady=(6, 0))
-
-        regler = ttk.Frame(schritt3)
-        regler.grid(row=2, column=0, columnspan=4, sticky="ew", pady=(10, 0))
-        regler.columnconfigure(1, weight=1)
-        regler.columnconfigure(4, weight=1)
-
-        ttk.Label(regler, text="Helligkeit:").grid(row=0, column=0, sticky="w")
-        self.helligkeit = tk.DoubleVar(value=0.55)
-        ttk.Scale(regler, from_=0.35, to=0.75, variable=self.helligkeit,
-                  command=lambda _: self.helligkeit_text.configure(
-                      text=f"{self.helligkeit.get():.2f}")).grid(
-            row=0, column=1, sticky="ew", padx=8)
-        self.helligkeit_text = ttk.Label(regler, text="0.55", width=5)
-        self.helligkeit_text.grid(row=0, column=2)
-
-        ttk.Label(regler, text="Fenster zurueckholen:").grid(row=0, column=3,
-                                                             sticky="w",
-                                                             padx=(20, 0))
-        self.staerke = tk.DoubleVar(value=0.8)
-        ttk.Scale(regler, from_=0.0, to=1.0, variable=self.staerke,
-                  command=lambda _: self.staerke_text.configure(
-                      text=f"{self.staerke.get():.2f}")).grid(
-            row=0, column=4, sticky="ew", padx=8)
-        self.staerke_text = ttk.Label(regler, text="0.80", width=5)
-        self.staerke_text.grid(row=0, column=5)
-
-        # --- Schritt 4: Zielordner und Start --------------------------------
-        schritt4 = ttk.LabelFrame(rahmen, padding=10, text="4. Zielordner")
-        schritt4.grid(row=3, column=0, sticky="ew", pady=(10, 0))
-        schritt4.columnconfigure(0, weight=1)
-        self.ausgabe_feld = ttk.Entry(schritt4)
-        self.ausgabe_feld.grid(row=0, column=0, sticky="ew")
-        ttk.Button(schritt4, text="Waehlen ...",
-                   command=self._waehle_ausgabe).grid(row=0, column=1,
-                                                      padx=(8, 0))
-        ttk.Label(schritt4, foreground="#5a5a5a",
-                  text="Ausgabe: unkomprimiertes 16-Bit-TIFF (sRGB), direkt in "
-                       "Lightroom und Photoshop weiterverarbeitbar.").grid(
-            row=1, column=0, columnspan=2, sticky="w", pady=(6, 0))
-
-        knopfreihe = ttk.Frame(rahmen)
-        knopfreihe.grid(row=4, column=0, sticky="ew", pady=(12, 0))
-        self.start_knopf = ttk.Button(knopfreihe, text="Verarbeitung starten",
-                                      command=self._starte_verarbeitung,
-                                      state="disabled")
-        self.start_knopf.pack(side="left")
-        self.abbruch_knopf = ttk.Button(knopfreihe, text="Abbrechen",
-                                        command=self._brich_ab,
-                                        state="disabled")
-        self.abbruch_knopf.pack(side="left", padx=(8, 0))
-        ttk.Button(knopfreihe, text="Probelauf mit Beispielbildern",
-                   command=self._starte_probelauf).pack(side="left", padx=(8, 0))
-        self.oeffnen_knopf = ttk.Button(knopfreihe, text="Ergebnisordner oeffnen",
+        # --- Fusszeile ----------------------------------------------------
+        fuss = ttk.Frame(self, padding=(20, 4, 20, 14))
+        fuss.pack(fill="x")
+        self.fortschritt = ttk.Progressbar(fuss, mode="determinate", length=200)
+        self.fortschritt.pack(side="left", fill="x", expand=True, padx=(0, 14))
+        ttk.Label(fuss, textvariable=self.status,
+                  foreground=Farben.text_leise).pack(side="left")
+        self.knopf_protokoll = ttk.Button(fuss, text="Protokoll",
+                                          command=self._zeige_protokoll)
+        self.knopf_protokoll.pack(side="right")
+        self.knopf_ausgabe = ttk.Button(fuss, text="Zielordner oeffnen",
                                         command=self._oeffne_ausgabe,
                                         state="disabled")
-        self.oeffnen_knopf.pack(side="right")
+        self.knopf_ausgabe.pack(side="right", padx=(0, 8))
 
-        self.fortschritt = ttk.Progressbar(rahmen, mode="determinate")
-        self.fortschritt.grid(row=5, column=0, sticky="ew", pady=(10, 0))
+        self.protokoll_text: tk.Text | None = None
+        self.protokoll_zeilen: list[tuple[str, str]] = []
 
-        # --- Protokoll -------------------------------------------------------
-        ttk.Label(rahmen, text="Protokoll").grid(row=6, column=0, sticky="w",
-                                                 pady=(10, 2))
-        protokoll_rahmen = ttk.Frame(rahmen)
-        protokoll_rahmen.grid(row=7, column=0, sticky="nsew")
-        protokoll_rahmen.columnconfigure(0, weight=1)
-        protokoll_rahmen.rowconfigure(0, weight=1)
-        self.protokoll = tk.Text(protokoll_rahmen, height=10, wrap="word",
-                                 state="disabled", background="#1e1e1e",
-                                 foreground="#e6e6e6", relief="flat")
-        self.protokoll.grid(row=0, column=0, sticky="nsew")
-        leiste2 = ttk.Scrollbar(protokoll_rahmen, orient="vertical",
-                                command=self.protokoll.yview)
-        leiste2.grid(row=0, column=1, sticky="ns")
-        self.protokoll.configure(yscrollcommand=leiste2.set)
-        self.protokoll.tag_configure("warnung", foreground="#ffc861")
-        self.protokoll.tag_configure("fehler", foreground="#ff8a80")
-        self.protokoll.tag_configure("erfolg", foreground="#9ae6a0")
-        self.protokoll.tag_configure("hinweis", foreground="#8fc7ff")
+    def _baue_seitenleiste(self, eltern) -> None:
+        leiste = ttk.Frame(eltern, style="Flaeche.TFrame", padding=(16, 14))
+        leiste.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        leiste.columnconfigure(0, weight=1)
 
-        self.status = ttk.Label(rahmen, text="Bereit.", anchor="w")
-        self.status.grid(row=8, column=0, sticky="ew", pady=(8, 0))
+        # Erkannte Reihen
+        ttk.Label(leiste, text="ERKANNTE REIHEN",
+                  style="Abschnitt.TLabel").grid(row=0, column=0, sticky="w")
+        self.reihen_liste = ttk.Combobox(leiste, state="readonly",
+                                         font=schrift(10))
+        self.reihen_liste.grid(row=1, column=0, sticky="ew", pady=(6, 4))
+        self.reihen_liste.bind("<<ComboboxSelected>>", self._reihe_gewechselt)
+        self.reihen_hinweis = ttk.Label(leiste, text="Noch kein Ordner gewaehlt.",
+                                        style="Leise.TLabel", wraplength=300)
+        self.reihen_hinweis.grid(row=2, column=0, sticky="w", pady=(0, 14))
 
-    # -----------------------------------------------------------------
-    # Protokoll
-    # -----------------------------------------------------------------
+        # Regler
+        ttk.Label(leiste, text="FEINJUSTIERUNG",
+                  style="Abschnitt.TLabel").grid(row=3, column=0, sticky="w")
+        kasten = ttk.Frame(leiste, style="Flaeche.TFrame")
+        kasten.grid(row=4, column=0, sticky="ew", pady=(8, 0))
+        kasten.columnconfigure(0, weight=1)
+        for zeile, regler in enumerate(REGLER):
+            self._baue_regler(kasten, zeile, regler)
+
+        # Schalter
+        schalter = ttk.Frame(leiste, style="Flaeche.TFrame")
+        schalter.grid(row=5, column=0, sticky="ew", pady=(14, 0))
+        self.ausrichten = tk.BooleanVar(value=True)
+        self.aufrichten = tk.BooleanVar(value=False)
+        ttk.Checkbutton(schalter, text="Bilder zueinander ausrichten",
+                        variable=self.ausrichten).pack(anchor="w")
+        ttk.Checkbutton(schalter, text="Stuerzende Linien aufrichten",
+                        variable=self.aufrichten).pack(anchor="w", pady=(4, 0))
+
+        leiste.rowconfigure(6, weight=1)
+
+        # Aktionen
+        aktionen = ttk.Frame(leiste, style="Flaeche.TFrame")
+        aktionen.grid(row=7, column=0, sticky="ew", pady=(14, 0))
+        aktionen.columnconfigure(0, weight=1)
+        ttk.Button(aktionen, text="Auf Standard zuruecksetzen",
+                   command=self._setze_zurueck).grid(row=0, column=0, sticky="ew")
+        self.knopf_start = ttk.Button(aktionen, text="Alle Reihen verarbeiten",
+                                      style="Start.TButton",
+                                      command=self._starte_verarbeitung,
+                                      state="disabled")
+        self.knopf_start.grid(row=1, column=0, sticky="ew", pady=(8, 0))
+
+    def _baue_regler(self, eltern, zeile: int, regler: Regler) -> None:
+        rahmen = ttk.Frame(eltern, style="Flaeche.TFrame")
+        rahmen.grid(row=zeile, column=0, sticky="ew", pady=(0, 10))
+        rahmen.columnconfigure(0, weight=1)
+
+        kopf = ttk.Frame(rahmen, style="Flaeche.TFrame")
+        kopf.grid(row=0, column=0, sticky="ew")
+        ttk.Label(kopf, text=regler.titel,
+                  style="Flaeche.TLabel").pack(side="left")
+        wert_anzeige = ttk.Label(kopf, text=f"{regler.standard:.2f}",
+                                 style="Wert.TLabel")
+        wert_anzeige.pack(side="right")
+
+        variable = tk.DoubleVar(value=regler.standard)
+        self.werte[regler.schluessel] = variable
+
+        def geaendert(_=None, r=regler, v=variable, a=wert_anzeige):
+            a.configure(text=f"{v.get():.{r.nachkomma}f}")
+            self._vorschau_anfordern()
+
+        skala = ttk.Scale(rahmen, from_=regler.minimum, to=regler.maximum,
+                          variable=variable, orient="horizontal",
+                          command=geaendert)
+        skala.grid(row=1, column=0, sticky="ew", pady=(3, 1))
+        ttk.Label(rahmen, text=regler.erklaerung, style="Leise.TLabel",
+                  wraplength=300).grid(row=2, column=0, sticky="w")
+
+    def _baue_buehne(self, eltern) -> None:
+        buehne = ttk.Frame(eltern, style="Buehne.TFrame")
+        buehne.grid(row=0, column=1, sticky="nsew")
+        buehne.rowconfigure(0, weight=1)
+        buehne.columnconfigure(0, weight=1)
+
+        self.bild_flaeche = tk.Label(buehne, bg=Farben.buehne,
+                                     text="Ordner waehlen, um die Vorschau zu sehen.",
+                                     fg=Farben.text_leise, font=schrift(11))
+        self.bild_flaeche.grid(row=0, column=0, sticky="nsew")
+        self.bild_flaeche.bind("<Configure>", self._buehne_veraendert)
+        # Gedrueckt halten zeigt das unbearbeitete Bild - der schnellste Weg,
+        # die Wirkung der Regler zu beurteilen.
+        self.bild_flaeche.bind("<ButtonPress-1>", self._zeige_vorher)
+        self.bild_flaeche.bind("<ButtonRelease-1>", self._zeige_nachher)
+
+        leiste = ttk.Frame(buehne, style="Buehne.TFrame", padding=(12, 8))
+        leiste.grid(row=1, column=0, sticky="ew")
+        self.vorschau_status = ttk.Label(leiste, text="",
+                                         background=Farben.buehne,
+                                         foreground=Farben.text_leise,
+                                         font=schrift(9))
+        self.vorschau_status.pack(side="left")
+        ttk.Label(leiste, text="Ins Bild klicken und halten zeigt die Rohfusion",
+                  background=Farben.buehne, foreground=Farben.text_leise,
+                  font=schrift(9)).pack(side="right")
+
+    # -- Vorschau ---------------------------------------------------------
+
+    def _vorschau_anfordern(self, verzoegerung: int = 320) -> None:
+        """Rechnet die Vorschau neu - aber erst, wenn der Regler ruht.
+
+        Ohne diese Verzoegerung wuerde jede Zwischenstellung eines Reglers
+        einen eigenen Durchlauf ausloesen und die Oberflaeche haengt.
+        """
+        if not self.vorschau_bilder:
+            return
+        self.vorschau_marke += 1
+        marke = self.vorschau_marke
+        self.vorschau_status.configure(text="rechnet …")
+        self.after(verzoegerung, lambda: self._vorschau_starten(marke))
+
+    def _vorschau_starten(self, marke: int) -> None:
+        if marke != self.vorschau_marke:
+            return          # inzwischen wurde weitergedreht
+        threading.Thread(target=self._vorschau_rechnen, args=(marke,),
+                         daemon=True).start()
+
+    def _vorschau_rechnen(self, marke: int) -> None:
+        try:
+            sys.path.insert(0, str(ORDNER))
+            import hdr_merge
+            args = hdr_merge.baue_parser().parse_args(["x", "y"])
+            for regler in REGLER:
+                setattr(args, regler.schalter.lstrip("-").replace("-", "_"),
+                        float(self.werte[regler.schluessel].get()))
+            args.no_align = not self.ausrichten.get()
+            bild = hdr_merge.berechne_vorschau(self.vorschau_bilder, args)
+        except Exception as fehler:      # pragma: no cover - Oberflaeche
+            self.meldungen.put(("fehler", f"Vorschau fehlgeschlagen: {fehler}"))
+            return
+        if marke == self.vorschau_marke:
+            self.meldungen.put(("vorschau", bild))
+
+    def _buehne_veraendert(self, _ereignis=None) -> None:
+        if self.roh_vorschau is not None:
+            self._zeichne_bild(self.roh_vorschau)
+
+    def _zeige_vorher(self, _ereignis=None) -> None:
+        if self.vorschau_bilder:
+            self.zeige_original = True
+            self._zeichne_bild(self._rohfusion())
+
+    def _zeige_nachher(self, _ereignis=None) -> None:
+        self.zeige_original = False
+        if self.roh_vorschau is not None:
+            self._zeichne_bild(self.roh_vorschau)
+
+    def _rohfusion(self):
+        """Die mittlere Belichtung als Vergleichsbild."""
+        return self.vorschau_bilder[len(self.vorschau_bilder) // 2]
+
+    def _zeichne_bild(self, bild) -> None:
+        """Zeigt ein Float-RGB-Bild ohne Umweg ueber Pillow an."""
+        import numpy as np
+        import cv2
+
+        breite = max(self.bild_flaeche.winfo_width() - 16, 200)
+        hoehe = max(self.bild_flaeche.winfo_height() - 16, 150)
+        h, w = bild.shape[:2]
+        skalierung = min(breite / w, hoehe / h)
+        ziel = (max(int(w * skalierung), 1), max(int(h * skalierung), 1))
+        klein = cv2.resize(np.clip(bild, 0.0, 1.0), ziel,
+                           interpolation=cv2.INTER_AREA)
+        acht_bit = (klein * 255.0 + 0.5).astype(np.uint8)
+
+        kopf = f"P6 {ziel[0]} {ziel[1]} 255 ".encode("ascii")
+        # tkinter erwartet die Daten als ASCII-Text, nicht als Bytes.
+        daten = base64.b64encode(kopf + acht_bit.tobytes()).decode("ascii")
+        self.foto = tk.PhotoImage(data=daten, format="PPM")
+        self.bild_flaeche.configure(image=self.foto, text="")
+
+    # -- Meldungen --------------------------------------------------------
 
     def _schreibe(self, text: str, kennzeichen: str = "") -> None:
-        self.protokoll.configure(state="normal")
-        self.protokoll.insert("end", text + "\n", kennzeichen)
-        self.protokoll.see("end")
-        self.protokoll.configure(state="disabled")
+        self.protokoll_zeilen.append((text, kennzeichen))
+        if self.protokoll_text is not None and self.protokoll_text.winfo_exists():
+            self.protokoll_text.configure(state="normal")
+            self.protokoll_text.insert("end", text + "\n", kennzeichen)
+            self.protokoll_text.see("end")
+            self.protokoll_text.configure(state="disabled")
 
     def _verarbeite_meldungen(self) -> None:
         try:
@@ -334,380 +553,265 @@ class Anwendung(tk.Tk):
                 art, nutzlast = self.meldungen.get_nowait()
                 if art == "zeile":
                     self._zeige_zeile(nutzlast)
-                elif art == "ende":
-                    self._verarbeitung_beendet(nutzlast)
-                elif art == "analyse":
+                elif art == "vorschau":
+                    self.roh_vorschau = nutzlast
+                    if not self.zeige_original:
+                        self._zeichne_bild(nutzlast)
+                    self.vorschau_status.configure(
+                        text=f"Vorschau {nutzlast.shape[1]} × {nutzlast.shape[0]} px")
+                elif art == "reihen":
                     self._zeige_analyse(nutzlast)
-                elif art == "einrichtung":
-                    self._einrichtung_beendet(nutzlast)
+                elif art == "geladen":
+                    self.vorschau_bilder = nutzlast
+                    self._vorschau_anfordern(verzoegerung=10)
+                elif art == "fehler":
+                    self.status.set(nutzlast)
+                    self.vorschau_status.configure(text="")
+                    self._schreibe(nutzlast, "fehler")
+                elif art == "fertig":
+                    self._verarbeitung_beendet(nutzlast)
         except queue.Empty:
             pass
         self.after(100, self._verarbeite_meldungen)
 
     def _zeige_zeile(self, zeile: str) -> None:
         kennzeichen = ""
-        if zeile.startswith("WARNING"):
-            kennzeichen = "warnung"
-        elif zeile.startswith(("ERROR", "CRITICAL", "Traceback")):
+        if zeile.startswith("ERROR") or "Traceback" in zeile:
             kennzeichen = "fehler"
-        elif "Fertig:" in zeile or "Successfully" in zeile:
-            kennzeichen = "erfolg"
+        elif zeile.startswith("WARNING"):
+            kennzeichen = "warnung"
         self._schreibe(zeile, kennzeichen)
-
         treffer = FERTIG_MUSTER.search(zeile)
         if treffer:
-            self.fertige_reihen += 1
-            self.fortschritt["value"] = self.fertige_reihen
-            gesamt = max(len(self.gruppen), self.fertige_reihen)
-            self.status.configure(
-                text=f"Verarbeitet: {self.fertige_reihen} von {gesamt} Reihen")
-            self._markiere_fertig(treffer.group("name"))
+            self.fortschritt["value"] = self.fortschritt["value"] + 1
+            fertig = int(self.fortschritt["value"])
+            self.status.set(f"{fertig} von {len(self.reihen)} Reihen fertig")
 
-    def _markiere_fertig(self, name: str) -> None:
-        for eintrag in self.tabelle.get_children():
-            werte = self.tabelle.item(eintrag, "values")
-            if werte and werte[2].split(",")[0].strip().startswith(name):
-                self.tabelle.item(eintrag, values=(werte[0], werte[1], werte[2],
-                                                   werte[3], "fertig"),
-                                  tags=("fertig",))
-                return
-
-    # -----------------------------------------------------------------
-    # Pakete
-    # -----------------------------------------------------------------
+    # -- Pakete -----------------------------------------------------------
 
     def _pruefe_pakete(self) -> None:
-        pflicht = fehlende_pakete()
+        fehlend = fehlende_pakete()
         optional = fehlende_optionale_pakete()
-        if not pflicht and not optional:
-            self._schreibe("Alle benoetigten Bausteine sind vorhanden.",
-                           "erfolg")
+        if not fehlend and not optional:
             return
-
-        zeilen = [f"  - {BENOETIGTE_PAKETE[n][0]}" for n in pflicht]
-        zeilen += [f"  - {OPTIONALE_PAKETE[n][0]}" for n in optional]
-        if not messagebox.askyesno(
-                "Einrichtung noetig",
-                "Beim ersten Start fehlen noch diese Bausteine:\n\n"
-                + "\n".join(zeilen) +
-                "\n\nSollen sie jetzt heruntergeladen und eingerichtet "
-                "werden?\nDas dauert ein bis zwei Minuten und ist nur "
-                "einmal noetig."):
-            self._schreibe("Einrichtung abgelehnt - die Verarbeitung kann noch "
-                           "nicht starten.", "warnung")
-            return
-
-        self.start_knopf.configure(state="disabled")
-        self.status.configure(text="Bausteine werden eingerichtet ...")
-        threading.Thread(target=self._richte_ein, daemon=True).start()
+        namen = ", ".join(BENOETIGTE_PAKETE[m][0] for m in fehlend)
+        namen += (", " if namen and optional else "")
+        namen += ", ".join(OPTIONALE_PAKETE[m][0] for m in optional)
+        if messagebox.askyesno(
+                "Bausteine fehlen",
+                f"Es fehlen noch: {namen}.\n\n"
+                "Sollen sie jetzt automatisch eingerichtet werden?\n"
+                "Das dauert ein bis zwei Minuten."):
+            self.status.set("Bausteine werden eingerichtet …")
+            threading.Thread(target=self._richte_ein, daemon=True).start()
 
     def _richte_ein(self) -> None:
-        """Installiert die fehlenden Pakete im Hintergrund."""
-        def melde(text: str) -> None:
-            self.meldungen.put(("zeile", text))
-
+        melde = lambda zeile: self.meldungen.put(("zeile", zeile))
         gescheitert = installiere_pakete(BENOETIGTE_PAKETE, melde)
         gescheitert += installiere_pakete(OPTIONALE_PAKETE, melde)
-        self.meldungen.put(("einrichtung", gescheitert))
+        self.meldungen.put(("zeile", "--- Einrichtung abgeschlossen."))
+        self.after(0, lambda: self.status.set(
+            "Einrichtung abgeschlossen." if not gescheitert
+            else "Einrichtung teilweise fehlgeschlagen – siehe Protokoll."))
 
-    def _einrichtung_beendet(self, gescheitert: list[str]) -> None:
-        pflicht = [n for n in gescheitert if n in BENOETIGTE_PAKETE]
-        if pflicht:
-            namen = ", ".join(BENOETIGTE_PAKETE[n][1] for n in pflicht)
-            self._schreibe(f"ERROR Diese Bausteine liessen sich nicht "
-                           f"einrichten: {namen}", "fehler")
-            messagebox.showerror(
-                "Einrichtung fehlgeschlagen",
-                f"Diese Bausteine liessen sich nicht einrichten:\n\n{namen}"
-                "\n\nHaeufigste Ursache: eine sehr neue Python-Version, fuer "
-                "die es noch keine fertigen Pakete gibt.\n\nAbhilfe: Python "
-                "3.12 zusaetzlich installieren und das Programm damit starten.")
-            self.status.configure(text="Einrichtung fehlgeschlagen.")
-            return
-
-        if "rawpy" in gescheitert:
-            self._schreibe(
-                "WARNING Die RAW-Entwicklung (rawpy) liess sich nicht "
-                "einrichten. 16-Bit-TIFFs funktionieren, RAW-Dateien nicht. "
-                "Meist liegt das an einer sehr neuen Python-Version - mit "
-                "Python 3.12 klappt es.", "warnung")
-            messagebox.showwarning(
-                "RAW-Entwicklung nicht verfuegbar",
-                "Alles Wichtige ist eingerichtet, nur die RAW-Entwicklung "
-                "nicht.\n\nDas Programm verarbeitet damit 16-Bit-TIFFs, aber "
-                "keine CR2-, NEF-, ARW-, DNG- oder RAF-Dateien.\n\n"
-                "Haeufigste Ursache ist eine sehr neue Python-Version. Mit "
-                "Python 3.12 laesst sich rawpy nachinstallieren.")
-        else:
-            self._schreibe("Einrichtung abgeschlossen.", "erfolg")
-        self.status.configure(text="Bereit.")
-        if self.gruppen:
-            self.start_knopf.configure(state="normal")
-
-    # -----------------------------------------------------------------
-    # Analyse der Belichtungsreihen
-    # -----------------------------------------------------------------
+    # -- Ordner und Analyse -----------------------------------------------
 
     def _waehle_eingabe(self) -> None:
         ordner = filedialog.askdirectory(title="Ordner mit den Aufnahmen")
-        if not ordner:
-            return
-        self.eingabe_feld.delete(0, "end")
-        self.eingabe_feld.insert(0, ordner)
-        self._analysiere()
-
-    def _waehle_ausgabe(self) -> None:
-        ordner = filedialog.askdirectory(title="Zielordner")
         if ordner:
-            self.ausgabe_feld.delete(0, "end")
-            self.ausgabe_feld.insert(0, ordner)
+            self.eingabe_pfad.set(ordner)
+            self._analysiere()
 
     def _analysiere(self) -> None:
-        """Liest den Ordner ein und erkennt die Belichtungsreihen."""
-        eingabe = Path(self.eingabe_feld.get().strip())
+        eingabe = Path(self.eingabe_pfad.get())
         if not eingabe.is_dir():
-            messagebox.showerror("Ordner fehlt",
-                                 "Bitte zuerst einen Ordner mit Aufnahmen "
-                                 "auswaehlen.")
+            messagebox.showerror("Ordner", "Der Ordner existiert nicht.")
             return
-        if fehlende_pakete():
-            self._schreibe("Bausteine fehlen noch - Analyse nicht moeglich.",
-                           "warnung")
-            return
-        if not self.ausgabe_feld.get().strip():
-            self.ausgabe_feld.insert(0, str(eingabe.parent / "Basisbilder"))
-
-        self.status.configure(text="Ordner wird eingelesen ...")
-        self._schreibe(f"--- Lese {eingabe} ein ...", "hinweis")
+        if not self.ausgabe_pfad.get():
+            self.ausgabe_pfad.set(str(eingabe.parent / f"{eingabe.name}_basis"))
+        self.status.set("Reihen werden erkannt …")
+        self.reihen_hinweis.configure(text="Reihen werden erkannt …")
         threading.Thread(target=self._analysiere_im_hintergrund,
                          args=(eingabe,), daemon=True).start()
 
     def _analysiere_im_hintergrund(self, eingabe: Path) -> None:
         try:
+            sys.path.insert(0, str(ORDNER))
             import hdr_merge
             aufnahmen = hdr_merge.sammle_aufnahmen(eingabe)
-            gruppen = hdr_merge.gruppiere_belichtungsreihen(aufnahmen, "auto",
-                                                            6.0)
-            self.meldungen.put(("analyse", (aufnahmen, gruppen)))
-        except Exception as fehler:  # pragma: no cover
-            self.meldungen.put(("zeile", f"ERROR Analyse fehlgeschlagen: "
-                                         f"{fehler}"))
+            reihen = hdr_merge.gruppiere_belichtungsreihen(aufnahmen, "auto", 6.0)
+        except Exception as fehler:
+            self.meldungen.put(("fehler", f"Analyse fehlgeschlagen: {fehler}"))
+            return
+        self.meldungen.put(("reihen", reihen))
 
-    def _zeige_analyse(self, daten: tuple) -> None:
-        aufnahmen, gruppen = daten
-        self.gruppen = gruppen
-        for eintrag in self.tabelle.get_children():
-            self.tabelle.delete(eintrag)
+    def _zeige_analyse(self, reihen: list) -> None:
+        self.reihen = [r for r in reihen if len(r) >= 2]
+        verworfen = len(reihen) - len(self.reihen)
+        if not self.reihen:
+            self.reihen_hinweis.configure(
+                text="Keine verwertbare Belichtungsreihe gefunden.")
+            self.status.set("Keine Reihen gefunden.")
+            self.knopf_start.configure(state="disabled")
+            return
 
-        auffaellig = 0
-        for i, gruppe in enumerate(gruppen, 1):
-            namen = ", ".join(a.pfad.name for a in gruppe)
-            evs = ", ".join(f"{a.ev:.1f}" if a.ev is not None else "?"
-                            for a in gruppe)
-            passend = len(gruppe) in (3, 5, 7)
-            if not passend:
-                auffaellig += 1
-            self.tabelle.insert(
-                "", "end",
-                values=(f"{i:02d}", len(gruppe),
-                        namen if len(namen) < 90 else namen[:87] + "...",
-                        evs if len(evs) < 30 else evs[:27] + "...",
-                        "bereit" if passend else "pruefen!"),
-                tags=() if passend else ("warnung",))
+        eintraege = []
+        for nummer, reihe in enumerate(self.reihen, start=1):
+            eintraege.append(f"Reihe {nummer:02d} · {reihe[0].pfad.stem} "
+                             f"({len(reihe)} Bilder)")
+        self.reihen_liste.configure(values=eintraege)
+        self.reihen_liste.current(0)
+        hinweis = f"{len(self.reihen)} Reihen erkannt."
+        if verworfen:
+            hinweis += f" {verworfen} mit zu wenig Bildern uebersprungen."
+        self.reihen_hinweis.configure(text=hinweis)
+        self.status.set(f"{len(self.reihen)} Reihen bereit.")
+        self.knopf_start.configure(state="normal")
+        self._reihe_gewechselt()
 
-        text = (f"{len(aufnahmen)} Dateien, {len(gruppen)} Belichtungsreihen "
-                f"erkannt.")
-        if auffaellig:
-            text += (f"  {auffaellig} Reihe(n) mit unerwarteter Bildanzahl - "
-                     f"bitte pruefen.")
-        self.zusammenfassung.configure(text=text)
-        self._schreibe(text, "warnung" if auffaellig else "erfolg")
+    def _reihe_gewechselt(self, _ereignis=None) -> None:
+        index = self.reihen_liste.current()
+        if index < 0 or index >= len(self.reihen) or index == self.vorschau_reihe:
+            return
+        self.vorschau_reihe = index
+        self.vorschau_bilder = []
+        self.vorschau_status.configure(text="Reihe wird geladen …")
+        self.bild_flaeche.configure(image="", text="Reihe wird geladen …")
+        self.foto = None
+        threading.Thread(target=self._lade_vorschau_reihe,
+                         args=(index,), daemon=True).start()
 
-        self.fortschritt["maximum"] = max(len(gruppen), 1)
-        self.fortschritt["value"] = 0
-        self.status.configure(text="Bereit zum Starten.")
-        self.start_knopf.configure(state="normal" if gruppen else "disabled")
+    def _lade_vorschau_reihe(self, index: int) -> None:
+        try:
+            sys.path.insert(0, str(ORDNER))
+            import hdr_merge
+            klein = hdr_merge.lade_reihe_klein(self.reihen[index],
+                                               VORSCHAU_BREITE)
+        except Exception as fehler:
+            self.meldungen.put(("fehler", f"Laden fehlgeschlagen: {fehler}"))
+            return
+        if index == self.vorschau_reihe:
+            self.meldungen.put(("geladen", klein))
 
-        if gruppen and self.sofort_starten.get():
-            self._starte_verarbeitung()
+    def _setze_zurueck(self) -> None:
+        for regler in REGLER:
+            self.werte[regler.schluessel].set(regler.standard)
+        self.ausrichten.set(True)
+        self.aufrichten.set(False)
+        self._vorschau_anfordern(verzoegerung=10)
 
-    # -----------------------------------------------------------------
-    # Verarbeitung
-    # -----------------------------------------------------------------
+    # -- Verarbeitung -----------------------------------------------------
 
     def _baue_argumente(self, eingabe: Path, ausgabe: Path) -> list[str]:
         argumente = [python_programm(), str(HDR_MERGE), str(eingabe),
-                     str(ausgabe),
-                     "--window-strength", f"{self.staerke.get():.2f}",
-                     "--mid-target", f"{self.helligkeit.get():.2f}",
-                     # Ausgabe bewusst immer unkomprimiert - volle Qualitaet
-                     # fuer die Weiterverarbeitung in Photoshop/Lightroom.
-                     "--compression", "none"]
-        if self.stativ.get():
+                     str(ausgabe), "--verbose", "--compression", "none"]
+        for regler in REGLER:
+            wert = float(self.werte[regler.schluessel].get())
+            if abs(wert - regler.standard) > 1e-6:
+                argumente += [regler.schalter, f"{wert:.4f}"]
+        if not self.ausrichten.get():
             argumente.append("--no-align")
-        if self.vorschau.get():
-            argumente.append("--preview")
-        if self.begradigen.get():
+        if self.aufrichten.get():
             argumente.append("--straighten")
-        if not self.basiston.get():
-            argumente += ["--base-tone", "off"]
-        if self.dienst_look.get():
-            # Gemessene Kombination, die dem kommerziellen Ergebnis am
-            # naechsten kommt: neutralerer Weissabgleich plus Angleich der
-            # Saettigung.
-            argumente += ["--raw-wb", "auto", "--color-match", "1.0"]
         return argumente
 
     def _starte_verarbeitung(self) -> None:
-        eingabe = Path(self.eingabe_feld.get().strip())
-        ziel = self.ausgabe_feld.get().strip()
-        if not eingabe.is_dir():
-            messagebox.showerror("Ordner fehlt",
-                                 "Bitte einen Ordner mit Aufnahmen waehlen.")
+        if self.laeuft:
             return
-        if not ziel:
-            messagebox.showerror("Zielordner fehlt",
-                                 "Bitte einen Zielordner waehlen.")
-            return
-        self.letzter_ausgabeordner = Path(ziel)
-        self.fertige_reihen = 0
-        self.fortschritt["value"] = 0
-        self.fortschritt["maximum"] = max(len(self.gruppen), 1)
-        self._starte_prozesskette(
-            [(self._baue_argumente(eingabe, Path(ziel)),
-              f"Verarbeite {len(self.gruppen)} Reihe(n) ...")],
-            gesamt=len(self.gruppen))
-
-    def _starte_probelauf(self) -> None:
-        """Erzeugt die Referenzszene und verarbeitet sie."""
+        eingabe = Path(self.eingabe_pfad.get())
+        ausgabe = Path(self.ausgabe_pfad.get() or
+                       str(eingabe.parent / f"{eingabe.name}_basis"))
         if fehlende_pakete():
-            messagebox.showinfo("Einrichtung noetig",
-                                "Die Bausteine sind noch nicht eingerichtet.")
+            messagebox.showerror(
+                "Bausteine fehlen",
+                "Die Verarbeitung braucht numpy, opencv und tifffile. "
+                "Bitte zuerst einrichten lassen.")
             return
-        self.letzter_ausgabeordner = BEISPIEL_AUSGABE
-        self.gruppen = [[]]
-        self.fertige_reihen = 0
-        self.fortschritt["maximum"] = 1
-        self.fortschritt["value"] = 0
-        self._starte_prozesskette([
-            ([python_programm(), str(TESTSZENE_SKRIPT), str(BEISPIEL_EINGABE)],
-             "Beispielbilder werden erzeugt ..."),
-            ([python_programm(), str(HDR_MERGE), str(BEISPIEL_EINGABE),
-              str(BEISPIEL_AUSGABE), "--bracket-size", "3", "--no-align",
-              "--preview", "--compression", "none"],
-             "Beispiel wird verarbeitet ..."),
-        ], gesamt=1)
-
-    def _starte_prozesskette(self, schritte: list[tuple[list[str], str]],
-                             gesamt: int) -> None:
-        if self.prozess is not None:
-            messagebox.showinfo("Laeuft bereits",
-                                "Es laeuft gerade eine Verarbeitung.")
-            return
-        self.abgebrochen = False
-        self.start_knopf.configure(state="disabled")
-        self.abbruch_knopf.configure(state="normal")
-        self.oeffnen_knopf.configure(state="disabled")
-        self.status.configure(text=schritte[0][1])
-        threading.Thread(target=self._arbeite_kette_ab, args=(schritte,),
+        self.ausgabe_pfad.set(str(ausgabe))
+        self.laeuft = True
+        self.knopf_start.configure(state="disabled", text="Verarbeitung laeuft …")
+        self.knopf_ausgabe.configure(state="disabled")
+        self.fortschritt.configure(maximum=max(len(self.reihen), 1), value=0)
+        self.status.set(f"0 von {len(self.reihen)} Reihen fertig")
+        self._schreibe(f"--- Start: {eingabe} -> {ausgabe}", "hinweis")
+        threading.Thread(target=self._arbeite_ab,
+                         args=(self._baue_argumente(eingabe, ausgabe),),
                          daemon=True).start()
 
-    def _arbeite_kette_ab(self, schritte: list[tuple[list[str], str]]) -> None:
-        umgebung = dict(os.environ, PYTHONIOENCODING="utf-8",
-                        PYTHONUNBUFFERED="1")
-        erfolgreich = True
+    def _arbeite_ab(self, argumente: list[str]) -> None:
+        erfolgreich = False
         try:
-            for befehl, statustext in schritte:
-                self.meldungen.put(("zeile", f"--- {statustext}"))
-                self.prozess = subprocess.Popen(
-                    befehl, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    text=True, encoding="utf-8", errors="replace",
-                    cwd=str(ORDNER), env=umgebung, **ohne_konsolenfenster())
-                assert self.prozess.stdout is not None
-                for zeile in self.prozess.stdout:
-                    self.meldungen.put(("zeile", zeile.rstrip()))
-                rueckgabe = self.prozess.wait()
-                self.prozess = None
-                if rueckgabe != 0:
-                    erfolgreich = False
-                    if not self.abgebrochen:
-                        self.meldungen.put(
-                            ("zeile", f"ERROR Verarbeitung abgebrochen "
-                                      f"(Rueckgabewert {rueckgabe})."))
-                    break
-        except FileNotFoundError as fehler:
-            erfolgreich = False
-            self.meldungen.put(("zeile", f"ERROR Programm nicht gefunden: "
-                                         f"{fehler}"))
-        except Exception as fehler:  # pragma: no cover
-            erfolgreich = False
-            self.meldungen.put(("zeile", f"ERROR Unerwarteter Fehler: {fehler}"))
+            self.prozess = subprocess.Popen(
+                argumente, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, encoding="utf-8", errors="replace", bufsize=1,
+                **ohne_konsolenfenster())
+            for zeile in self.prozess.stdout:
+                self.meldungen.put(("zeile", zeile.rstrip()))
+            erfolgreich = self.prozess.wait() == 0
+        except Exception as fehler:      # pragma: no cover - Oberflaeche
+            self.meldungen.put(("zeile", f"ERROR {fehler}"))
         finally:
             self.prozess = None
-            self.meldungen.put(("ende", erfolgreich))
+            self.meldungen.put(("fertig", erfolgreich))
 
     def _verarbeitung_beendet(self, erfolgreich: bool) -> None:
-        self.start_knopf.configure(
-            state="normal" if self.gruppen else "disabled")
-        self.abbruch_knopf.configure(state="disabled")
-        if self.abgebrochen:
-            self.status.configure(text="Abgebrochen.")
-        elif erfolgreich:
-            self.status.configure(
-                text=f"Fertig - {self.fertige_reihen} Reihe(n) verarbeitet.")
-            self.fortschritt["value"] = self.fortschritt["maximum"]
-        else:
-            self.status.configure(text="Mit Fehlern beendet - siehe Protokoll.")
-        if (self.letzter_ausgabeordner is not None
-                and self.letzter_ausgabeordner.is_dir()):
-            self.oeffnen_knopf.configure(state="normal")
-            self._schreibe(f"Ergebnisse liegen in: "
-                           f"{self.letzter_ausgabeordner}", "hinweis")
-
-    def _brich_ab(self) -> None:
-        if self.prozess is not None:
-            self.abgebrochen = True
-            self.prozess.terminate()
-            self._schreibe("Abbruch angefordert ...", "warnung")
+        self.laeuft = False
+        self.knopf_start.configure(state="normal", text="Alle Reihen verarbeiten")
+        self.knopf_ausgabe.configure(state="normal")
+        self.status.set("Fertig." if erfolgreich
+                        else "Mit Fehlern beendet – siehe Protokoll.")
 
     def _oeffne_ausgabe(self) -> None:
-        if self.letzter_ausgabeordner is None:
+        ziel = Path(self.ausgabe_pfad.get())
+        if not ziel.is_dir():
+            messagebox.showinfo("Zielordner", "Es wurde noch nichts geschrieben.")
             return
-        ordner = str(self.letzter_ausgabeordner)
         try:
             if os.name == "nt":
-                os.startfile(ordner)  # noqa: S606
+                os.startfile(str(ziel))       # type: ignore[attr-defined]
             elif sys.platform == "darwin":
-                subprocess.Popen(["open", ordner])
+                subprocess.Popen(["open", str(ziel)])
             else:
-                subprocess.Popen(["xdg-open", ordner])
-        except Exception as fehler:  # pragma: no cover
-            messagebox.showinfo("Ordner", f"{ordner}\n\n({fehler})")
+                subprocess.Popen(["xdg-open", str(ziel)])
+        except Exception as fehler:
+            messagebox.showerror("Zielordner", str(fehler))
+
+    # -- Protokoll --------------------------------------------------------
+
+    def _zeige_protokoll(self) -> None:
+        fenster = tk.Toplevel(self)
+        fenster.title("Protokoll")
+        fenster.geometry("900x520")
+        fenster.configure(bg=Farben.grund)
+        text = tk.Text(fenster, bg=Farben.flaeche, fg=Farben.text,
+                       insertbackground=Farben.text, relief="flat",
+                       font=("Consolas" if os.name == "nt" else "monospace", 9),
+                       wrap="word", padx=12, pady=10)
+        text.pack(fill="both", expand=True, padx=12, pady=12)
+        text.tag_configure("fehler", foreground=Farben.fehler)
+        text.tag_configure("warnung", foreground=Farben.warnung)
+        text.tag_configure("hinweis", foreground=Farben.akzent_hell)
+        for zeile, kennzeichen in self.protokoll_zeilen:
+            text.insert("end", zeile + "\n", kennzeichen)
+        text.configure(state="disabled")
+        text.see("end")
+        self.protokoll_text = text
 
     def _beim_schliessen(self) -> None:
+        if self.laeuft and not messagebox.askyesno(
+                "Beenden", "Die Verarbeitung laeuft noch. Wirklich beenden?"):
+            return
         if self.prozess is not None:
-            if not messagebox.askyesno("Verarbeitung laeuft",
-                                       "Es laeuft noch eine Verarbeitung. "
-                                       "Wirklich beenden?"):
-                return
-            self.abgebrochen = True
-            self.prozess.terminate()
+            try:
+                self.prozess.terminate()
+            except Exception:
+                pass
         self.destroy()
 
 
 def main(argv: list[str] | None = None) -> None:
-    argv = list(sys.argv[1:] if argv is None else argv)
-    if not HDR_MERGE.exists():
-        wurzel = tk.Tk()
-        wurzel.withdraw()
-        messagebox.showerror(
-            "Datei fehlt",
-            f"hdr_merge.py wurde nicht gefunden.\n\nErwartet in:\n{ORDNER}\n\n"
-            "Bitte alle Dateien im selben Ordner belassen.")
-        return
-    startordner = None
-    if argv and Path(argv[0]).is_dir():
-        startordner = str(Path(argv[0]).resolve())
+    argumente = list(sys.argv[1:] if argv is None else argv)
+    startordner = argumente[0] if argumente else None
     Anwendung(startordner).mainloop()
 
 

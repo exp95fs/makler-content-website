@@ -477,7 +477,8 @@ def waehle_demosaic():
     return rawpy.DemosaicAlgorithm.AHD
 
 
-def entwickle_raw(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
+def entwickle_raw(pfad: Path, weissabgleich: str = "camera",
+                  halbe_groesse: bool = False) -> np.ndarray:
     """RAW neutral und deterministisch entwickeln.
 
     Keinerlei Auto-Korrekturen: ``no_auto_bright=True`` verhindert die
@@ -502,7 +503,7 @@ def entwickle_raw(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
             output_color=rawpy.ColorSpace.sRGB,
             gamma=(2.222, 4.5),          # Standard-sRGB-Kurve, keine Kreativkurve
             demosaic_algorithm=waehle_demosaic(),
-            half_size=False,
+            half_size=halbe_groesse,
             user_flip=None,              # Kamera-Orientierung uebernehmen
             highlight_mode=rawpy.HighlightMode.Clip,
             # Ein Durchgang Medianfilter auf den Farbkanaelen. Er ist gegen
@@ -529,11 +530,17 @@ def lade_tiff(pfad: Path) -> np.ndarray:
     return np.clip(bild.astype(np.float32), 0.0, 1.0)
 
 
-def lade_bild(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
-    """Laedt RAW oder TIFF als RGB-Float32 im Bereich 0..1."""
+def lade_bild(pfad: Path, weissabgleich: str = "camera",
+              halbe_groesse: bool = False) -> np.ndarray:
+    """Laedt RAW oder TIFF als RGB-Float32 im Bereich 0..1.
+
+    ``halbe_groesse`` gilt nur fuer RAWs und dient allein der Vorschau: Die
+    Entwicklung ueberspringt dann das Demosaicing und liefert direkt ein
+    Bild halber Kantenlaenge - rund viermal schneller.
+    """
     endung = pfad.suffix.lower()
     if endung in RAW_ENDUNGEN:
-        return entwickle_raw(pfad, weissabgleich)
+        return entwickle_raw(pfad, weissabgleich, halbe_groesse)
     if endung in TIFF_ENDUNGEN:
         return lade_tiff(pfad)
     raise ValueError(f"Nicht unterstuetztes Format: {pfad.name}")
@@ -2237,6 +2244,120 @@ class ReihenErgebnis:
     erfolgreich: bool
 
 
+def lade_reihe_klein(aufnahmen: Sequence[Aufnahme], breite: int,
+                     weissabgleich: str = "camera") -> list[np.ndarray]:
+    """Laedt eine Reihe verkleinert - Grundlage der Vorschau.
+
+    RAWs werden mit ``half_size`` entwickelt, was etwa viermal schneller ist
+    als die volle Entwicklung, und anschliessend auf die Zielbreite
+    gebracht. Aus rund 60 Sekunden je Reihe werden so wenige Sekunden.
+    """
+    klein: list[np.ndarray] = []
+    for aufnahme in aufnahmen:
+        bild = lade_bild(aufnahme.pfad, weissabgleich, halbe_groesse=True)
+        if bild.shape[1] > breite:
+            hoehe = int(round(breite * bild.shape[0] / bild.shape[1]))
+            bild = cv2.resize(bild, (breite, hoehe),
+                              interpolation=cv2.INTER_AREA)
+        klein.append(np.ascontiguousarray(bild))
+    return klein
+
+
+def berechne_vorschau(bilder_klein: Sequence[np.ndarray],
+                      args: argparse.Namespace) -> np.ndarray:
+    """Vorschaubild aus bereits verkleinerten Belichtungen.
+
+    Nimmt exakt denselben Weg wie der Endlauf (siehe ``verarbeite_bilder``),
+    nur ohne die Geometrieschritte - die aendern den Ausschnitt, nicht den
+    Look, und kosten in der Vorschau nur Zeit.
+
+    Alle Radien im Programm sind Anteile der Bildbreite, deshalb wirken
+    Zeichnung, Schaerfe und Masken auf dem kleinen Bild massstabsgetreu wie
+    auf dem grossen.
+    """
+    protokoll: list[tuple[int, str]] = []
+    ergebnis, _, _, _, _ = verarbeite_bilder(
+        [b.copy() for b in bilder_klein], args, protokoll)
+    return veredle_ergebnis(ergebnis, args, protokoll)
+
+
+def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
+                      protokoll: list[tuple[int, str]],
+                      tags_je_bild: Sequence[dict] | None = None
+                      ) -> tuple[np.ndarray, WindowPullErgebnis, np.ndarray,
+                                 list[np.ndarray], dict]:
+    """Der Rechenkern: von den geladenen Belichtungen bis vor die Geometrie.
+
+    Bewusst als eigene Funktion, damit die Vorschau in der Oberflaeche
+    exakt denselben Weg nimmt wie der spaetere Endlauf - nur auf
+    verkleinerten Bildern. Waeren es zwei Implementierungen, koennte die
+    Vorschau etwas zeigen, das das Ergebnis nicht einloest; genau darauf
+    muss man sich beim Justieren aber verlassen koennen.
+
+    Rueckgabe: Ergebnis, Window-Pull-Zwischenstand, Fusion, Vorschaukacheln
+    fuer den Kontaktbogen und die EXIF-Tags der Referenzaufnahme.
+    """
+    # Reihenfolge nach tatsaechlicher Bildhelligkeit festlegen (unabhaengig
+    # von der Dateireihenfolge): dunkelste zuerst.
+    helligkeiten = [float(berechne_luminanz(b).mean()) for b in bilder]
+    reihenfolge = sorted(range(len(bilder)), key=lambda i: helligkeiten[i])
+    bilder = [bilder[i] for i in reihenfolge]
+
+    referenz_index = len(bilder) // 2  # mittlere Belichtung
+    referenz_tags: dict = {}
+    if tags_je_bild:
+        sortierte_tags = [tags_je_bild[i] for i in reihenfolge]
+        referenz_tags = sortierte_tags[referenz_index]
+
+    if not args.no_align:
+        bilder = richte_reihe_aus(bilder, referenz_index, protokoll)
+
+    fusion = fusioniere_mertens(bilder, args.contrast, args.saturation,
+                                args.exposure)
+
+    # Fuer den Kontaktbogen reichen kleine Vorschaubilder. Sie werden jetzt
+    # erzeugt, damit anschliessend nur noch die beiden tatsaechlich
+    # benoetigten Belichtungen in voller Aufloesung im Speicher bleiben.
+    # Bei einer Siebener-Reihe mit 24 Megapixeln spart das ueber ein
+    # Gigabyte.
+    vorschau_kacheln = ([erzeuge_vorschaukachel(b) for b in bilder]
+                        if args.preview else [])
+    dunkel = bilder[0]
+    referenz = bilder[referenz_index]
+    bilder.clear()
+
+    window = fuehre_window_pull_aus(fusion, referenz, dunkel, args, protokoll)
+    del dunkel, referenz
+    ergebnis = window.bild
+
+    if args.base_tone == "on":
+        ergebnis = normalisiere_tonwert(ergebnis, window, args, protokoll)
+    else:
+        protokoll.append((logging.INFO,
+                          "Tonale Normalisierung deaktiviert (--base-tone off) "
+                          "- Ausgabe ist die flache Rohfusion."))
+
+    return ergebnis, window, fusion, vorschau_kacheln, referenz_tags
+
+
+def veredle_ergebnis(ergebnis: np.ndarray, args: argparse.Namespace,
+                     protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Farbangleich, Zeichnung und Spitzlichtschutz - der Abschluss.
+
+    Steht getrennt, weil die Geometrieschritte dazwischen liegen und die
+    Vorschau sie ueberspringt (sie aendern den Bildausschnitt, nicht den
+    Look).
+    """
+    ergebnis = gleiche_saettigung_an(ergebnis, args.color_match,
+                                     args.color_match_target, protokoll)
+    # Bewusst nach allen geometrischen Schritten: Objektivkorrektur und
+    # Perspektivkorrektur interpolieren das Bild neu und wuerden vorher
+    # erzeugte Schaerfe wieder aufweichen.
+    ergebnis = verstaerke_zeichnung(ergebnis, args.clarity, args.clarity_radius,
+                                    args.sharpen, args.sharpen_radius, protokoll)
+    return schuetze_spitzlichter(ergebnis, args, protokoll)
+
+
 def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
                      args: argparse.Namespace) -> ReihenErgebnis:
     """Verarbeitet eine komplette Belichtungsreihe zu einem Basisbild."""
@@ -2266,45 +2387,10 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
                           f"({formen}) - uebersprungen."))
         return ReihenErgebnis(name, None, protokoll, False)
 
-    # Reihenfolge nach tatsaechlicher Bildhelligkeit festlegen (unabhaengig
-    # von der Dateireihenfolge): dunkelste zuerst.
-    helligkeiten = [float(berechne_luminanz(b).mean()) for b in bilder]
-    reihenfolge = sorted(range(len(bilder)), key=lambda i: helligkeiten[i])
-    bilder = [bilder[i] for i in reihenfolge]
-    sortierte_aufnahmen = [aufnahmen[i] for i in reihenfolge]
-
-    referenz_index = len(bilder) // 2  # mittlere Belichtung
-
-    if not args.no_align:
-        bilder = richte_reihe_aus(bilder, referenz_index, protokoll)
-
-    fusion = fusioniere_mertens(bilder, args.contrast, args.saturation,
-                                args.exposure)
-
-    # Fuer den Kontaktbogen reichen kleine Vorschaubilder. Sie werden jetzt
-    # erzeugt, damit anschliessend nur noch die beiden tatsaechlich
-    # benoetigten Belichtungen in voller Aufloesung im Speicher bleiben.
-    # Bei einer Siebener-Reihe mit 24 Megapixeln spart das ueber ein
-    # Gigabyte.
-    vorschau_kacheln = ([erzeuge_vorschaukachel(b) for b in bilder]
-                        if args.preview else [])
-    dunkel = bilder[0]
-    referenz = bilder[referenz_index]
-    bilder.clear()
+    ergebnis, window, fusion, vorschau_kacheln, referenz_tags = verarbeite_bilder(
+        bilder, args, protokoll,
+        tags_je_bild=[a.tags for a in aufnahmen])
     del bilder
-
-    window = fuehre_window_pull_aus(fusion, referenz, dunkel, args, protokoll)
-    del dunkel, referenz
-    ergebnis = window.bild
-
-    if args.base_tone == "on":
-        ergebnis = normalisiere_tonwert(ergebnis, window, args, protokoll)
-    else:
-        protokoll.append((logging.INFO,
-                          "Tonale Normalisierung deaktiviert (--base-tone off) "
-                          "- Ausgabe ist die flache Rohfusion."))
-
-    referenz_tags = sortierte_aufnahmen[referenz_index].tags
 
     if args.lens_k1:
         vorher = ergebnis.shape[:2]
@@ -2327,14 +2413,7 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
         ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
                                          protokoll, referenz_tags)
 
-    ergebnis = gleiche_saettigung_an(ergebnis, args.color_match,
-                                     args.color_match_target, protokoll)
-    # Bewusst nach allen geometrischen Schritten: Objektivkorrektur und
-    # Perspektivkorrektur interpolieren das Bild neu und wuerden vorher
-    # erzeugte Schaerfe wieder aufweichen.
-    ergebnis = verstaerke_zeichnung(ergebnis, args.clarity, args.clarity_radius,
-                                    args.sharpen, args.sharpen_radius, protokoll)
-    ergebnis = schuetze_spitzlichter(ergebnis, args, protokoll)
+    ergebnis = veredle_ergebnis(ergebnis, args, protokoll)
 
     ausgabe_ordner.mkdir(parents=True, exist_ok=True)
     ziel = ausgabe_ordner / f"{name}_hdr.tif"

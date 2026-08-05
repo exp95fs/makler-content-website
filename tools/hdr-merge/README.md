@@ -30,14 +30,34 @@ Zielwerte bringt. Abschaltbar mit `--base-tone off`.
 3. Doppelklick auf das Symbol. Beim ersten Start bietet das Programm an, die
    fehlenden Bausteine einzurichten – mit „Ja" bestätigen, ein bis zwei
    Minuten warten.
-4. **Ordner wählen** → die Reihen werden erkannt, angezeigt und automatisch
-   verarbeitet.
+4. **Ordner wählen** → die Reihen werden erkannt und die erste erscheint als
+   Vorschau.
+5. An den Reglern justieren, bis es passt – die Vorschau rechnet mit.
+6. **„Alle Reihen verarbeiten"** → fertige 16-Bit-TIFFs im Zielordner.
 
 Ein Bilderordner kann auch direkt auf das Desktop-Symbol gezogen werden.
 
-Die Oberfläche zeigt vor dem Start eine Tabelle aller erkannten Reihen mit
-Dateinamen und EV-Muster. Reihen mit unerwarteter Bildanzahl werden gelb
-markiert – so fällt eine falsche Gruppierung sofort auf, bevor gerechnet wird.
+### Die Vorschau
+
+Links stehen sechs Regler in Klartext (Helligkeit, Kontrast, Zeichnung,
+Schärfe, Fenster zurückholen, Fensterhelligkeit), rechts das Bild. Nach jeder
+Reglerbewegung wird neu gerechnet – auf einem verkleinerten Bild, deshalb in
+rund zwei Sekunden statt einer Minute.
+
+**Ins Bild klicken und halten** zeigt die unbearbeitete Aufnahme. Das ist der
+schnellste Weg, die Wirkung der Regler zu beurteilen.
+
+Entscheidend ist, dass die Vorschau **denselben Rechenweg** nimmt wie der
+Endlauf: Beide rufen `verarbeite_bilder` auf, es gibt keine zweite
+Implementierung. Alle Radien im Programm sind Anteile der Bildbreite, deshalb
+wirkt jeder Regler auf dem kleinen Bild maßstabsgetreu. Zwei Tests halten das
+fest — auf identischer Eingabe muss die Vorschau bitgleich zum Endergebnis
+sein, und auf halber Kantenlänge müssen die Tonwert-Kennwerte übereinstimmen.
+Ein dritter Test vergleicht jeden Regler mit der Voreinstellung im Programm,
+damit die Oberfläche nicht unbemerkt abdriften kann.
+
+Nur der Endlauf schreibt Dateien. Er läuft weiterhin als eigener Prozess, mit
+genau den Werten, die in der Vorschau eingestellt waren.
 
 ---
 
