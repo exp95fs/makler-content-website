@@ -215,17 +215,47 @@ class TestSynthetischeSzene(unittest.TestCase):
     # -- Tonale Normalisierung --------------------------------------------
 
     def test_normalisierung_trifft_zielwerte(self):
-        """Die Zielwerte stammen aus der Messung am kommerziellen Ergebnis."""
+        """Die Verankerung selbst, ohne die nachgelagerte Kontrastkurve.
+
+        Geprueft wird der zugesicherte Vertrag von --white-target,
+        --black-target und --mid-target. Er beschreibt die Lage der
+        Stuetzpunkte NACH der Verankerung; die Kontrastkennlinie greift
+        danach und verschiebt sie bewusst (siehe den folgenden Test).
+        """
         vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        lauf = SzenenLauf(["--tone-contrast", "0"])
+        try:
+            # Die Maske haengt allein an den Belichtungen, nicht am Ergebnis.
+            binaer, _, _ = self._maske()
+            innen = ~binaer.astype(bool)
+            lum = hdr_merge.berechne_luminanz(lauf.ergebnis)[innen]
+            self.assertAlmostEqual(float(np.percentile(lum, 0.2)),
+                                   vorgabe.black_target, delta=0.02)
+            self.assertAlmostEqual(float(np.percentile(lum, 99.5)),
+                                   vorgabe.white_target, delta=0.03)
+            self.assertAlmostEqual(float(np.median(lum)), vorgabe.mid_target,
+                                   delta=0.06)
+        finally:
+            lauf.aufraeumen()
+
+    def test_kontrastkurve_hebt_die_lichter_an(self):
+        """Die Kennlinie muss den Tonwertumfang messbar spreizen.
+
+        Zielgroesse ist nicht mehr --white-target, sondern der am Vorbild
+        gemessene Weisspunkt: Die drei vermessenen Ergebnisse des Dienstes
+        liegen bei p99.5 = 0.918 / 0.873 / 0.900, im Mittel also bei 0.897.
+        """
         binaer, _, _ = self._maske()
         innen = ~binaer.astype(bool)
         lum = self.lum_ergebnis[innen]
-        self.assertAlmostEqual(float(np.percentile(lum, 0.2)),
-                               vorgabe.black_target, delta=0.02)
-        self.assertAlmostEqual(float(np.percentile(lum, 99.5)),
-                               vorgabe.white_target, delta=0.03)
-        self.assertAlmostEqual(float(np.median(lum)), vorgabe.mid_target,
-                               delta=0.06)
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        self.assertGreater(float(np.percentile(lum, 99.5)),
+                           vorgabe.white_target + 0.02,
+                           "Die Kontrastkennlinie spreizt die Lichter nicht")
+        self.assertLess(float(np.percentile(lum, 99.5)), 0.93,
+                        "Die Lichter laufen ueber das Vorbild hinaus")
+        self.assertLess(float(np.percentile(lum, 0.2)), 0.06,
+                        "Die Tiefen kommen nicht zur Ruhe")
 
     def test_base_tone_off_liefert_flachere_rohfusion(self):
         lauf = SzenenLauf(["--base-tone", "off"])

@@ -76,6 +76,21 @@ NEUTRAL_GRENZE = 0.22
 # Schaetzung voll vertraut wird (Anteil der Umgebungsflaeche).
 NEUTRAL_MINDESTANTEIL = 0.10
 
+# Kontrastkennlinie, gemessen am kommerziellen Vorbild: perzentilweiser
+# Vergleich von drei fertigen Ergebnissen des Dienstes mit den eigenen
+# Ergebnissen derselben drei Aufnahmen. Links der eigene Ist-Wert, rechts
+# der Wert des Vorbilds. Die Stuetzstellen sind streng monoton steigend,
+# damit keine Tonwerte zusammenfallen und Zeichnung verloren geht.
+KONTRAST_STUETZSTELLEN = np.array(
+    [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+     0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00],
+    dtype=np.float32)
+KONTRAST_ZIELWERTE = np.array(
+    [0.000, 0.045, 0.075, 0.098, 0.125, 0.152, 0.185, 0.240, 0.330, 0.430,
+     0.513, 0.583, 0.640, 0.702, 0.765, 0.815, 0.855, 0.905, 0.950, 0.982,
+     1.000],
+    dtype=np.float32)
+
 LOG = logging.getLogger("hdr_merge")
 
 
@@ -1108,6 +1123,54 @@ def gleiche_lokale_farbstiche_aus(bild: np.ndarray, staerke: float,
     return ergebnis.astype(np.float32)
 
 
+def wende_kontrastkurve_an(bild: np.ndarray, staerke: float,
+                           protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Legt die gemessene Kontrastkennlinie des Vorbilds auf das Bild.
+
+    Diese Kennlinie ist nicht ausgedacht. Sie wurde ermittelt, indem drei
+    fertige Ergebnisse des kommerziellen Dienstes und die eigenen Ergebnisse
+    derselben drei Aufnahmen perzentilweise gegenuebergestellt wurden. Alle
+    drei Szenen zeigten dieselbe Form, und zwar deutlich: Was bei uns bei
+    0.30 lag, liegt beim Vorbild bei 0.18; was bei uns bei 0.70 lag, liegt
+    dort bei 0.77.
+
+    Genau diese Differenz ist der Grund fuer den Eindruck "flach, blass, wie
+    mit einem Schleier". Ohne sie liegt das ganze Bild in einem schmalen
+    Mittelband: Die Tiefen kommen nie zur Ruhe, und den Lichtern fehlt der
+    Zug nach oben.
+
+    Das weicht bewusst von der urspruenglichen Vorgabe "keine S-Kurve" ab.
+    Der Grund ist ausdruecklich benannt worden: Ziel ist, die Ergebnisse des
+    Dienstes zu reproduzieren - und der Dienst legt eine solche Kurve an.
+    Mit --tone-contrast 0 bleibt die Ausgabe wie zuvor rein linear normalisiert;
+    Zwischenwerte blenden anteilig ueber.
+
+    Angewendet wird sie wie die uebrige Tonwertabbildung auf der Luminanz,
+    umgesetzt ueber einen gemeinsamen Faktor je Pixel. Farbton und
+    Saettigung bleiben dadurch unveraendert - eine kanalweise Kurve wuerde
+    stattdessen die Saettigung mit anheben.
+    """
+    if staerke <= 0.0:
+        return bild
+
+    lum = berechne_luminanz(bild)
+    ziel = np.interp(np.clip(lum, 0.0, 1.0), KONTRAST_STUETZSTELLEN,
+                     KONTRAST_ZIELWERTE).astype(np.float32)
+    ziel = lum + (ziel - lum) * float(np.clip(staerke, 0.0, 1.0))
+
+    # Ueber den Weisspunkt hinaus wird nicht gestreckt: Die Kennlinie darf
+    # keine Lichter ausbrennen, die vorher Zeichnung hatten.
+    ziel = np.minimum(ziel, np.maximum(lum, KONTRAST_ZIELWERTE[-1]))
+
+    faktor = ziel / np.maximum(lum, 1e-5)
+    ergebnis = (bild * faktor[..., None]).astype(np.float32)
+    protokoll.append((logging.DEBUG,
+                      f"Kontrastkennlinie (Staerke {staerke:.2f}): Median "
+                      f"{float(np.median(lum)):.3f} -> "
+                      f"{float(np.median(ziel)):.3f}"))
+    return ergebnis
+
+
 def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                          args: argparse.Namespace,
                          protokoll: list[tuple[int, str]]) -> np.ndarray:
@@ -1267,7 +1330,10 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                               f"Weissabgleich-Faktoren (R,G,B): "
                               f"{faktor[0]:.3f}/{faktor[1]:.3f}/{faktor[2]:.3f}"))
 
-    # 5. Highlight-Schutz im Fensterbereich.
+    # 5. Gemessene Kontrastkennlinie des Vorbilds.
+    ergebnis = wende_kontrastkurve_an(ergebnis, args.tone_contrast, protokoll)
+
+    # 6. Highlight-Schutz im Fensterbereich.
     #
     # Der Fensterbereich wird IMMER neu aufgebaut, nicht nur wenn eine
     # Heuristik anschlaegt. Frueher entschied ein Schwellwertvergleich
@@ -2338,6 +2404,10 @@ def baue_parser() -> argparse.ArgumentParser:
     t.add_argument("--shadow-gain", type=float, default=8.0,
                    help="Obergrenze fuer die Aufhellung eines einzelnen "
                         "Pixels. Begrenzt die Rauschverstaerkung in den Tiefen")
+    t.add_argument("--tone-contrast", type=float, default=1.0,
+                   help="Anteil der am kommerziellen Dienst gemessenen "
+                        "Kontrastkennlinie (0 = aus, rein lineare "
+                        "Normalisierung; 1 = vollstaendig)")
     t.add_argument("--color-match", type=float, default=0.0,
                    help="Saettigung anteilig an den kommerziellen Dienst "
                         "angleichen (0 = aus, 1 = vollstaendig). Nur sinnvoll, "
