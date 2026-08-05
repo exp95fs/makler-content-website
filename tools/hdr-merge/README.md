@@ -141,13 +141,13 @@ Esszimmer) und gegen **echte Sony-ARW-Belichtungsreihen** derselben Objekte.
 
 | Kennwert | Dienst | Dieses Werkzeug |
 |---|---|---|
-| Schwarzpunkt (p0,2) | 0,034 | **0,036** |
-| Median | 0,625 | **0,615** |
-| Weißpunkt (p99,5) | 0,836 | **0,827** |
-| Hellster Punkt | 0,963 | **0,939** |
+| Schwarzpunkt (p0,2) | 0,034 | **0,034** |
+| Median | 0,625 | **0,619** |
+| Weißpunkt (p99,5) | 0,836 | **0,856** |
+| Hellster Punkt | 0,963 | **0,977** |
 | Ausgebrannte Pixel | 0,000 % | **0,000 %** |
-| Hellste 5 % | 0,804 | 0,761 |
-| **Gesamtabweichung** | – | **0,088** (anfangs 0,416) |
+| Hellste 5 % | 0,804 | **0,792** |
+| **Gesamtabweichung** | – | **0,052** über drei echte Szenen (vorher 0,160) |
 
 Im **Fensterbereich derselben Szene** (Schiebetür mit Blick auf einen Hang):
 
@@ -399,9 +399,9 @@ sind 0,11).
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--base-tone` | `on` | `off` liefert die flache Rohfusion. |
-| `--white-target` | `0.82` | Zielwert für den Weißpunkt des Innenraums. |
+| `--white-target` | `0.78` | Zielwert für den Weißpunkt des Innenraums. Am Vorbild kalibriert: die nachgelagerte Kontrastkennlinie hebt den Weißpunkt noch um rund 0,06, entsprechend liegt der Zielwert darunter. |
 | `--black-target` | `0.035` | Zielwert für den Schwarzpunkt. |
-| `--mid-target` | `0.62` | Zielwert für den Mittelton. |
+| `--mid-target` | `0.58` | Zielwert für den Mittelton. Ebenfalls am Vorbild kalibriert (siehe `--white-target`). |
 | `--mid-mode` | `lift` | `lift` hellt nur auf (weiße Wände bleiben weiß); `exact` erzwingt den Zielwert in beide Richtungen. |
 | `--white-percentile` | `99.5` | Perzentil für den Weißpunkt. |
 | `--black-percentile` | `0.2` | Perzentil für den Schwarzpunkt. |

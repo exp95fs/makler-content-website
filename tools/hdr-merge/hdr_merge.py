@@ -205,6 +205,11 @@ AUSSICHT_RAMPE = 0.5
 # Sonnenflecken auf weisser Laibung - bleibt exakt unveraendert.
 GRUNDBILD_KNIE = 0.95
 
+# Unterhalb dieser Luminanz wird die Zeichnungsverstaerkung ausgeblendet,
+# damit sie die Tiefen nicht auf null druckt. Deutlich ueber dem Schwarzpunkt
+# (0.035), damit auch knapp darueber noch Luft bleibt.
+SCHATTEN_SCHUTZ = 0.12
+
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
                     rate: float = ROLLOFF_RATE) -> np.ndarray:
@@ -1327,6 +1332,15 @@ def verstaerke_zeichnung(bild: np.ndarray, clarity: float, clarity_radius: float
         weich = cv2.GaussianBlur(neu, (0, 0), sigma)
         neu = neu + schaerfe * (neu - weich)
 
+    # Tiefenschutz. Ohne ihn zieht die Verstaerkung die dunkelste Seite jeder
+    # Kante mit nach unten und drueckt sie auf null: gemessen fiel der
+    # Schwarzpunkt (Perzentil 0.2) von 0.032 auf 0.000, und 0.4 % aller Pixel
+    # wurden reines Schwarz. Das ist zugeklebte Tiefe - Zeichnung, die sich
+    # nicht zurueckholen laesst. Das Vorbild macht das nicht (dort liegt der
+    # Schwarzpunkt bei 0.034). Unterhalb von SCHATTEN_SCHUTZ wird die
+    # Verstaerkung deshalb ausgeblendet.
+    schutz = np.clip(lum / SCHATTEN_SCHUTZ, 0.0, 1.0)
+    neu = lum + (neu - lum) * schutz
     neu = np.clip(neu, 0.0, 1.0).astype(np.float32)
 
     # Die Luminanzaenderung wird als Faktor auf alle drei Kanaele gelegt.
@@ -2620,9 +2634,9 @@ def baue_parser() -> argparse.ArgumentParser:
     t = p.add_argument_group("Tonale Normalisierung")
     t.add_argument("--base-tone", choices=["on", "off"], default="on",
                    help="'off' liefert die flache Rohfusion")
-    t.add_argument("--white-target", type=float, default=0.82)
+    t.add_argument("--white-target", type=float, default=0.78)
     t.add_argument("--black-target", type=float, default=0.035)
-    t.add_argument("--mid-target", type=float, default=0.62)
+    t.add_argument("--mid-target", type=float, default=0.58)
     t.add_argument("--mid-mode", choices=["lift", "exact"], default="lift",
                    help="'lift' hellt nur auf, wenn das Bild dunkler als der "
                         "Zielwert ist (weisse Waende bleiben weiss); "
