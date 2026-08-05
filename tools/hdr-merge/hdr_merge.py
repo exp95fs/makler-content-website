@@ -68,6 +68,14 @@ LUMA_GEWICHTE = np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
 # Erwartete Reihenlaengen einer Belichtungsreihe
 ERWARTETE_REIHENLAENGEN = (3, 5, 7)
 
+# Lokaler Weissabgleich: ab dieser Buntheit gilt ein Pixel als gefaerbte
+# Flaeche und verraet nichts mehr ueber die Lichtfarbe. Darunter faellt
+# sein Gewicht linear ab.
+NEUTRAL_GRENZE = 0.22
+# So viel neutrales Gewicht muss in der Umgebung liegen, damit der oertlichen
+# Schaetzung voll vertraut wird (Anteil der Umgebungsflaeche).
+NEUTRAL_MINDESTANTEIL = 0.10
+
 LOG = logging.getLogger("hdr_merge")
 
 
@@ -1025,6 +1033,81 @@ def schaetze_graupunkt(bild: np.ndarray, fenstermaske: np.ndarray,
     return bild[flaechen].mean(axis=0).astype(np.float32)
 
 
+def gleiche_lokale_farbstiche_aus(bild: np.ndarray, staerke: float,
+                                  radius_anteil: float, grenze: float,
+                                  protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Gleicht ortsabhaengige Farbstiche aus (lokaler Weissabgleich).
+
+    Ein Innenraum ist fast nie von einer einzigen Lichtquelle beleuchtet. In
+    einer vermessenen Kuechenaufnahme lag der Boden bei einem Rot/Blau-
+    Verhaeltnis von 3.4 (warmes Kunstlicht) und die Decke bei 0.92
+    (Tageslicht durchs Fenster). Ein globaler Weissabgleich kann dagegen
+    nichts ausrichten: Ueber das ganze Bild gemittelt heben sich beide
+    Stiche auf, er findet folgerichtig nichts zu tun. Sichtbar bleibt ein
+    Bild mit orangenem Boden und blauen Schatten.
+
+    Geschaetzt wird die oertliche Lichtfarbe aus einer stark
+    weichgezeichneten Fassung des Bildes. Der Radius ist bewusst gross
+    (Standard 15 % der Bildbreite): Er soll grossflaechige Lichtstimmungen
+    erfassen, nicht die Farbe einzelner Gegenstaende.
+
+    Entscheidend ist dabei, WELCHE Pixel die Lichtfarbe verraten. Ein
+    schlichter oertlicher Mittelwert kann nicht zwischen "warmes Licht" und
+    "warmes Material" unterscheiden - er neutralisiert einen Eichenboden
+    genauso wie eine Gluehlampenstimmung. Deshalb geht jedes Pixel nur nach
+    Massgabe seiner Neutralitaet in die Schaetzung ein: Nahezu graue
+    Flaechen (Waende, Decke, Arbeitsplatte) bestimmen die Lichtfarbe, kraeftig
+    gefaerbte Flaechen (Holz, rote Schuessel) bleiben aussen vor. Findet sich
+    in der Umgebung ueberhaupt keine neutrale Flaeche, sinkt das Vertrauen
+    und es wird gar nicht korrigiert - lieber ein Farbstich zu wenig
+    entfernt als ein Eichenboden entfaerbt.
+
+    Zwei weitere Sicherungen begrenzen den Eingriff: Die Korrektur je Kanal
+    ist gedeckelt, und sie wird luminanzneutral normiert - die Helligkeit
+    bleibt also unveraendert, es verschiebt sich ausschliesslich die Farbe.
+    """
+    if staerke <= 0.0:
+        return bild
+
+    breite = bild.shape[1]
+    radius = max(8, int(round(breite * radius_anteil)))
+    sicher = np.clip(bild, 0.0, None)
+
+    # Neutralitaet je Pixel: 1.0 = grau, 0.0 = kraeftig gefaerbt. Sehr dunkle
+    # Pixel werden zusaetzlich abgewertet, dort ist die Farbe reines Rauschen.
+    hoch = sicher.max(axis=2)
+    tief = sicher.min(axis=2)
+    buntheit = (hoch - tief) / np.maximum(hoch, 1e-4)
+    neutral = np.clip(1.0 - buntheit / NEUTRAL_GRENZE, 0.0, 1.0)
+    neutral *= np.clip(berechne_luminanz(sicher) / 0.04, 0.0, 1.0)
+    neutral = neutral.astype(np.float32)
+
+    # Gewichteter oertlicher Mittelwert nur ueber die neutralen Anteile.
+    masse = box_filter(neutral, radius)
+    grob = box_filter(sicher * neutral[..., None], radius) \
+        / np.maximum(masse, 1e-6)[..., None]
+    lum_grob = np.maximum(berechne_luminanz(grob), 1e-4)
+
+    # Oertliche Farbigkeit: 1.0 bedeutet neutral.
+    chroma = grob / lum_grob[..., None]
+    korrektur = np.clip(1.0 / np.maximum(chroma, 1e-4), 1.0 - grenze,
+                        1.0 + grenze)
+    vertrauen = np.clip(masse / NEUTRAL_MINDESTANTEIL, 0.0, 1.0)
+    korrektur = 1.0 + (korrektur - 1.0) * (float(staerke)
+                                           * vertrauen)[..., None]
+
+    # Luminanzneutral: der Faktor darf die Helligkeit nicht mitziehen.
+    gewicht = np.tensordot(korrektur, LUMA_GEWICHTE, axes=([2], [0]))
+    korrektur = korrektur / np.maximum(gewicht, 1e-4)[..., None]
+
+    ergebnis = bild * korrektur
+    abweichung = float(np.mean(np.abs(korrektur - 1.0)))
+    protokoll.append((logging.DEBUG,
+                      f"Lokaler Weissabgleich: Radius {radius} px, mittlere "
+                      f"Korrektur {abweichung * 100:.1f} %"))
+    return ergebnis.astype(np.float32)
+
+
 def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                          args: argparse.Namespace,
                          protokoll: list[tuple[int, str]]) -> np.ndarray:
@@ -1042,6 +1125,13 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                           "Zu wenig Innenraumflaeche fuer die Normalisierung - "
                           "es wird das gesamte Bild als Bezug verwendet."))
         innen = np.ones_like(innen)
+
+    # Ortsabhaengige Farbstiche vor der Tonwertabbildung ausgleichen - eine
+    # Beleuchtungskorrektur gehoert an den Anfang, nicht ans Ende.
+    if args.local_wb > 0.0:
+        bild = gleiche_lokale_farbstiche_aus(bild, args.local_wb,
+                                             args.local_wb_radius,
+                                             args.local_wb_limit, protokoll)
 
     lum = berechne_luminanz(bild)
     lum_innen = lum[innen]
@@ -1063,18 +1153,38 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                           "Weiss-/Schwarzpunkt-Verankerung uebersprungen."))
         ergebnis = bild.astype(np.float32)
     else:
-        normiert = (bild - schwarz) / (weiss - schwarz)
+        # Die gesamte Tonwertabbildung laeuft ueber die LUMINANZ. R, G und B
+        # werden anschliessend nur mit einem gemeinsamen Faktor skaliert.
+        #
+        # Der Grund ist ein Fehler, der sich vorher genau hier eingenistet
+        # hatte: Wurde der aus der Luminanz gewonnene Schwarzpunkt kanalweise
+        # abgezogen und danach bei null abgeschnitten, fiel in den Tiefen der
+        # schwaechste Kanal auf null, waehrend der staerkste stehen blieb. Der
+        # Farbton kippte dadurch vollstaendig. Gemessen an einer echten
+        # Aufnahme lag das Blau/Rot-Verhaeltnis im Band 0.10 bis 0.20
+        # anschliessend bei 1.95 (Quelle: 0.87) und die Saettigung bei 0.53
+        # (Quelle: 0.21) - sichtbar als blaue Flecken in dunklen Flaechen.
+        #
+        # Ueber einen gemeinsamen Faktor ist der Farbton mathematisch
+        # unantastbar: Jede Skalierung laesst die Kanalverhaeltnisse und
+        # damit Farbton und Saettigung exakt, wie sie waren.
+        def kurve(werte: np.ndarray, gamma_wert: float) -> np.ndarray:
+            """Luminanz-Kennlinie: normieren, Gamma, auf die Zielspanne."""
+            norm = np.clip((werte - schwarz) / (weiss - schwarz), 0.0, None)
+            if abs(gamma_wert - 1.0) > 1e-6:
+                norm = np.power(norm, gamma_wert)
+            return args.black_target + spanne * norm
+
+        spanne = max(args.white_target - args.black_target, 1e-4)
+        median_norm = float(np.clip(
+            (np.median(lum_innen) - schwarz) / (weiss - schwarz), 0.0, None))
+        ziel_norm = float(np.clip((args.mid_target - args.black_target) / spanne,
+                                  1e-3, 0.999))
         protokoll.append((logging.DEBUG,
                           f"Weisspunkt {weiss:.3f} -> {args.white_target:.2f}, "
                           f"Schwarzpunkt {schwarz:.3f} -> "
                           f"{args.black_target:.2f}"))
 
-        # Gamma so waehlen, dass der Innenraum-Median auf dem Zielwert landet.
-        median_norm = float(np.median(
-            berechne_luminanz(np.clip(normiert, 0.0, 1.0))[innen]))
-        spanne = max(args.white_target - args.black_target, 1e-4)
-        ziel_norm = float(np.clip((args.mid_target - args.black_target) / spanne,
-                                  1e-3, 0.999))
         if 1e-3 < median_norm < 0.999:
             gamma = float(np.clip(math.log(ziel_norm) / math.log(median_norm),
                                   0.3, 3.0))
@@ -1101,39 +1211,47 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis,
                               f"ausserhalb des sinnvollen Bereichs - "
                               f"Gamma-Korrektur uebersprungen."))
 
-        positiv = np.maximum(normiert, 0.0)
-        # Der Merker fuer die Nachverankerung weiter unten.
-        verankern = True
-        # Das Gamma wird ueber die LUMINANZ angewendet und als gemeinsamer
-        # Faktor auf R, G und B gelegt. Kanalweise gerechnet wuerde ein Gamma
-        # die Kanalverhaeltnisse verschieben und damit die Saettigung
-        # veraendern - bei Gamma 1.9 stieg die Saettigung eines Eichenbodens
-        # im Test von 0.29 auf 0.51. Genau das soll dieses Werkzeug nicht tun.
-        if abs(gamma - 1.0) > 1e-6:
-            lum_norm = np.maximum(berechne_luminanz(positiv), 1e-3)
-            faktor = np.clip(np.power(lum_norm, gamma - 1.0), 0.05, 20.0)
-            positiv = positiv * faktor[..., None]
-        ergebnis = args.black_target + spanne * positiv
+        # Nachverankerung: Das Gamma verschiebt die Endpunkte wieder. Statt
+        # das Bild ein zweites Mal zu verrechnen, wird die Kennlinie selbst
+        # nachjustiert - sie ist eindimensional und damit billig auszuwerten.
+        stuetzstellen = np.linspace(schwarz, weiss, 256, dtype=np.float32)
+        abgebildet = kurve(stuetzstellen, gamma)
+        unten, oben = float(abgebildet[0]), float(abgebildet[-1])
+        if oben - unten > 1e-4:
+            nach_a = (args.white_target - args.black_target) / (oben - unten)
+            nach_b = args.black_target - unten * nach_a
+        else:
+            nach_a, nach_b = 1.0, 0.0
 
-        # Nachverankerung: Das Gamma verschiebt die Endpunkte wieder. Bei
-        # einer kraeftigen Aufhellung (gemessen Gamma 0.51 an einer echten
-        # Aufnahme) landet der Schwarzpunkt statt bei 0.035 bei 0.059 - die
-        # Tiefen saufen nicht ab, sondern grauen aus. Ein zweiter, rein
-        # linearer Durchgang setzt beide Endpunkte exakt auf die Zielwerte.
-        if verankern:
-            lum_zwei = berechne_luminanz(np.clip(ergebnis, 0.0, 1.0))[innen]
-            schwarz_zwei = float(np.percentile(lum_zwei, args.black_percentile))
-            weiss_zwei = float(np.percentile(lum_zwei, args.white_percentile))
-            if weiss_zwei - schwarz_zwei > 1e-4:
-                faktor = ((args.white_target - args.black_target)
-                          / (weiss_zwei - schwarz_zwei))
-                ergebnis = ((ergebnis - schwarz_zwei) * faktor
-                            + args.black_target)
-                protokoll.append((logging.DEBUG,
-                                  f"Nachverankerung: Schwarz {schwarz_zwei:.3f} "
-                                  f"-> {args.black_target:.3f}, Weiss "
-                                  f"{weiss_zwei:.3f} -> "
-                                  f"{args.white_target:.3f}"))
+        ziel_lum = kurve(lum, gamma) * nach_a + nach_b
+
+        # Die Kennlinie wird in zwei Anteile zerlegt:
+        #
+        #   * einen gemeinsamen FAKTOR auf R, G und B - der laesst Farbton und
+        #     Saettigung mathematisch unberuehrt;
+        #   * einen neutralen ZUSCHLAG, der auf alle drei Kanaele gleich
+        #     addiert wird.
+        #
+        # Der Faktor ist nach oben begrenzt. Ohne diese Grenze bekaemen fast
+        # schwarze Pixel eine Verstaerkung von zwanzig und mehr, und ihr
+        # Farbrauschen wuerde als bunte Flecken sichtbar. Was der begrenzte
+        # Faktor an Helligkeit schuldig bleibt, liefert der Zuschlag nach -
+        # und weil er auf alle Kanaele gleich wirkt, entsaettigt er das
+        # Rauschen in den tiefsten Tiefen, statt es einzufaerben. Genau so
+        # verhaelt sich auch ein klassischer Schwarzpunkt.
+        #
+        # Rechnerisch bleibt die Zielluminanz exakt getroffen: Die Luminanz
+        # von (Bild mal Faktor plus Zuschlag) ist Luminanz mal Faktor plus
+        # Zuschlag, weil die Luminanzgewichte sich zu eins summieren.
+        sicher = np.maximum(lum, 1e-5)
+        faktor = np.clip(ziel_lum / sicher, 0.0, args.shadow_gain)
+        zuschlag = np.maximum(ziel_lum - lum * faktor, 0.0)
+        ergebnis = (bild * faktor[..., None]
+                    + zuschlag[..., None]).astype(np.float32)
+        protokoll.append((logging.DEBUG,
+                          f"Tonwertfaktor: Median {float(np.median(faktor)):.2f}, "
+                          f"begrenzt bei {float((faktor >= args.shadow_gain).mean()) * 100:.2f} % "
+                          f"der Pixel"))
 
     # 4. Globaler Weissabgleich ueber den Graupunkt der Wandflaechen.
     if args.wb_strength > 0.0:
@@ -2217,6 +2335,9 @@ def baue_parser() -> argparse.ArgumentParser:
                         "'exact' erzwingt den Zielwert in beide Richtungen")
     t.add_argument("--white-percentile", type=float, default=99.5)
     t.add_argument("--black-percentile", type=float, default=0.2)
+    t.add_argument("--shadow-gain", type=float, default=8.0,
+                   help="Obergrenze fuer die Aufhellung eines einzelnen "
+                        "Pixels. Begrenzt die Rauschverstaerkung in den Tiefen")
     t.add_argument("--color-match", type=float, default=0.0,
                    help="Saettigung anteilig an den kommerziellen Dienst "
                         "angleichen (0 = aus, 1 = vollstaendig). Nur sinnvoll, "
@@ -2231,6 +2352,15 @@ def baue_parser() -> argparse.ArgumentParser:
     t.add_argument("--highlight-ceiling", type=float, default=0.98,
                    help="Obergrenze fuer Spitzlichter im gesamten Bild "
                         "(0 = aus). Verhindert hartes Clipping")
+    t.add_argument("--local-wb", type=float, default=0.9,
+                   help="Ortsabhaengiger Weissabgleich gegen Mischlicht "
+                        "(0 = aus). Neutralisiert grossflaechige Farbstiche")
+    t.add_argument("--local-wb-radius", type=float, default=0.15,
+                   help="Radius der oertlichen Lichtfarbschaetzung als Anteil "
+                        "der Bildbreite. Kleiner = ortsgenauer, aber "
+                        "entfaerbt eher echte Objektfarben")
+    t.add_argument("--local-wb-limit", type=float, default=0.35,
+                   help="Groesste zulaessige Korrektur je Farbkanal")
     t.add_argument("--wb-strength", type=float, default=0.7,
                    help="Staerke des globalen Weissabgleichs (0 = aus)")
 
