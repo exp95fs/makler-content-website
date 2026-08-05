@@ -183,6 +183,11 @@ def fuelle_loecher(maske: np.ndarray) -> np.ndarray:
 # groessere Werte machen den Himmel heller und flacher.
 ROLLOFF_RATE = 1.0
 
+# Radius der Frequenztrennung in der Lichterkompression, als Anteil der
+# Bildbreite. Klein genug, dass nur Feinzeichnung (Wolken, Sprossen)
+# erhalten bleibt, nicht der Helligkeitsverlauf ueber das Fenster.
+DETAIL_RADIUS_ANTEIL = 0.006
+
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
                     rate: float = ROLLOFF_RATE) -> np.ndarray:
@@ -210,7 +215,8 @@ def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
 
 def komprimiere_lichter_in_maske(bild: np.ndarray, maske_weich: np.ndarray,
                                  knie: float, obergrenze: float,
-                                 rate: float = ROLLOFF_RATE) -> np.ndarray:
+                                 rate: float = ROLLOFF_RATE,
+                                 detail_erhalt: float = 1.0) -> np.ndarray:
     """Wendet den Rolloff auf den maskierten Bereich an.
 
     Gerechnet wird auf dem **staerksten Kanal** je Pixel, nicht auf der
@@ -224,9 +230,52 @@ def komprimiere_lichter_in_maske(bild: np.ndarray, maske_weich: np.ndarray,
     Speichern abgeschnitten - genau dann verliert der Himmel seine Farbe und
     wird milchig weiss. Ueber den Maximalkanal ist garantiert, dass kein
     Kanal die Obergrenze reisst und nichts geclippt werden muss.
+
+    Die Kompression wird ausserdem nur auf die GROBE Struktur gelegt. Ein
+    Rolloff ist eine flache Kennlinie: Wo er den Tonwertumfang auf ein
+    Drittel staucht, staucht er die feine Zeichnung gleich mit - und aus
+    Wolken wird eine gleichmaessige helle Flaeche. Genau das war messbar:
+    Die Feinzeichnung in den hellsten fuenf Prozent lag bei zwei vermessenen
+    Aufnahmen bei 0.022 und 0.014, beim kommerziellen Vorbild dagegen bei
+    0.048 und 0.049.
+
+    Deshalb wird die Fuehrungsgroesse in eine grobe Basis und die feine
+    Zeichnung zerlegt. Nur die Basis durchlaeuft den Rolloff, die
+    Feinzeichnung wird unveraendert wieder aufaddiert (--window-texture).
+    Der Himmel bekommt dadurch seine Wolkenstruktur zurueck, ohne dass die
+    Gesamthelligkeit des Fensters steigt.
     """
     fuehrung = bild.max(axis=2)
-    ziel = weicher_rolloff(fuehrung, knie, obergrenze, rate)
+
+    if detail_erhalt > 0.0:
+        # Radius bewusst klein: Es geht um Wolkenzeichnung und Sprossen,
+        # nicht um den Helligkeitsverlauf ueber das ganze Fenster - der
+        # gehoert in die Basis und muss komprimiert werden.
+        radius = max(2, int(round(bild.shape[1] * DETAIL_RADIUS_ANTEIL)))
+        basis = np.maximum(box_filter(fuehrung, radius), 1e-5)
+
+        # Die Feinzeichnung wird als VERHAELTNIS zur Basis gefuehrt, nicht
+        # als Differenz. Der Unterschied ist nicht kosmetisch: Eine
+        # Palmwedel vor hellem Himmel liegt zwei Blendenstufen unter der
+        # oertlichen Basis. Als Differenz aufaddiert ergibt das nach der
+        # Kompression der Basis einen negativen Zielwert - der Wedel wird
+        # schwarz. Gemessen an einer echten Aufnahme fielen so 0.41 % aller
+        # Pixel auf null, sichtbar als schwarze Sprenkel im Fenster.
+        #
+        # Als Verhaeltnis geht das nicht: Ein Faktor bleibt ein Faktor,
+        # gleich wie stark die Basis gestaucht wird. Der Wedel behaelt
+        # seinen relativen Abstand zum Himmel und kann nie unter null
+        # geraten.
+        verhaeltnis = np.power(fuehrung / basis,
+                               float(np.clip(detail_erhalt, 0.0, 1.0)))
+        ziel = weicher_rolloff(basis, knie, obergrenze, rate) * verhaeltnis
+        # Die Feinzeichnung darf die Obergrenze nicht reissen. Der winzige
+        # Abschlag haelt die Zusage auch dann ein, wenn die Obergrenze in
+        # float32 minimal aufgerundet dargestellt wird.
+        ziel = np.clip(ziel, 0.0, obergrenze * (1.0 - 1e-6))
+    else:
+        ziel = weicher_rolloff(fuehrung, knie, obergrenze, rate)
+
     faktor = np.where(fuehrung > 1e-5, ziel / np.maximum(fuehrung, 1e-5), 1.0)
     alpha = np.clip(maske_weich, 0.0, 1.0)
     faktor = 1.0 + (faktor - 1.0) * alpha
@@ -989,7 +1038,8 @@ def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
                          0.10, obergrenze - 0.05))
     ergebnis = komprimiere_lichter_in_maske(
         zusammengesetzt, maske_ton, knie=knie,
-        obergrenze=obergrenze, rate=args.window_rolloff)
+        obergrenze=obergrenze, rate=args.window_rolloff,
+        detail_erhalt=args.window_texture)
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
@@ -2380,12 +2430,16 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Mindestbreite des Tonwertbands, das dem "
                         "Fensterinhalt zur Verfuegung steht. Groesser = mehr "
                         "Zeichnung im Fenster")
-    w.add_argument("--window-ceiling", type=float, default=0.90,
+    w.add_argument("--window-ceiling", type=float, default=0.80,
                    help="Obergrenze, auf die der Fensterinhalt weich "
                         "komprimiert wird (Zeichnung statt Weiss)")
     w.add_argument("--window-rolloff", type=float, default=1.6,
                    help="Steilheit der Lichterkompression im Fenster. "
                         "Kleiner = mehr Zeichnung, dunklerer Himmel")
+    w.add_argument("--window-texture", type=float, default=0.4,
+                   help="Anteil der Feinzeichnung, der die Lichterkompression "
+                        "im Fenster unveraendert ueberlebt (0 = alte, "
+                        "flachere Kompression; 1 = volle Wolkenzeichnung)")
     w.add_argument("--window-blur", type=float, default=0.02,
                    help="Guided-Filter-Radius als Anteil der Bildbreite")
 
