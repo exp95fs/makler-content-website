@@ -186,6 +186,21 @@ Im **Fensterbereich derselben Szene** (Schiebetür mit Blick auf einen Hang):
 
 Also gleiche Fensterhelligkeit bei mehr erhaltener Struktur.
 
+### Tests
+
+```bat
+python test_hdr_merge.py     :: Bildverarbeitung (83 Tests)
+python test_gui.py           :: Oberfläche (10 Tests)
+```
+
+`test_gui.py` stellt tkinter durch einen Ersatz, der jeden Aufruf annimmt.
+Damit läuft der komplette Aufbau des Fensters auch dort durch, wo kein
+Fenstersystem vorhanden ist — auf einem Bauserver oder in einer schlanken
+Umgebung. Das fängt nicht alles (ob eine ttk-Option gültig ist, weiß nur das
+echte tkinter), aber die häufigsten Fehler: falsch geschriebene
+Methodennamen, in falscher Reihenfolge angelegte Variablen, kaputte
+Signaturen. Zwei der Tests rechnen eine echte Vorschau durch.
+
 `benchmark_fotello.py` misst ein beliebiges Ergebnis gegen diese Zielwerte:
 
 ```bat
