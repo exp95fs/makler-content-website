@@ -188,6 +188,11 @@ ROLLOFF_RATE = 1.0
 # erhalten bleibt, nicht der Helligkeitsverlauf ueber das Fenster.
 DETAIL_RADIUS_ANTEIL = 0.006
 
+# Radius, mit dem das Ausbrenn-Gewicht geschlossen wird, als Anteil der
+# Bildbreite. Gross genug, um Motivstruktur (Wiese, Wolkenkanten) zu
+# schliessen, klein genug, um eine Pendelleuchte stehen zu lassen.
+AUSBRENN_CLOSE_ANTEIL = 0.005
+
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
                     rate: float = ROLLOFF_RATE) -> np.ndarray:
@@ -993,11 +998,30 @@ def berechne_ausbrenn_gewicht(referenz: np.ndarray, schwelle: float,
     angehoben und ausserhalb nicht - es entsteht ein sichtbarer
     Helligkeitssprung mitten im Objekt.
 
-    Die Rampe ist weich, damit an der Grenze keine harte Kante entsteht.
+    Das Gewicht wird anschliessend geschlossen (morphologisches Closing),
+    und das ist kein Feinschliff, sondern der Kern der Sache. Pixelweise
+    berechnet folgt es jeder Struktur im Motiv: Eine sonnenbeschienene
+    Wiese hinter dem Fenster liegt teils ueber, teils unter der Schwelle.
+    Punkt fuer Punkt wird dann einmal der dunkle Auszug und einmal die
+    ausgebrannte Fusion eingeblendet - und weil die Fusion dort weiss ist,
+    entsteht genau der milchige, gesprenkelte Fensterinhalt, der als
+    "Schleier" und "Artefakte" auffaellt.
+
+    Das Closing loescht diese punktweise Sprenkelung, ohne den
+    eigentlichen Zweck aufzugeben: Kleine, vereinzelt untersaettigte Pixel
+    inmitten einer ausgebrannten Flaeche verschwinden, ein
+    zusammenhaengender dunkler Gegenstand von der Groesse einer
+    Pendelleuchte ueberlebt es unveraendert.
     """
     lum = berechne_luminanz(referenz)
     gewicht = (lum - (schwelle - rampe)) / max(rampe, 1e-4)
-    return np.clip(gewicht, 0.0, 1.0).astype(np.float32)
+    gewicht = np.clip(gewicht, 0.0, 1.0).astype(np.float32)
+
+    radius = max(1, int(round(referenz.shape[1] * AUSBRENN_CLOSE_ANTEIL)))
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                     (2 * radius + 1, 2 * radius + 1))
+    gewicht = cv2.morphologyEx(gewicht, cv2.MORPH_CLOSE, kern)
+    return gewicht.astype(np.float32)
 
 
 def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
@@ -2430,13 +2454,13 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Mindestbreite des Tonwertbands, das dem "
                         "Fensterinhalt zur Verfuegung steht. Groesser = mehr "
                         "Zeichnung im Fenster")
-    w.add_argument("--window-ceiling", type=float, default=0.80,
+    w.add_argument("--window-ceiling", type=float, default=0.75,
                    help="Obergrenze, auf die der Fensterinhalt weich "
                         "komprimiert wird (Zeichnung statt Weiss)")
     w.add_argument("--window-rolloff", type=float, default=1.6,
                    help="Steilheit der Lichterkompression im Fenster. "
                         "Kleiner = mehr Zeichnung, dunklerer Himmel")
-    w.add_argument("--window-texture", type=float, default=0.4,
+    w.add_argument("--window-texture", type=float, default=0.9,
                    help="Anteil der Feinzeichnung, der die Lichterkompression "
                         "im Fenster unveraendert ueberlebt (0 = alte, "
                         "flachere Kompression; 1 = volle Wolkenzeichnung)")
