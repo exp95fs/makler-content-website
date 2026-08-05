@@ -81,7 +81,13 @@ python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --bracket-size 3 --no-align --
 python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --base-tone off
 
 :: Mehr Zeichnung im Fenster (dafür etwas dunklerer Himmel)
-python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --window-ceiling 0.88 --window-rolloff 0.8
+python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --window-ceiling 0.70 --window-rolloff 0.8
+
+:: Heller Himmel statt Zeichnung, dafür flacherer Fensterinhalt
+python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --window-ceiling 0.85
+
+:: Ohne die gemessene Kontrastkurve (rein lineare Normalisierung wie früher)
+python hdr_merge.py C:\Objekt\raw C:\Objekt\basis --tone-contrast 0
 ```
 
 ---
@@ -357,32 +363,40 @@ sind 0,11).
 
 | Parameter | Standard | Wirkung |
 |---|---|---|
-| `--window-strength` | `0.8` | Deckkraft des Effekts. `0` = aus. |
+| `--window-strength` | `1.0` | Deckkraft des Effekts. `0` = aus. |
 | `--window-wb` | `0.0` | Lokaler Weißabgleich im Fenster. **Standard aus** – bei Tageslichtfenstern zerstört er die Himmelsfarbe (siehe Benchmark). Nur sinnvoll, wenn ein Fenster tatsächlich unnatürlich kalt wirkt. |
 | `--window-threshold` | `0.90` | Ab welcher Luminanz ein Bereich als ausgebrannt gilt. |
 | `--window-detail` | `0.010` | Mindest-Standardabweichung im Dunkelbild (Struktur). |
 | `--window-detail-fraction` | `0.10` | Anteil strukturierter Pixel, ab dem eine Fläche als Fenster gilt. Höher = strenger gegen Fehlerkennungen. |
 | `--window-min-area` | `0.001` | Mindestgröße einer Fläche als Bildanteil (0,1 %). |
 | `--window-close` | `0.015` | Breite des Schließ-Kernels als Anteil der Bildbreite. Muss breiter sein als eine Fenstersprosse. |
-| `--window-ceiling` | `0.92` | Obergrenze für den Fensterinhalt. Niedriger = mehr Zeichnung, grauerer Himmel. |
-| `--window-rolloff` | `1.0` | Steilheit der Lichterkompression. Kleiner = mehr Zeichnung, dunklerer Himmel. |
+| `--window-ceiling` | `0.75` | Obergrenze für den Fensterinhalt. Niedriger = mehr Zeichnung, grauerer Himmel. An einer echten Fensterfläche gemessen: `0.90` ergab Luminanz 0.73, das Vorbild liegt bei 0.58. |
+| `--window-rolloff` | `1.6` | Steilheit der Lichterkompression. Kleiner = mehr Zeichnung, dunklerer Himmel. |
 | `--window-range` | `0.50` | Mindestbreite des Tonwertbands für den Fensterinhalt. Größer = mehr Zeichnung im Fenster. |
 | `--window-blur` | `0.02` | Guided-Filter-Radius als Anteil der Bildbreite. |
+| `--window-texture` | `0.9` | Anteil der Feinzeichnung, der die Lichterkompression unverändert übersteht. `0` = alte, flachere Kompression; `1` = volle Wolken- und Wiesenzeichnung. Die Kompression ist eine flache Kennlinie und würde die feine Zeichnung sonst mitstauchen (gemessen: 0.014 statt 0.049 beim Vorbild). |
 
 ### Tonale Normalisierung
 
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--base-tone` | `on` | `off` liefert die flache Rohfusion. |
-| `--white-target` | `0.95` | Zielwert für den Weißpunkt des Innenraums. |
-| `--black-target` | `0.02` | Zielwert für den Schwarzpunkt. |
-| `--mid-target` | `0.55` | Zielwert für den Mittelton. |
+| `--white-target` | `0.82` | Zielwert für den Weißpunkt des Innenraums. |
+| `--black-target` | `0.035` | Zielwert für den Schwarzpunkt. |
+| `--mid-target` | `0.62` | Zielwert für den Mittelton. |
 | `--mid-mode` | `lift` | `lift` hellt nur auf (weiße Wände bleiben weiß); `exact` erzwingt den Zielwert in beide Richtungen. |
 | `--white-percentile` | `99.5` | Perzentil für den Weißpunkt. |
 | `--black-percentile` | `0.2` | Perzentil für den Schwarzpunkt. |
 | `--wb-strength` | `0.7` | Stärke des globalen Weißabgleichs. `0` = aus. |
 | `--raw-wb` | `camera` | Weißabgleich der RAW-Entwicklung. `auto` berechnet ihn neu und liefert ein neutraleres Bild (gemessen: weiße Wand R/B 1,043 statt 1,114). |
+| `--tone-contrast` | `1.0` | Anteil der am kommerziellen Dienst **gemessenen** Kontrastkennlinie. `0` = rein lineare Normalisierung wie bisher. Ohne sie wirkt das Ergebnis flach und verschleiert: Was hier bei 0.30 lag, liegt beim Vorbild bei 0.18, was hier bei 0.70 lag, dort bei 0.77. |
+| `--shadow-gain` | `8.0` | Obergrenze für die Aufhellung eines einzelnen Pixels. Begrenzt die Rauschverstärkung in den Tiefen. |
+| `--local-wb` | `0.9` | Stärke des lokalen Weißabgleichs. Ein Innenraum ist fast nie von einer einzigen Lichtquelle beleuchtet (gemessen: Boden R/B 3.4 durch Kunstlicht, Decke 0.92 durch Tageslicht); global heben sich beide Stiche auf. Die örtliche Lichtfarbe wird **nur aus nahezu neutralen Flächen** geschätzt, damit ein Eichenboden warm bleibt. `0` = aus. |
+| `--local-wb-radius` | `0.15` | Radius der Schätzung als Anteil der Bildbreite. Groß, damit großflächige Lichtstimmungen erfasst werden und nicht die Farbe einzelner Gegenstände. |
+| `--local-wb-limit` | `0.35` | Obergrenze der Korrektur je Kanal. |
 | `--highlight-ceiling` | `0.98` | Obergrenze für Spitzlichter im ganzen Bild (`0` = aus). Verhindert hartes Clipping. |
+| `--color-match` | `0.0` | Sättigung anteilig an den kommerziellen Dienst angleichen (`0` = aus, `1` = vollständig). Nur sinnvoll, wenn das Preset auf dessen Ausgabe eingestellt ist – der Dienst entsättigt, dieses Werkzeug nicht. |
+| `--color-match-target` | `0.098` | Zielwert der Sättigung, am Dienst gemessen. Wirkt nur zusammen mit `--color-match`. |
 
 ### Perspektive und Ausgabe
 

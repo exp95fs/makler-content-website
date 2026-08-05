@@ -20,6 +20,8 @@ verlassen:
 
 from __future__ import annotations
 
+import pathlib
+import re
 import shutil
 import tempfile
 import unittest
@@ -842,6 +844,52 @@ class TestExifLeser(unittest.TestCase):
 
     def test_ev_ohne_daten(self):
         self.assertIsNone(hdr_merge.berechne_ev({}))
+
+
+class TestReadmeStimmtMitDenSchaltern(unittest.TestCase):
+    """Die Parametertabelle im README muss dem Programm entsprechen.
+
+    Sie war es zwischenzeitlich nicht: Neun Standardwerte in der Tabelle
+    waren veraltet (etwa --window-ceiling mit 0.92 statt 0.75), und sieben
+    Schalter fehlten ganz. Eine Doku, die man nicht glauben kann, ist
+    schlimmer als keine - deshalb wird der Abgleich jetzt geprueft.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.readme = (pathlib.Path(__file__).parent / "README.md").read_text(
+            encoding="utf-8")
+        cls.schalter = {
+            option: aktion.default
+            for aktion in hdr_merge.baue_parser()._actions
+            for option in aktion.option_strings
+            if option.startswith("--") and option != "--help"
+        }
+
+    def test_jeder_schalter_ist_dokumentiert(self):
+        fehlend = sorted(name for name in self.schalter
+                         if f"`{name}`" not in self.readme)
+        self.assertEqual(fehlend, [], f"Nicht im README: {fehlend}")
+
+    def test_dokumentierte_standardwerte_stimmen(self):
+        abweichungen = []
+        muster = re.compile(r"^\| `(--[a-z0-9-]+)` \| `([^`]*)` \|", re.M)
+        for treffer in muster.finditer(self.readme):
+            name, dokumentiert = treffer.group(1), treffer.group(2)
+            if name not in self.schalter:
+                abweichungen.append(f"{name}: gibt es nicht mehr")
+                continue
+            echt = self.schalter[name]
+            gleich = str(echt) == dokumentiert
+            if not gleich and isinstance(echt, float):
+                try:
+                    gleich = abs(float(dokumentiert) - echt) < 1e-9
+                except ValueError:
+                    gleich = False
+            if not gleich:
+                abweichungen.append(f"{name}: README {dokumentiert!r}, "
+                                    f"tatsaechlich {echt!r}")
+        self.assertEqual(abweichungen, [], "\n".join(abweichungen))
 
 
 if __name__ == "__main__":
