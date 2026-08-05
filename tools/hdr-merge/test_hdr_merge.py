@@ -812,6 +812,107 @@ class TestSpitzlichtschutz(unittest.TestCase):
         self.assertAlmostEqual(float(ergebnis.max()), 1.0)
 
 
+class TestAussichtsGewichtung(unittest.TestCase):
+    """Der Window Pull muss die ganze Fensterflaeche einheitlich behandeln.
+
+    Der Fall, der die "schattierten Bereiche" erzeugte: zwei Scheiben
+    desselben Fensters, eine ausgebrannt, die andere hinter einem
+    Insektengitter nur mittelhell. Frueher wurde nur die erste ersetzt.
+    """
+
+    def _szene(self):
+        # Rahmenluminanz 0.5; links helle Aussicht, rechts gedaempfte
+        # Aussicht, unten ein dunkler Gegenstand davor.
+        fenster_roh = np.zeros((60, 60, 3), dtype=np.float32)
+        fenster_roh[:40, :30] = 1.6   # freie Aussicht
+        fenster_roh[:40, 30:] = 0.8   # Aussicht hinter Gitter
+        fenster_roh[40:, :] = 0.12    # Gegenstand im Raum davor
+        referenz = np.full((60, 60, 3), 0.5, dtype=np.float32)
+        referenz[:40, :30] = 0.97     # nur die freie Aussicht brennt aus
+        return fenster_roh, referenz
+
+    def test_gedaempfte_aussicht_wird_mitersetzt(self):
+        fenster_roh, referenz = self._szene()
+        gewicht = hdr_merge.berechne_aussicht_gewicht(
+            fenster_roh, ring_luminanz=0.5, referenz=referenz, schwelle=0.90)
+        self.assertGreater(float(gewicht[:40, :30].mean()), 0.99)
+        # Der eigentliche Fehler: hier stand frueher 0.
+        self.assertGreater(float(gewicht[:40, 35:].mean()), 0.99)
+
+    def test_gegenstand_vor_dem_fenster_bleibt_stehen(self):
+        fenster_roh, referenz = self._szene()
+        gewicht = hdr_merge.berechne_aussicht_gewicht(
+            fenster_roh, ring_luminanz=0.5, referenz=referenz, schwelle=0.90)
+        self.assertLess(float(gewicht[50:, 20:40].mean()), 0.05)
+
+    def test_ausgebrannt_zaehlt_immer_als_aussicht(self):
+        # Rueckfallebene: selbst bei unbrauchbar geschaetzter Rahmenhelligkeit
+        # wird ausgebrannte Flaeche ersetzt.
+        fenster_roh, referenz = self._szene()
+        gewicht = hdr_merge.berechne_aussicht_gewicht(
+            fenster_roh, ring_luminanz=99.0, referenz=referenz, schwelle=0.90)
+        self.assertGreater(float(gewicht[:40, :30].mean()), 0.99)
+
+
+class TestZeichnung(unittest.TestCase):
+
+    def _wand(self):
+        # Flaeche mit feiner Maserung, so flau wie nach dem Aufhellen.
+        y, x = np.mgrid[0:80, 0:80].astype(np.float32)
+        muster = 0.004 * np.sin(x / 1.7) + 0.004 * np.sin(y / 5.0)
+        return np.repeat((0.70 + muster)[..., None], 3, axis=2).astype(np.float32)
+
+    def test_zeichnung_nimmt_messbar_zu(self):
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        bild = self._wand()
+        ergebnis = hdr_merge.verstaerke_zeichnung(
+            bild, vorgabe.clarity, vorgabe.clarity_radius,
+            vorgabe.sharpen, vorgabe.sharpen_radius, [])
+        self.assertGreater(float(ergebnis[..., 1].std()),
+                           float(bild[..., 1].std()) * 1.5)
+
+    def test_mittlere_helligkeit_bleibt(self):
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        bild = self._wand()
+        ergebnis = hdr_merge.verstaerke_zeichnung(
+            bild, vorgabe.clarity, vorgabe.clarity_radius,
+            vorgabe.sharpen, vorgabe.sharpen_radius, [])
+        self.assertAlmostEqual(float(ergebnis.mean()), float(bild.mean()),
+                               places=2)
+
+    def test_farbton_bleibt_erhalten(self):
+        # Verstaerkt wird die Helligkeitszeichnung, nicht die Saettigung.
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        bild = self._wand()
+        bild[..., 0] *= 1.10   # warmer Stich
+        bild[..., 2] *= 0.92
+        ergebnis = hdr_merge.verstaerke_zeichnung(
+            bild, vorgabe.clarity, vorgabe.clarity_radius,
+            vorgabe.sharpen, vorgabe.sharpen_radius, [])
+        vorher = float((bild[..., 0] / bild[..., 2]).mean())
+        nachher = float((ergebnis[..., 0] / ergebnis[..., 2]).mean())
+        self.assertAlmostEqual(vorher, nachher, places=3)
+
+    def test_abschaltbar(self):
+        bild = self._wand()
+        ergebnis = hdr_merge.verstaerke_zeichnung(bild, 0.0, 0.005, 0.0,
+                                                  0.0006, [])
+        self.assertTrue(np.array_equal(ergebnis, bild))
+
+    def test_keine_halos_an_harten_kanten(self):
+        # Fensterrahmen gegen helle Aussicht: der kantenbewusste Guided
+        # Filter darf dort keinen hellen Saum erzeugen.
+        bild = np.full((80, 80, 3), 0.25, dtype=np.float32)
+        bild[:, 40:] = 0.95
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        ergebnis = hdr_merge.verstaerke_zeichnung(
+            bild, vorgabe.clarity, vorgabe.clarity_radius,
+            vorgabe.sharpen, vorgabe.sharpen_radius, [])
+        dunkle_seite = ergebnis[:, 30:39, 1]
+        self.assertLess(float(dunkle_seite.min()), 0.26)
+        self.assertLess(abs(float(dunkle_seite.mean()) - 0.25), 0.02)
+
+
 class TestExifLeser(unittest.TestCase):
 
     def test_liest_tiff_tags(self):

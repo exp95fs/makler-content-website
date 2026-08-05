@@ -193,6 +193,12 @@ DETAIL_RADIUS_ANTEIL = 0.006
 # schliessen, klein genug, um eine Pendelleuchte stehen zu lassen.
 AUSBRENN_CLOSE_ANTEIL = 0.005
 
+# Ab welchem Bruchteil der Rahmenhelligkeit ein Pixel als Aussicht zaehlt.
+# Unterhalb dieses Werts liegt Inventar im Raum (gemessen: Sofakissen bei
+# 0.29 der Rahmenhelligkeit), oberhalb die Szene draussen (Aussicht hinter
+# einem Insektengitter bei 1.7, freie Aussicht bei 3.5).
+AUSSICHT_RAMPE = 0.5
+
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
                     rate: float = ROLLOFF_RATE) -> np.ndarray:
@@ -724,8 +730,8 @@ class WindowPullErgebnis:
     fenster_roh: np.ndarray | None = None
     ring: np.ndarray | None = None
     ring_luminanz: float = 0.0
-    # Wie stark das Referenzbild je Pixel ausgebrannt war (0..1).
-    ausbrenn_gewicht: np.ndarray | None = None
+    # Wie sicher ein Pixel echte Aussicht zeigt statt Inventar davor (0..1).
+    aussicht_gewicht: np.ndarray | None = None
     # Maske fuer die Lichterkompression (deckt die Fensterflaeche voll ab).
     maske_ton: np.ndarray | None = None
 
@@ -975,28 +981,52 @@ def fuehre_window_pull_aus(fusion: np.ndarray, referenz: np.ndarray,
     fenster_roh = gleiche_fenster_weissabgleich_an(fenster_roh, fusion,
                                                    maske_binaer, args.window_wb)
 
-    ausbrenn_gewicht = berechne_ausbrenn_gewicht(referenz,
+    aussicht_gewicht = berechne_aussicht_gewicht(fenster_roh, ring_luminanz,
+                                                 referenz,
                                                  args.window_threshold)
+    protokoll.append((logging.DEBUG,
+                      f"Aussichtsanteil in der Fenstermaske: "
+                      f"{float(aussicht_gewicht[maske_binaer.astype(bool)].mean()) * 100:.1f} %"))
     ergebnis = setze_fensterinhalt(fusion, fenster_roh, maske_weich, maske_ton,
-                                   ring_luminanz, args, ausbrenn_gewicht)
+                                   ring_luminanz, args, aussicht_gewicht)
     return WindowPullErgebnis(ergebnis, maske_weich, maske_binaer, anteil,
                               fenster_roh, ring, ring_luminanz,
-                              ausbrenn_gewicht, maske_ton)
+                              aussicht_gewicht, maske_ton)
 
 
-def berechne_ausbrenn_gewicht(referenz: np.ndarray, schwelle: float,
+def berechne_aussicht_gewicht(fenster_roh: np.ndarray, ring_luminanz: float,
+                              referenz: np.ndarray, schwelle: float,
                               rampe: float = 0.10) -> np.ndarray:
-    """Wie stark ein Pixel im Referenzbild tatsaechlich ausgebrannt ist (0..1).
+    """Wie sicher ein Pixel innerhalb der Maske echte Aussicht zeigt (0..1).
 
-    Der Window Pull darf nur dort ersetzen, wo im Referenzbild wirklich
-    Information fehlt. Alles andere - der Fensterrahmen, die Sprossen, ein
-    dunkler Gegenstand vor dem Fenster wie eine Pendelleuchte - ist in der
-    Fusion bereits korrekt belichtet und muss unangetastet bleiben.
+    Der Window Pull darf nur dort ersetzen, wo tatsaechlich die Szene
+    ausserhalb des Fensters liegt. Ein dunkler Gegenstand vor dem Fenster -
+    eine Pendelleuchte, ein Sofakissen, der Rahmen selbst - ist in der
+    Fusion bereits korrekt belichtet und muss unangetastet bleiben. Ohne
+    diese Gewichtung wird ein solches Objekt innerhalb der Maske mit dem
+    Verstaerkungsfaktor des Himmels angehoben und ausserhalb nicht - es
+    entsteht ein Helligkeitssprung mitten im Objekt.
 
-    Ohne diese Gewichtung wird ein dunkles Objekt, das die Fenstergrenze
-    kreuzt, innerhalb der Maske mit dem Verstaerkungsfaktor des Himmels
-    angehoben und ausserhalb nicht - es entsteht ein sichtbarer
-    Helligkeitssprung mitten im Objekt.
+    Entscheidend ist, WORAN "Aussicht" erkannt wird. Frueher wurde gefragt,
+    ob das Referenzbild an dieser Stelle ausgebrannt war. Das ist zu eng:
+    Eine Fensterscheibe hinter einem Insektengitter oder im Schatten eines
+    Vordachs ist Aussicht, brennt aber nicht aus (gemessen: Referenz-
+    Luminanz 0.52 gegenueber 0.96 bei der Nachbarscheibe). Sie blieb
+    deshalb komplett die flaue Fusion, waehrend direkt daneben der klare
+    dunkle Auszug stand - zwei verschiedene Darstellungen derselben
+    Aussicht nebeneinander, getrennt durch eine sichtbare Kante. Das sind
+    die "schattierten Bereiche" im Fenster.
+
+    Gefragt wird stattdessen, ob der zurueckgeholte Fensterinhalt heller
+    liegt als der Fensterrahmen. Das trennt sauber und ohne freien
+    Parameter, weil es die Geometrie der Szene abbildet: Was draussen ist,
+    ist heller als der Rahmen; was im Raum davor steht, ist dunkler.
+    Gemessen an derselben Szene, Rahmenluminanz 0.48 - Aussicht hinter
+    Gitter 0.82, freie Aussicht 1.67, Sofakissen 0.14, Holzwand 0.36.
+
+    Zusaetzlich gilt weiterhin: Was im Referenzbild ausgebrannt war, ist in
+    jedem Fall Aussicht. Diese zweite Bedingung ist die Rueckfallebene,
+    falls die Rahmenhelligkeit einmal schlecht geschaetzt wird.
 
     Das Gewicht wird anschliessend geschlossen (morphologisches Closing),
     und das ist kein Feinschliff, sondern der Kern der Sache. Pixelweise
@@ -1013,9 +1043,18 @@ def berechne_ausbrenn_gewicht(referenz: np.ndarray, schwelle: float,
     zusammenhaengender dunkler Gegenstand von der Groesse einer
     Pendelleuchte ueberlebt es unveraendert.
     """
-    lum = berechne_luminanz(referenz)
-    gewicht = (lum - (schwelle - rampe)) / max(rampe, 1e-4)
+    # 1. Aussicht liegt heller als der Fensterrahmen.
+    lum_fenster = berechne_luminanz(fenster_roh)
+    oben = max(float(ring_luminanz), 1e-3)
+    unten = AUSSICHT_RAMPE * oben
+    gewicht = (lum_fenster - unten) / max(oben - unten, 1e-4)
     gewicht = np.clip(gewicht, 0.0, 1.0).astype(np.float32)
+
+    # 2. Rueckfallebene: ausgebrannt im Referenzbild ist immer Aussicht.
+    lum_ref = berechne_luminanz(referenz)
+    ausgebrannt = np.clip((lum_ref - (schwelle - rampe)) / max(rampe, 1e-4),
+                          0.0, 1.0).astype(np.float32)
+    gewicht = np.maximum(gewicht, ausgebrannt)
 
     radius = max(1, int(round(referenz.shape[1] * AUSBRENN_CLOSE_ANTEIL)))
     kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
@@ -1027,7 +1066,7 @@ def berechne_ausbrenn_gewicht(referenz: np.ndarray, schwelle: float,
 def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
                         maske_weich: np.ndarray, maske_ton: np.ndarray,
                         knie_luminanz: float, args: argparse.Namespace,
-                        ausbrenn_gewicht: np.ndarray | None = None) -> np.ndarray:
+                        aussicht_gewicht: np.ndarray | None = None) -> np.ndarray:
     """Setzt den Fensterinhalt ein und bringt ihn in den darstellbaren Bereich.
 
     Wichtig ist die Reihenfolge: Erst wird ueberblendet, DANN komprimiert.
@@ -1043,8 +1082,8 @@ def setze_fensterinhalt(grundbild: np.ndarray, fenster_roh: np.ndarray,
     Knies bleibt alles unveraendert.
     """
     deckkraft = np.clip(maske_weich, 0.0, 1.0) * float(args.window_strength)
-    if ausbrenn_gewicht is not None:
-        deckkraft = deckkraft * ausbrenn_gewicht
+    if aussicht_gewicht is not None:
+        deckkraft = deckkraft * aussicht_gewicht
     alpha = deckkraft[..., None]
     zusammengesetzt = grundbild * (1.0 - alpha) + fenster_roh * alpha
 
@@ -1195,6 +1234,69 @@ def gleiche_lokale_farbstiche_aus(bild: np.ndarray, staerke: float,
                       f"Lokaler Weissabgleich: Radius {radius} px, mittlere "
                       f"Korrektur {abweichung * 100:.1f} %"))
     return ergebnis.astype(np.float32)
+
+
+def verstaerke_zeichnung(bild: np.ndarray, clarity: float, clarity_radius: float,
+                         schaerfe: float, schaerfe_radius: float,
+                         protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Holt die Zeichnung zurueck, die das Aufhellen gekostet hat.
+
+    Das ist keine Geschmacksfrage, sondern der Ausgleich eines messbaren
+    Verlusts. Die tonale Normalisierung hebt eine Wand von Luminanz 0.27 auf
+    0.70 - der Absolutkontrast ihrer Maserung bleibt dabei nahezu gleich
+    (gemessen 0.0031 -> 0.0025), waehrend die Helligkeit sich mehr als
+    verdoppelt. Relativ zur Umgebung, und nur so nimmt das Auge Struktur
+    wahr, faellt die Zeichnung damit auf ein Drittel. Aus einer Holzwand mit
+    Maserung und Astloechern wird eine weisse Flaeche.
+
+    Dass hier wirklich etwas fehlt und nicht bloss ein Geschmack bedient
+    wird, zeigt der Vergleich mit dem kommerziellen Vorbild an derselben
+    Szene: bei praktisch gleicher mittlerer Helligkeit (0.710 gegenueber
+    0.704) traegt dessen Wandflaeche ueber alle Strukturgroessen hinweg das
+    Zwei- bis Zweieinhalbfache an Zeichnung. Die Voreinstellungen sind so
+    gewaehlt, dass genau dieses Verhaeltnis erreicht wird - nicht mehr.
+
+    Zwei Stufen, beide ausschliesslich auf der Luminanz (die Farbe bleibt
+    unangetastet, das Verhaeltnis der Kanaele wird nur mitgezogen):
+
+      1. Lokaler Kontrast ueber den Guided Filter. Kantenbewusst, damit an
+         harten Kontrastkanten - Fensterrahmen gegen helle Aussicht - keine
+         hellen Saeume entstehen. Ein gewoehnlicher Weichzeichner als Basis
+         wuerde genau dort Halos erzeugen.
+      2. Capture Sharpening ueber eine feine Unschaerfemaske. Das ist der
+         Ausgleich fuer die Weichheit, die jede RAW-Entwicklung durch
+         Demosaicing mitbringt, kein Kreativ-Effekt.
+    """
+    if clarity <= 0.0 and schaerfe <= 0.0:
+        return bild
+
+    breite = bild.shape[1]
+    lum = berechne_luminanz(bild)
+    neu = lum
+
+    if clarity > 0.0:
+        radius = max(3, int(round(breite * clarity_radius)))
+        basis = guided_filter(neu, neu, radius, 1e-3)
+        neu = neu + clarity * (neu - basis)
+
+    if schaerfe > 0.0:
+        sigma = max(0.6, breite * schaerfe_radius)
+        weich = cv2.GaussianBlur(neu, (0, 0), sigma)
+        neu = neu + schaerfe * (neu - weich)
+
+    neu = np.clip(neu, 0.0, 1.0).astype(np.float32)
+
+    # Die Luminanzaenderung wird als Faktor auf alle drei Kanaele gelegt.
+    # Dadurch bleibt der Farbton exakt erhalten - verstaerkt wird nur die
+    # Helligkeitszeichnung, nicht die Saettigung.
+    faktor = (neu / np.maximum(lum, 1e-4))[..., None]
+    ergebnis = np.clip(bild * faktor, 0.0, 1.0).astype(np.float32)
+
+    protokoll.append((logging.DEBUG,
+                      f"Zeichnung verstaerkt (lokaler Kontrast {clarity:.2f}, "
+                      f"Schaerfe {schaerfe:.2f}): mittlere Struktur "
+                      f"{float(np.abs(neu - lum).mean()):.5f}"))
+    return ergebnis
 
 
 def wende_kontrastkurve_an(bild: np.ndarray, staerke: float,
@@ -1474,7 +1576,7 @@ def nimm_fenster_zurueck(bild: np.ndarray, window: WindowPullErgebnis,
                       f"Skalierung {skalierung:.2f})"))
     return setze_fensterinhalt(bild, window.fenster_roh * skalierung,
                                window.maske_weich, window.maske_ton, ring_neu,
-                               args, window.ausbrenn_gewicht)
+                               args, window.aussicht_gewicht)
 
 
 # ---------------------------------------------------------------------------
@@ -2170,6 +2272,11 @@ def verarbeite_reihe(aufnahmen: Sequence[Aufnahme], ausgabe_ordner: Path,
 
     ergebnis = gleiche_saettigung_an(ergebnis, args.color_match,
                                      args.color_match_target, protokoll)
+    # Bewusst nach allen geometrischen Schritten: Objektivkorrektur und
+    # Perspektivkorrektur interpolieren das Bild neu und wuerden vorher
+    # erzeugte Schaerfe wieder aufweichen.
+    ergebnis = verstaerke_zeichnung(ergebnis, args.clarity, args.clarity_radius,
+                                    args.sharpen, args.sharpen_radius, protokoll)
     ergebnis = schuetze_spitzlichter(ergebnis, args, protokoll)
 
     ausgabe_ordner.mkdir(parents=True, exist_ok=True)
@@ -2511,6 +2618,19 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Groesste zulaessige Korrektur je Farbkanal")
     t.add_argument("--wb-strength", type=float, default=0.7,
                    help="Staerke des globalen Weissabgleichs (0 = aus)")
+
+    z = p.add_argument_group("Zeichnung und Schaerfe")
+    z.add_argument("--clarity", type=float, default=1.0,
+                   help="Lokaler Kontrast. Holt die Zeichnung zurueck, die "
+                        "das Aufhellen kostet (0 = aus).")
+    z.add_argument("--clarity-radius", type=float, default=0.005,
+                   help="Radius des lokalen Kontrasts als Anteil der "
+                        "Bildbreite.")
+    z.add_argument("--sharpen", type=float, default=0.6,
+                   help="Capture Sharpening. Gleicht die Weichheit der "
+                        "RAW-Entwicklung aus (0 = aus).")
+    z.add_argument("--sharpen-radius", type=float, default=0.0006,
+                   help="Radius des Schaerfens als Anteil der Bildbreite.")
 
     s = p.add_argument_group("Perspektive")
     s.add_argument("--lens-k1", type=float, default=0.0,

@@ -198,8 +198,8 @@ Alles davon wurde erst durch den Vergleich sichtbar und ist behoben:
    heller Schein um dunkle Gegenstände vor dem Fenster. Beides kam daher, dass
    der Guided Filter die Maske an dunklen Kanten einbrechen lässt — richtig
    fürs Überblenden, fatal für die Lichterkompression. Es gibt jetzt zwei
-   getrennte Masken, dazu eine Ausbrenn-Gewichtung, die nur dort ersetzt, wo im
-   Referenzbild wirklich Information fehlt.
+   getrennte Masken, dazu eine Aussichts-Gewichtung, die nur dort ersetzt, wo
+   tatsächlich die Szene außerhalb des Fensters liegt.
 
 ### Wenn das Preset auf den Dienst kalibriert ist
 
@@ -308,10 +308,28 @@ aber eine weitere Abhängigkeit bedeuten.
    (selbst in NumPy implementiert, damit keine Abhängigkeit auf
    `opencv-contrib` entsteht). Ausdrücklich **kein** Gauß auf der Maske –
    genau das erzeugt Halos.
-7. **Ausbrenn-Gewichtung:** Ersetzt wird nur dort, wo im Referenzbild
-   wirklich Information fehlt. Ein dunkler Gegenstand vor dem Fenster – eine
-   Pendelleuchte, ein Fensterkreuz – bleibt unangetastet, sonst entsteht
-   mitten im Objekt ein Helligkeitssprung an der Fenstergrenze.
+7. **Aussichts-Gewichtung:** Ersetzt wird nur dort, wo tatsächlich die Szene
+   außerhalb des Fensters liegt. Ein dunkler Gegenstand vor dem Fenster – eine
+   Pendelleuchte, ein Fensterkreuz, ein Sofakissen – bleibt unangetastet, sonst
+   entsteht mitten im Objekt ein Helligkeitssprung an der Fenstergrenze.
+
+   Entscheidend ist, **woran** Aussicht erkannt wird. Früher wurde gefragt, ob
+   das Referenzbild ausgebrannt war. Das ist zu eng: Eine Fensterscheibe hinter
+   einem Insektengitter ist Aussicht, brennt aber nicht aus (gemessen:
+   Referenz-Luminanz 0,52 gegenüber 0,96 bei der Nachbarscheibe). Sie blieb
+   deshalb komplett die flaue Fusion, während direkt daneben der klare dunkle
+   Auszug stand — zwei verschiedene Darstellungen derselben Aussicht
+   nebeneinander, getrennt durch eine sichtbare Kante. Das waren die
+   „schattierten Bereiche" im Fenster.
+
+   Gefragt wird stattdessen, ob der zurückgeholte Fensterinhalt **heller liegt
+   als der Fensterrahmen**. Das trennt ohne freien Parameter, weil es die
+   Geometrie der Szene abbildet: Was draußen ist, ist heller als der Rahmen;
+   was im Raum davor steht, ist dunkler. Gemessen an derselben Szene bei
+   Rahmenluminanz 0,48 — Aussicht hinter Gitter 0,82, freie Aussicht 1,67,
+   Sofakissen 0,14, Holzwand 0,36. Was im Referenzbild ausgebrannt war, gilt
+   zusätzlich immer als Aussicht; das ist die Rückfallebene, falls die
+   Rahmenhelligkeit einmal schlecht geschätzt wird.
 8. **Komposition:** Fensterinhalt aus dem Dunkelbild, helligkeitsangepasst
    über die mittlere Luminanz in einem dilatierten Ring um die Maskengrenze
    (den Fensterrahmen), damit der Übergang nicht springt.
@@ -397,6 +415,27 @@ sind 0,11).
 | `--highlight-ceiling` | `0.98` | Obergrenze für Spitzlichter im ganzen Bild (`0` = aus). Verhindert hartes Clipping. |
 | `--color-match` | `0.0` | Sättigung anteilig an den kommerziellen Dienst angleichen (`0` = aus, `1` = vollständig). Nur sinnvoll, wenn das Preset auf dessen Ausgabe eingestellt ist – der Dienst entsättigt, dieses Werkzeug nicht. |
 | `--color-match-target` | `0.098` | Zielwert der Sättigung, am Dienst gemessen. Wirkt nur zusammen mit `--color-match`. |
+
+### Zeichnung und Schärfe
+
+Das Aufhellen kostet Zeichnung, und zwar messbar: Eine Holzwand steigt von
+Luminanz 0,27 auf 0,70, der Absolutkontrast ihrer Maserung bleibt dabei fast
+gleich (0,0031 → 0,0025). Relativ zur Umgebung — und nur so nimmt das Auge
+Struktur wahr — fällt die Zeichnung damit auf ein Drittel. Aus einer Holzwand
+mit Maserung und Astlöchern wird eine weiße Fläche.
+
+Die Voreinstellungen sind am kommerziellen Dienst **gemessen**, nicht
+geschätzt: Bei praktisch gleicher mittlerer Helligkeit (0,710 gegenüber 0,704)
+trägt dessen Wandfläche über alle Strukturgrößen hinweg das Zwei- bis
+Zweieinhalbfache an Zeichnung. Nachgemessen über vier Bildzonen liegt das
+Ergebnis mit diesen Werten bei 0,78 bis 1,20 des Vorbilds.
+
+| Parameter | Standard | Wirkung |
+|---|---|---|
+| `--clarity` | `1.0` | Lokaler Kontrast über den Guided Filter. Kantenbewusst, damit an harten Kontrastkanten (Fensterrahmen gegen helle Aussicht) keine hellen Säume entstehen. `0` = aus. |
+| `--clarity-radius` | `0.005` | Radius als Anteil der Bildbreite. |
+| `--sharpen` | `0.6` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
+| `--sharpen-radius` | `0.0006` | Radius als Anteil der Bildbreite. |
 
 ### Perspektive und Ausgabe
 
