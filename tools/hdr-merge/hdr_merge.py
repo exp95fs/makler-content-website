@@ -447,6 +447,31 @@ def lies_aufnahmezeit(tags: dict, pfad: Path) -> float:
 # ---------------------------------------------------------------------------
 
 
+def waehle_demosaic():
+    """Das beste verfuegbare Demosaic-Verfahren.
+
+    AAHD ist AHD in beiden Punkten ueberlegen, die hier zaehlen - gemessen
+    an denselben Aufnahmen: mehr Zeichnung auf einer Holzwand (relatives
+    Detail 0.01172 gegenueber 0.01052, rund elf Prozent mehr) UND weniger
+    Falschfarbe auf feinen, sich wiederholenden Strukturen (1.015 statt
+    1.262 Prozent). Das ist selten - meist erkauft ein Verfahren das eine
+    mit dem anderen.
+
+    Die Falschfarbe ist damit nicht beseitigt: Die blau-orangen Streifen
+    auf einer im Backofenglas gespiegelten Jalousie sind echtes optisches
+    Moire, entstanden unterhalb der Aufloesungsgrenze des Sensors. Kein
+    Demosaic-Verfahren kann Information zurueckholen, die nie aufgezeichnet
+    wurde - es laesst sich nur daempfen.
+
+    Nicht jede rawpy-Fassung bringt AAHD mit, deshalb der Rueckfall.
+    """
+    for name in ("AAHD", "DHT", "AHD"):
+        verfahren = getattr(rawpy.DemosaicAlgorithm, name, None)
+        if verfahren is not None:
+            return verfahren
+    return rawpy.DemosaicAlgorithm.AHD
+
+
 def entwickle_raw(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
     """RAW neutral und deterministisch entwickeln.
 
@@ -471,11 +496,15 @@ def entwickle_raw(pfad: Path, weissabgleich: str = "camera") -> np.ndarray:
             output_bps=16,
             output_color=rawpy.ColorSpace.sRGB,
             gamma=(2.222, 4.5),          # Standard-sRGB-Kurve, keine Kreativkurve
-            demosaic_algorithm=rawpy.DemosaicAlgorithm.AHD,
+            demosaic_algorithm=waehle_demosaic(),
             half_size=False,
             user_flip=None,              # Kamera-Orientierung uebernehmen
             highlight_mode=rawpy.HighlightMode.Clip,
-            median_filter_passes=0,
+            # Ein Durchgang Medianfilter auf den Farbkanaelen. Er ist gegen
+            # Falschfarben gebaut und kostet praktisch keine Zeichnung
+            # (gemessen: Wanddetail 0.01172 -> 0.01158, Falschfarbe
+            # 1.015 -> 0.943 %).
+            median_filter_passes=1,
             fbdd_noise_reduction=rawpy.FBDDNoiseReductionMode.Off,
         )
     return (rgb.astype(np.float32) / 65535.0)
