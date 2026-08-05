@@ -288,8 +288,20 @@ def komprimiere_lichter_in_maske(bild: np.ndarray, maske_weich: np.ndarray,
         # gleich wie stark die Basis gestaucht wird. Der Wedel behaelt
         # seinen relativen Abstand zum Himmel und kann nie unter null
         # geraten.
-        verhaeltnis = np.power(fuehrung / basis,
-                               float(np.clip(detail_erhalt, 0.0, 1.0)))
+        exponent = float(np.clip(detail_erhalt, 0.0, 1.0))
+        # Bei vollem Detailerhalt ist das Potenzieren mathematisch wirkungslos
+        # (x hoch 1 ist x), NumPy rechnet es aber trotzdem ueber jeden Pixel
+        # aus - und der Spitzlichtschutz ruft genau mit diesem Wert. Das
+        # Ergebnis ist nachgewiesen bitgleich.
+        #
+        # Ehrlichkeitshalber: Eine messbare Zeitersparnis hat das hier NICHT
+        # gebracht (11.94 gegenueber 11.86 Sekunden). Die Laufzeit dieser
+        # Funktion wird nicht vom Rechnen bestimmt, sondern vom Anfordern der
+        # 132-MB-Zwischenarrays - die Einzelschritte summieren sich auf 2.9
+        # Sekunden, die Funktion braucht 11.9. Der Verzicht bleibt trotzdem
+        # richtig: Arbeit ohne Wirkung gehoert nicht in den Rechenweg.
+        verhaeltnis = (fuehrung / basis if exponent == 1.0
+                       else np.power(fuehrung / basis, exponent))
         ziel = weicher_rolloff(basis, knie, obergrenze, rate) * verhaeltnis
         # Die Feinzeichnung darf die Obergrenze nicht reissen. Der winzige
         # Abschlag haelt die Zusage auch dann ein, wenn die Obergrenze in
