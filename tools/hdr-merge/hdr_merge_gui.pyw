@@ -239,6 +239,11 @@ REGLER = [
     Regler("fensterzeichnung", "--hdr-window-contrast", "Fensterzeichnung",
            "Wieviel Tonwertumfang das Fenster behaelt. Zu hoch = es "
            "brennt wieder aus.", 0.0, 1.0, 0.55),
+    # Ohne diese Ruecknahme wird ein blasser Himmel beim Herunterziehen zu
+    # kraeftigem Cyan - der klassische HDR-Himmel.
+    Regler("fensterfarbe", "--hdr-saturation", "Fensterfarbe",
+           "Farbruecknahme draussen. 1.0 = unveraendert, dann wird der "
+           "Himmel tuerkis.", 0.3, 1.0, 0.65),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,

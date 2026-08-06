@@ -950,7 +950,8 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     protokoll: list[tuple[int, str]],
                     knie: float = 1.0,
                     fensterziel: float = 0.45,
-                    fensterkontrast: float = 0.55) -> np.ndarray:
+                    fensterkontrast: float = 0.55,
+                    saettigung: float = 0.65) -> np.ndarray:
     """Belichten wie ein Fotograf - und die Fenster wie von Hand freistellen.
 
     Der entscheidende Punkt: Ein Fenster ist physikalisch drei bis vier
@@ -1036,10 +1037,25 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                         zusammen)
 
     lum_neu = np.exp2(zusammen)
-    # Wie ueberall im Programm: gemeinsamer Faktor auf alle drei Kanaele,
-    # damit der Farbton unangetastet bleibt.
-    ergebnis = _nach_srgb(np.clip(strahlung * (lum_neu / lum)[..., None],
-                                  0.0, 1.0))
+
+    # 6. Farbe: draussen die Saettigung zuruecknehmen.
+    #
+    # Sonst entsteht der klassische HDR-Himmel. Ein sehr helles Pixel liegt
+    # dicht an Weiss, seine Kanaele unterscheiden sich also nur wenig -
+    # aber sie unterscheiden sich. Wird die Flaeche um mehrere
+    # Blendenstufen heruntergezogen und dabei das Kanalverhaeltnis exakt
+    # erhalten, wird aus dem blassen Blau ein kraeftiges Cyan. Gemessen an
+    # einer Haustuer-Szene: Saettigung 0.218 bei erhaltenem Verhaeltnis
+    # gegenueber 0.161 beim kommerziellen Vorbild - und im Bild ein harter,
+    # tuerkiser Himmel statt eines natuerlichen.
+    #
+    # Der Exponent wirkt NUR draussen (ueber t) und laesst den Innenraum
+    # unberuehrt: Dort wurde nichts gezogen, dort gibt es auch nichts zu
+    # korrigieren.
+    exponent = (1.0 - t * (1.0 - float(saettigung)))[..., None]
+    verhaeltnis = np.maximum(strahlung, 1e-9) / lum[..., None]
+    ergebnis = _nach_srgb(np.clip(lum_neu[..., None]
+                                  * np.power(verhaeltnis, exponent), 0.0, 1.0))
     protokoll.append((logging.DEBUG,
                       f"Belichtung auf Raumniveau {niveau:.4f} -> "
                       f"{kompression:.2f}; Fensterflaeche ({float((t > 0.5).mean()) * 100:.1f} % "
@@ -2872,7 +2888,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
                                    args.hdr_knee, args.hdr_highlight,
-                                   args.hdr_window_contrast)
+                                   args.hdr_window_contrast,
+                                   args.hdr_saturation)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3279,6 +3296,11 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
                          "dichtere Fenster.")
+    hd.add_argument("--hdr-saturation", type=float, default=0.65,
+                    help="Wie stark die Farbe draussen zurueckgenommen "
+                         "wird. 1.0 = Kanalverhaeltnis exakt erhalten, dann "
+                         "wird der Himmel beim Herunterziehen zu kraeftigem "
+                         "Cyan. Wirkt nur auf die gezogene Flaeche.")
     hd.add_argument("--hdr-window-contrast", type=float, default=0.55,
                     help="Wieviel Tonwertumfang die Fensterflaeche behaelt. "
                          "1.0 = voller Umfang, dann brennt sie wieder aus. "
