@@ -1014,6 +1014,53 @@ class TestOberflaecheStimmtMitDemProgramm(unittest.TestCase):
                         f"das Programm nutzt {getattr(vorgabe, name)}")
 
 
+class TestMaskenDeckkraft(unittest.TestCase):
+    """Die weiche Maske muss innen voll decken UND den Rahmen freilassen.
+
+    Beide Seiten sind schon einmal schiefgegangen, deshalb steht das hier
+    fest:
+
+      * Deckt sie innen nicht voll, bleibt das ausgebrannte Grundbild
+        anteilig stehen - sichtbar als heller Saum entlang der
+        Fensterkante und als blasser Schleier ueber der Scheibe.
+      * Laeuft sie auf den Rahmen, wird dieser mit Fensterinhalt
+        uebermalt - ein weisser Rahmen wirkt dann grau.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.lauf = SzenenLauf()
+        bilder = [cls.lauf.belichtung(i) for i in (1, 2, 3)]
+        fusion = hdr_merge.fusioniere_mertens(bilder, 1.0, 1.0, 1.0)
+        cls.binaer, cls.weich = hdr_merge.erkenne_fenstermaske(
+            referenz=bilder[1], dunkel=bilder[0], fusion=fusion,
+            schwelle=0.90, detail_schwelle=0.010, detail_anteil=0.10,
+            min_flaeche_anteil=0.001, blur_anteil=0.008, protokoll=[])
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.lauf.aufraeumen()
+
+    def test_deckt_das_fensterinnere_voll(self):
+        innen = cv2.distanceTransform(self.binaer, cv2.DIST_L2, 5) > 20
+        self.assertGreater(int(innen.sum()), 500, "Testszene zu klein")
+        self.assertGreater(float(self.weich[innen].mean()), 0.95,
+                           "Maske deckt das Fensterinnere nicht voll - das "
+                           "ausgebrannte Grundbild scheint durch")
+
+    def test_laesst_den_rahmen_frei(self):
+        aussen = cv2.distanceTransform(1 - self.binaer, cv2.DIST_L2, 5)
+        rahmen = (aussen > 5) & (aussen < 40)
+        self.assertGreater(int(rahmen.sum()), 500, "Testszene zu klein")
+        self.assertLess(float(self.weich[rahmen].mean()), 0.25,
+                        "Maske laeuft auf den Fensterrahmen - er wird mit "
+                        "Fensterinhalt uebermalt und wirkt grau")
+
+    def test_klingt_nach_aussen_vollstaendig_ab(self):
+        weit = cv2.distanceTransform(1 - self.binaer, cv2.DIST_L2, 5) > 80
+        self.assertLess(float(self.weich[weit].mean()), 0.02)
+
+
 class TestFarbprofil(unittest.TestCase):
     """Ohne eingebettetes Profil ist ein TIFF farblich mehrdeutig.
 

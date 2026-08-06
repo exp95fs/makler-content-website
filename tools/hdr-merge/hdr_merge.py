@@ -213,6 +213,15 @@ ANZEIGE_RADIUS_ANTEIL = 0.0006
 # Wie stark der Kantenkontrast gegenueber dem Capture Sharpening wiegt.
 ANZEIGE_ANTEIL = 0.6
 
+# Kennlinie, die die weiche Fenstermaske auf ihren vollen Wertebereich
+# streckt. Unterhalb von UNTEN gilt eine Stelle als Rahmen (Deckkraft null),
+# oberhalb von OBEN als Fenster (volle Deckkraft). Ohne sie erreicht die
+# Maske innen nie ihren vollen Wert und das ausgebrannte Grundbild scheint
+# als heller Saum durch; mit zu weiten Grenzen laeuft sie auf den Rahmen und
+# faerbt ihn grau.
+MASKE_KENNLINIE_UNTEN = 0.20
+MASKE_KENNLINIE_OBEN = 0.60
+
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
 # sonst clippen wuerde. Alles darunter - helle Waende, Arbeitsplatten,
@@ -925,31 +934,37 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
 
     # 5. Kantenbewusstes Weichzeichnen ueber den Guided Filter
     #
-    # Vor dem Weichzeichnen wird die Maske um den Weichzeichnungsradius
-    # ausgedehnt. Das ist keine Kosmetik, sondern behebt einen Fehler, der
-    # in JEDEM Bild sichtbar war: Der Guided Filter mittelt ueber seinen
-    # Radius, und an einer Maskenkante mittelt er zwangslaeufig mit dem
-    # Nullbereich ausserhalb. Die Deckkraft erreichte deshalb nirgends
-    # ihren vollen Wert - gemessen 0.573 direkt an der Fensterkante und
-    # selbst 200 Pixel tief im Fenster nur 0.819.
+    # Der Guided Filter mittelt ueber seinen Radius und mittelt an einer
+    # Maskenkante zwangslaeufig mit dem Nullbereich ausserhalb. Die
+    # Deckkraft erreichte deshalb nirgends ihren vollen Wert - gemessen
+    # 0.573 direkt an der Fensterkante und selbst 200 Pixel tief im
+    # Fenster nur 0.819. Die Folge: 18 bis 43 Prozent des ausgebrannten
+    # Grundbildes blieben stehen, sichtbar als heller Saum entlang der
+    # Kante und als blasser Schleier ueber der ganzen Scheibe.
     #
-    # Die Folge: 18 bis 43 Prozent des ausgebrannten Grundbildes blieben
-    # stehen. Sichtbar als heller Saum entlang der Fensterkante und als
-    # blasser Schleier ueber der ganzen Fensterflaeche - das Fenster wirkte
-    # "zu eng maskiert", weil effektiv nur ein Teil des Inhalts eingesetzt
-    # wurde.
+    # Behoben wird das mit einer Kennlinie AUF DER MASKE, nicht durch
+    # Ausdehnen. Der Unterschied ist entscheidend, und er wurde teuer
+    # gelernt: Ausdehnen um den Radius bringt die Deckkraft innen zwar auf
+    # 0.966, legt sie aber auch zu 0.770 auf den Fensterrahmen - der
+    # weisse Rahmen wird dann mit Fensterinhalt uebermalt und wirkt grau.
     #
-    # Ausgedehnt liegt die Mittelungszone auf dem Rahmen statt im Fenster.
-    # Gemessen: Deckkraft 0.966 an der Kante, 1.000 im Inneren - und
-    # trotzdem kein Ueberlaufen (0.004 mehr als 30 px ausserhalb), weil
-    # der Guided Filter die Kante weiterhin am Rahmen festhaelt.
+    # Die Kennlinie streckt stattdessen den Wertebereich der weichen
+    # Maske: Was schon ueberwiegend Fenster ist, geht auf volle Deckkraft,
+    # was ueberwiegend Rahmen ist, faellt auf null. Der Uebergang bleibt
+    # weich und bleibt an derselben Stelle. Gemessen an derselben Szene:
+    #
+    #                        innen Kante   innen tief   auf dem Rahmen
+    #   vorher                     0.573        0.819            0.151
+    #   Ausdehnen (verworfen)      0.966        1.000            0.770
+    #   Kennlinie                  0.876        1.000            0.090
+    #
+    # Also innen fast voll UND der Rahmen sauberer als im Ausgangszustand.
     fuehrung = berechne_luminanz(fusion)
     radius = max(2, int(round(w * blur_anteil)))
-    ausdehnung = cv2.getStructuringElement(
-        cv2.MORPH_ELLIPSE, (2 * radius + 1, 2 * radius + 1))
-    gedehnt = cv2.dilate(maske, ausdehnung).astype(np.float32)
-    weich = guided_filter(fuehrung, gedehnt, radius, 1e-4)
-    weich = np.clip(weich, 0.0, 1.0).astype(np.float32)
+    weich = guided_filter(fuehrung, maske.astype(np.float32), radius, 1e-4)
+    weich = np.clip((weich - MASKE_KENNLINIE_UNTEN)
+                    / (MASKE_KENNLINIE_OBEN - MASKE_KENNLINIE_UNTEN),
+                    0.0, 1.0).astype(np.float32)
 
     # Frueher entstand hier eine zweite, kraeftig geschlossene und
     # ausgedehnte Maske fuer die Lichterkompression. Sie ist ersatzlos
