@@ -204,6 +204,15 @@ AUSSICHT_RAMPE = 0.5
 # sichtbar werden kann; darunter kostet das Interpolieren nur Schaerfe.
 AUSRICHT_SCHWELLE_PX = 0.5
 
+# Radius des Kantenkontrasts als Anteil der Bildbreite. Er ist so gewaehlt,
+# dass er bei ueblicher Bildschirmgroesse auf rund einem Pixel landet: Eine
+# 33-Megapixel-Aufnahme wird auf einem Monitor vierfach verkleinert, 4 px im
+# Original werden dort zu 1 px. Genau dieser Anteil fehlte im Vergleich mit
+# dem kommerziellen Vorbild (0.73 seiner Kantenzeichnung ohne, 1.02 mit).
+ANZEIGE_RADIUS_ANTEIL = 0.0006
+# Wie stark der Kantenkontrast gegenueber dem Capture Sharpening wiegt.
+ANZEIGE_ANTEIL = 0.6
+
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
 # sonst clippen wuerde. Alles darunter - helle Waende, Arbeitsplatten,
@@ -212,8 +221,10 @@ GRUNDBILD_KNIE = 0.95
 
 # Unterhalb dieser Luminanz wird die Zeichnungsverstaerkung ausgeblendet,
 # damit sie die Tiefen nicht auf null druckt. Deutlich ueber dem Schwarzpunkt
-# (0.035), damit auch knapp darueber noch Luft bleibt.
-SCHATTEN_SCHUTZ = 0.12
+# (0.035), damit auch knapp darueber noch Luft bleibt. Mit der zweistufigen
+# Schaerfung musste der Wert steigen: Bei 0.12 fiel der Schwarzpunkt der
+# Testszene auf 0.014 statt der angestrebten 0.035.
+SCHATTEN_SCHUTZ = 0.22
 
 
 def weicher_rolloff(werte: np.ndarray, knie: float, obergrenze: float = 1.0,
@@ -913,9 +924,31 @@ def erkenne_fenstermaske(referenz: np.ndarray, dunkel: np.ndarray,
                           f"(Schwellwert --window-threshold pruefen)."))
 
     # 5. Kantenbewusstes Weichzeichnen ueber den Guided Filter
+    #
+    # Vor dem Weichzeichnen wird die Maske um den Weichzeichnungsradius
+    # ausgedehnt. Das ist keine Kosmetik, sondern behebt einen Fehler, der
+    # in JEDEM Bild sichtbar war: Der Guided Filter mittelt ueber seinen
+    # Radius, und an einer Maskenkante mittelt er zwangslaeufig mit dem
+    # Nullbereich ausserhalb. Die Deckkraft erreichte deshalb nirgends
+    # ihren vollen Wert - gemessen 0.573 direkt an der Fensterkante und
+    # selbst 200 Pixel tief im Fenster nur 0.819.
+    #
+    # Die Folge: 18 bis 43 Prozent des ausgebrannten Grundbildes blieben
+    # stehen. Sichtbar als heller Saum entlang der Fensterkante und als
+    # blasser Schleier ueber der ganzen Fensterflaeche - das Fenster wirkte
+    # "zu eng maskiert", weil effektiv nur ein Teil des Inhalts eingesetzt
+    # wurde.
+    #
+    # Ausgedehnt liegt die Mittelungszone auf dem Rahmen statt im Fenster.
+    # Gemessen: Deckkraft 0.966 an der Kante, 1.000 im Inneren - und
+    # trotzdem kein Ueberlaufen (0.004 mehr als 30 px ausserhalb), weil
+    # der Guided Filter die Kante weiterhin am Rahmen festhaelt.
     fuehrung = berechne_luminanz(fusion)
     radius = max(2, int(round(w * blur_anteil)))
-    weich = guided_filter(fuehrung, maske.astype(np.float32), radius, 1e-4)
+    ausdehnung = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE, (2 * radius + 1, 2 * radius + 1))
+    gedehnt = cv2.dilate(maske, ausdehnung).astype(np.float32)
+    weich = guided_filter(fuehrung, gedehnt, radius, 1e-4)
     weich = np.clip(weich, 0.0, 1.0).astype(np.float32)
 
     # Frueher entstand hier eine zweite, kraeftig geschlossene und
@@ -1383,23 +1416,39 @@ def verstaerke_zeichnung(bild: np.ndarray, clarity: float, clarity_radius: float
         neu = neu + clarity * (neu - basis)
 
     if schaerfe > 0.0:
-        # Der Radius ist eine ABSOLUTE Pixelangabe, nicht wie beim lokalen
-        # Kontrast ein Anteil der Bildbreite. Das ist keine Feinheit,
-        # sondern der Unterschied zwischen Schaerfe und Filterlook: Die
-        # Unschaerfe, die hier ausgeglichen wird, stammt aus Demosaicing
-        # und Sensor-Tiefpass und ist eine feste Eigenschaft in Pixeln -
-        # sie wird nicht groesser, nur weil der Sensor mehr Megapixel hat.
+        # Geschaerft wird auf ZWEI Groessenordnungen, und das ist der Kern
+        # der Sache. Beide sind noetig, weil sie zwei verschiedene Dinge
+        # tun und an zwei verschiedenen Stellen sichtbar werden:
         #
-        # Frueher war der Wert ein Anteil der Breite und ergab auf einer
-        # 33-Megapixel-Aufnahme 4.2 px Sigma. Gemessen an derselben
-        # Aufnahme kostet das teuer: Die Energie in breiten Uebergaengen
-        # stieg um 26 % (0.0243 auf 0.0306), waehrend die feinen Kanten
-        # kaum mehr gewannen als bei 1.0 px. Breite Saeume um jede Kante
-        # sind genau der Eindruck "da liegt ein Filter drueber" - und die
-        # eigentlichen Kanten bleiben trotzdem weich.
-        sigma = max(0.4, float(schaerfe_radius))
-        weich = cv2.GaussianBlur(neu, (0, 0), sigma)
-        neu = neu + schaerfe * (neu - weich)
+        # 1. Capture Sharpening, absolut in Pixeln. Es gleicht die
+        #    Unschaerfe aus Demosaicing und Sensor-Tiefpass aus. Die ist
+        #    eine feste Eigenschaft in Pixeln und wird nicht groesser, nur
+        #    weil der Sensor mehr Megapixel hat. Sichtbar wird es in der
+        #    Ansicht 1:1 und im Druck.
+        #
+        # 2. Kantenkontrast, als Anteil der Bildbreite. Er entscheidet,
+        #    wie das Bild auf dem Bildschirm wirkt - und dort liegt der
+        #    Unterschied zwischen "gestochen" und "matschig". Eine
+        #    33-Megapixel-Aufnahme wird auf einem Monitor rund vierfach
+        #    verkleinert; alles, was nur auf Pixelebene geschaerft wurde,
+        #    verschwindet dabei restlos.
+        #
+        # Das ist nachgemessen, nicht angenommen. Gegen das kommerzielle
+        # Vorbild, beide auf 1663 px Breite gebracht und die Kanten von
+        # den glatten Flaechen getrennt (Rauschen sieht sonst wie Schaerfe
+        # aus): Ohne den zweiten Anteil erreicht das Ergebnis 0.73 von
+        # dessen Kantenzeichnung, mit Radius 4 px genau 1.02.
+        #
+        # Ein frueherer Stand hatte nur den zweiten Anteil, aber mit
+        # voller Staerke und ohne den ersten. Das ergab breite Saeume ohne
+        # scharfe Kanten - der Eindruck "da liegt ein Filter drueber".
+        # Beides zusammen, jeweils massvoll, ist die Loesung.
+        fein = max(0.4, float(schaerfe_radius))
+        neu = neu + schaerfe * (neu - cv2.GaussianBlur(neu, (0, 0), fein))
+
+        anzeige = max(1.5, breite * ANZEIGE_RADIUS_ANTEIL)
+        neu = neu + (schaerfe * ANZEIGE_ANTEIL) * (
+            neu - cv2.GaussianBlur(neu, (0, 0), anzeige))
 
     # Tiefenschutz. Ohne ihn zieht die Verstaerkung die dunkelste Seite jeder
     # Kante mit nach unten und drueckt sie auf null: gemessen fiel der
@@ -2873,7 +2922,7 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Anteil der Feinzeichnung, der die Lichterkompression "
                         "im Fenster unveraendert ueberlebt (0 = alte, "
                         "flachere Kompression; 1 = volle Wolkenzeichnung)")
-    w.add_argument("--window-blur", type=float, default=0.02,
+    w.add_argument("--window-blur", type=float, default=0.008,
                    help="Guided-Filter-Radius als Anteil der Bildbreite")
 
     t = p.add_argument_group("Tonale Normalisierung")

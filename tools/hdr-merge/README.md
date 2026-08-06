@@ -460,7 +460,7 @@ sind 0,11).
 | `--window-ceiling` | `0.75` | Obergrenze für den Fensterinhalt. Niedriger = mehr Zeichnung, grauerer Himmel. An einer echten Fensterfläche gemessen: `0.90` ergab Luminanz 0.73, das Vorbild liegt bei 0.58. |
 | `--window-rolloff` | `1.6` | Steilheit der Lichterkompression. Kleiner = mehr Zeichnung, dunklerer Himmel. |
 | `--window-range` | `0.50` | Mindestbreite des Tonwertbands für den Fensterinhalt. Größer = mehr Zeichnung im Fenster. |
-| `--window-blur` | `0.02` | Guided-Filter-Radius als Anteil der Bildbreite. |
+| `--window-blur` | `0.008` | Guided-Filter-Radius als Anteil der Bildbreite. |
 | `--window-texture` | `0.9` | Anteil der Feinzeichnung, der die Lichterkompression unverändert übersteht. `0` = alte, flachere Kompression; `1` = volle Wolken- und Wiesenzeichnung. Die Kompression ist eine flache Kennlinie und würde die feine Zeichnung sonst mitstauchen (gemessen: 0.014 statt 0.049 beim Vorbild). |
 
 ### Tonale Normalisierung
