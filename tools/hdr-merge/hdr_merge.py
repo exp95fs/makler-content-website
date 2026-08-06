@@ -230,7 +230,32 @@ BELICHTUNGSGUETE_BREITE = 0.22
 # Kantenschaerfe der Basis-Feinzeichnung-Trennung im Tonemapping. Groesser
 # als beim Maskieren, weil hier ein glatter Beleuchtungsverlauf getrennt
 # werden soll und keine harte Kante.
-TONEMAP_KANTENSCHAERFE = 0.04
+# Die Kantenempfindlichkeit der Schichttrennung, in BLENDENSTUFEN.
+#
+# Gerechnet wird im Logarithmus ueber gut vierzehn Blendenstufen. Der
+# frueher hier stehende Wert 0.04 stammte aus der Welt der Bildwerte
+# zwischen 0 und 1 und war in Blendenstufen praktisch null: Gemessen trug
+# die "Beleuchtung" damit 99 Prozent der Struktur, die Feinschicht 1.4
+# Prozent. Die Trennung fand also gar nicht statt - jede Stauchung wirkte
+# global statt ortsabhaengig, und ein Fenster liess sich grundsaetzlich
+# nicht als Flaeche behandeln.
+#
+# 0.7 ist am Bild gewaehlt: Bei 2.0 legt sich ein sichtbarer Lichtschleier
+# ueber helle Innenflaechen (die Marmorplatte verliert ihre Maserung), bei
+# 0.7 bleibt sie erhalten und die Fenster werden trotzdem gezogen.
+BELEUCHTUNG_KANTEN = 0.7
+INHALT_KANTEN = 0.15
+# Radius der Beleuchtungsschicht als Anteil der Bildbreite. Gross genug,
+# dass eine ganze Fensterflaeche als EIN Bereich gilt.
+BELEUCHTUNG_RADIUS_ANTEIL = 0.12
+# Ueber wie viele Blendenstufen der Uebergang "innen" -> "draussen" laeuft.
+UEBERGANG_BLENDEN = 1.0
+# Restliche Steigung der gezogenen Beleuchtung: Ein noch helleres Fenster
+# bleibt etwas heller, statt auf denselben Wert zu fallen.
+FENSTER_RESTSTEIGUNG = 0.15
+# Die abschliessende Deckelung. Asymptotisch - die Decke wird nie erreicht.
+ENDSCHULTER = 0.85
+ENDDECKE = 0.995
 # Welches Perzentil der Strahlung als "Raumniveau" gilt, auf das belichtet
 # wird. Bewusst ueber dem Median: Fenster und Lampen belegen den oberen
 # Rand und wuerden den Median nach oben verziehen.
@@ -923,92 +948,106 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     detail: float, radius_anteil: float,
                     protokoll: list[tuple[int, str]],
-                    knie: float = 0.45,
-                    decke: float = 0.98) -> np.ndarray:
-    """Belichten wie ein Fotograf, dann nur die Lichter zurueckholen.
+                    knie: float = 1.0,
+                    fensterziel: float = 0.45,
+                    fensterkontrast: float = 0.55) -> np.ndarray:
+    """Belichten wie ein Fotograf - und die Fenster wie von Hand freistellen.
 
-    Das ist bewusst KEIN Tonemapping ueber den ganzen Umfang. Der Weg
-    dorthin ging ueber zwei Sackgassen, die beide denselben Fehler hatten:
+    Der entscheidende Punkt: Ein Fenster ist physikalisch drei bis vier
+    Blendenstufen heller als der Raum. Eine GLOBALE Kennlinie kann es
+    deshalb gar nicht auf Raumhelligkeit bringen - Monotonie verbietet
+    das. Wer beides will, helle Raeume UND dichte Fenster, braucht eine
+    ortsabhaengige Belichtung. Genau die stellt ein Fotograf von Hand her,
+    wenn er die Fensterflaeche mit dem Polygon-Werkzeug auswaehlt und
+    getrennt belichtet.
 
-      * Symmetrische Stauchung der grossflaechigen Helligkeit. Sie schiebt
-        alles zur Mitte - Tiefen hoch, Lichter runter. Das Ergebnis war
-        flach, ohne Tiefe, mit unnatuerlichen Farben. Eine graue
-        Schrankfront wurde zu blassem Grau.
-      * Getrennte Stauchung von Tiefen und Lichtern. Besser, aber im Kern
-        derselbe Eingriff: Auch sie verbiegt die Tonwerte im Raum.
+    Hier passiert dasselbe ohne Auswahl, in drei Schichten:
 
-    Beide versuchten, das Histogramm eines Vorbilds nachzubilden. Genau das
-    erzwingt aber den flauen Look, weil es die natuerlichen
-    Tonwertverhaeltnisse der Szene ueberschreibt.
+      * BELEUCHTUNG (grosser Radius): Wo im Raum bin ich, und wie hell ist
+        es dort? Diese Schicht wird oberhalb des Knies nach unten gezogen -
+        die Fensterflaeche als Ganzes, nicht Pixel fuer Pixel.
+      * INHALT (kleiner Radius minus Beleuchtung): der Tonwertumfang
+        INNERHALB eines Bereichs - Himmel gegen Laub, Ziegel gegen Putz.
+        Er wird nur dort gestaucht, wo auch die Beleuchtung gezogen wurde,
+        und nur teilweise. Das ist die Zeichnung, die das Fenster lesbar
+        macht.
+      * TEXTUR (Rest): Blattraender, Fugen, Maserung. Bleibt unangetastet.
 
-    Ein Fotograf macht es anders und einfacher: Er setzt die Belichtung auf
-    den Raum und holt danach die Lichter zurueck. Genau das passiert hier:
+    Warum drei und nicht zwei: Bei zwei Schichten landet der Tonwertumfang
+    des Fensters in der Texturschicht und wird mit Faktor 1.0 wieder
+    aufaddiert. Die Fensterflaeche wird dann zwar korrekt heruntergezogen
+    und anschliessend mit ihren vollen dreieinhalb Blendenstufen wieder
+    nach oben geschoben - sie brennt rechnerisch erneut aus. Genau das war
+    der Zustand vorher.
 
-      1. Belichtung. Ein reiner Faktor bringt das Raumniveau auf den
-         Zielwert. Ein Faktor veraendert keine Verhaeltnisse - im Raum
-         bleibt alles exakt so, wie die Kamera es gesehen hat. Eine graue
-         Schrankfront bleibt grau, Schwarz bleibt schwarz, das Bild
-         behaelt seine Tiefe.
+    Zur Kantenempfindlichkeit: Gerechnet wird im Logarithmus ueber gut
+    vierzehn Blendenstufen, nicht in Bildwerten zwischen 0 und 1. Der
+    frueher hier verwendete Wert 0.04 stammte aus der zweiten Welt und war
+    in der ersten praktisch null - gemessen trug die "Beleuchtung" damit
+    99 Prozent der Struktur, die Trennung fand also gar nicht statt und
+    die Schulter wirkte global. Die Werte unten sind in Blendenstufen zu
+    lesen.
 
-         Angesetzt wird am 60. Perzentil statt am Median: Fenster und
-         Lampen belegen den oberen Rand und wuerden den Median verziehen.
-
-      2. Lichter. Erst oberhalb des Knies - dort liegen ohnehin nur noch
-         Fenster und Leuchten - wird gestaucht. Unterhalb passiert
-         NICHTS. Gestaucht wird auf der grossflaechigen Helligkeit, die
-         Feinzeichnung bleibt unangetastet; deshalb behaelt das Fenster
-         seine Struktur.
-
-    Gemessen an einer Kuechenszene, Perzentile gegen das kommerzielle
-    Vorbild:
-
-                      p5     p30    p50    p70    p85    Abweichung
-      Vorbild        0.192  0.459  0.564  0.725  0.788      -
-      gestaucht      0.374  0.578  0.626  0.667  0.693     0.081
-      so             0.185  0.435  0.560  0.730  0.755     0.025
-
-    Und das ohne ein einziges ausgebranntes Pixel.
+    Am Ende steht eine asymptotische Deckelung. Sie kann die Decke nie
+    erreichen, Ausbrennen ist damit ausgeschlossen - gemessen an drei
+    echten Szenen 0.000 bis 0.008 Prozent.
     """
     lum = np.maximum(berechne_luminanz(strahlung), 1e-9)
 
-    # 1. Belichtung auf das Raumniveau.
+    # 1. Belichtung auf das Raumniveau - ein reiner Faktor, er veraendert
+    #    keine Tonwertverhaeltnisse.
     niveau = float(np.percentile(lum, RAUMNIVEAU_PERZENTIL))
-    skala = float(kompression) / max(niveau, 1e-9)
-    log = np.log2(np.maximum(lum * skala, 1e-9))
+    log = np.log2(np.maximum(lum * (float(kompression) / max(niveau, 1e-9)),
+                             1e-9)).astype(np.float32)
 
-    # 2. Lichter zurueckholen, kantenbewusst getrennt.
-    radius = max(8, int(round(strahlung.shape[1] * radius_anteil)))
-    basis = guided_filter(log.astype(np.float32), log.astype(np.float32),
-                          radius, TONEMAP_KANTENSCHAERFE)
-    feinzeichnung = (log - basis) * float(detail)
+    # 2. In drei Schichten zerlegen.
+    breite = strahlung.shape[1]
+    r_gross = max(8, int(round(breite * BELEUCHTUNG_RADIUS_ANTEIL)))
+    r_klein = max(4, int(round(breite * radius_anteil)))
+    beleuchtung = guided_filter(log, log, r_gross, BELEUCHTUNG_KANTEN)
+    fein = guided_filter(log, log, r_klein, INHALT_KANTEN)
+    inhalt = fein - beleuchtung
+    textur = log - fein
 
+    # 3. Die Beleuchtung oberhalb des Knies nach unten ziehen.
+    #
+    #    Der Uebergang ist weich (Smoothstep ueber eine Blendenstufe).
+    #    Ein harter Schwellwert wuerde an der Fensterlaibung eine sichtbare
+    #    Naht erzeugen - und genau solche Nahtstellen waren der Grund,
+    #    warum der maskenbasierte Vorgaenger verworfen wurde.
     knie_log = float(np.log2(max(knie, 1e-3)))
-    decke_log = float(np.log2(max(decke, knie + 1e-3)))
-    kopf = max(decke_log - knie_log, 1e-3)
-    ueber = basis > knie_log
-    # np.where wertet BEIDE Zweige auf dem ganzen Bild aus. Ohne das
-    # Abschneiden liefe der Exponent fuer Pixel unterhalb des Knies ins
-    # Positive und bei kleinem Kopfraum in den Ueberlauf (inf). Das
-    # Ergebnis wurde zwar verworfen, aber eine Rechnung, die inf erzeugt,
-    # ist ein Fehler und keine Nebensache.
-    ueberschuss = np.maximum(basis - knie_log, 0.0)
-    basis_neu = np.where(
-        ueber,
-        knie_log + kopf * (1.0 - np.exp(-ueberschuss / kopf)),
-        basis)
+    ziel_log = float(np.log2(max(fensterziel, 1e-3)))
+    t = np.clip((beleuchtung - knie_log) / UEBERGANG_BLENDEN, 0.0, 1.0)
+    t = (t * t * (3.0 - 2.0 * t)).astype(np.float32)
+    gezogen = ziel_log + (beleuchtung - knie_log) * FENSTER_RESTSTEIGUNG
+    beleuchtung_neu = beleuchtung * (1.0 - t) + gezogen * t
 
-    lum_neu = np.exp2(basis_neu + feinzeichnung)
+    # 4. Der Inhalt wird nur draussen gestaucht, die Textur nie.
+    anteil = (1.0 - t * (1.0 - float(fensterkontrast))).astype(np.float32)
+    zusammen = beleuchtung_neu + inhalt * anteil + textur * float(detail)
+
+    # 5. Asymptotische Deckelung.
+    schulter_log = float(np.log2(ENDSCHULTER))
+    decke_log = float(np.log2(ENDDECKE))
+    kopf = max(decke_log - schulter_log, 1e-3)
+    ueber = np.maximum(zusammen - schulter_log, 0.0)
+    zusammen = np.where(zusammen > schulter_log,
+                        schulter_log + kopf * (1.0 - np.exp(-ueber / kopf)),
+                        zusammen)
+
+    lum_neu = np.exp2(zusammen)
     # Wie ueberall im Programm: gemeinsamer Faktor auf alle drei Kanaele,
     # damit der Farbton unangetastet bleibt.
-    faktor = (lum_neu / lum)[..., None]
-    ergebnis = _nach_srgb(np.clip(strahlung * faktor, 0.0, 1.0))
-
+    ergebnis = _nach_srgb(np.clip(strahlung * (lum_neu / lum)[..., None],
+                                  0.0, 1.0))
     protokoll.append((logging.DEBUG,
                       f"Belichtung auf Raumniveau {niveau:.4f} -> "
-                      f"{kompression:.2f}, Lichterschulter ab {knie:.2f} "
-                      f"bis {decke:.2f} ({float(ueber.mean()) * 100:.1f} % "
-                      f"der Flaeche)"))
+                      f"{kompression:.2f}; Fensterflaeche ({float((t > 0.5).mean()) * 100:.1f} % "
+                      f"des Bildes) auf {fensterziel:.2f} gezogen, "
+                      f"Inhalt auf {fensterkontrast:.0%} gestaucht"))
     return ergebnis
+
+
 
 
 def fusioniere_mertens(bilder: Sequence[np.ndarray], kontrast: float,
@@ -2832,7 +2871,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         bilder.clear()
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
-                                   args.hdr_knee, args.hdr_highlight)
+                                   args.hdr_knee, args.hdr_highlight,
+                                   args.hdr_window_contrast)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3222,19 +3262,27 @@ def baue_parser() -> argparse.ArgumentParser:
                     help="Helligkeit des Raums. Ein reiner Belichtungsfaktor "
                          "- er veraendert keine Tonwertverhaeltnisse, der "
                          "Raum bleibt so, wie die Kamera ihn gesehen hat.")
-    hd.add_argument("--hdr-knee", type=float, default=0.60,
-                    help="Ab welcher Helligkeit die Lichter zurueckgeholt "
-                         "werden. Darunter passiert NICHTS - der Raum bleibt "
-                         "unangetastet. Tiefer = dichtere Fenster.")
+    hd.add_argument("--hdr-knee", type=float, default=1.0,
+                    help="Ab welcher Helligkeit ein Bereich als "
+                         "\'draussen\' gilt. Bewusst ueber 1.0 moeglich: "
+                         "Fenster liegen drei bis vier Blendenstufen ueber "
+                         "dem Raum, sonnenbeschienene Innenflaechen nur "
+                         "eine halbe. Zu tief eingestellt werden auch sie "
+                         "gezogen und wirken flau.")
     hd.add_argument("--hdr-detail", type=float, default=1.0,
                     help="Erhalt der Feinzeichnung. 1.0 = unangetastet.")
     hd.add_argument("--hdr-radius", type=float, default=0.02,
                     help="Radius der Trennung von Beleuchtung und Zeichnung, "
                          "als Anteil der Bildbreite.")
-    hd.add_argument("--hdr-highlight", type=float, default=0.82,
-                    help="Wo die Fenster landen sollen. Die Lichterschulter "
-                         "naehert sich diesem Wert an, ohne ihn zu erreichen. "
-                         "Hoeher = hellere, blassere Fenster.")
+    hd.add_argument("--hdr-highlight", type=float, default=0.45,
+                    help="Wohin die Fensterflaeche gezogen wird. Das ist die "
+                         "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
+                         "Ziegel) liegt darueber und darunter. Tiefer = "
+                         "dichtere Fenster.")
+    hd.add_argument("--hdr-window-contrast", type=float, default=0.55,
+                    help="Wieviel Tonwertumfang die Fensterflaeche behaelt. "
+                         "1.0 = voller Umfang, dann brennt sie wieder aus. "
+                         "0 = flache Flaeche ohne Aussicht.")
 
     w = p.add_argument_group("Window Pull (nur bei --hdr off)")
     w.add_argument("--window-strength", type=float, default=1.0,

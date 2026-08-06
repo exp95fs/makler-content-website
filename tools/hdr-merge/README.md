@@ -39,8 +39,9 @@ Ein Bilderordner kann auch direkt auf das Desktop-Symbol gezogen werden.
 
 ### Die Vorschau
 
-Links stehen sechs Regler in Klartext (Helligkeit, Kontrast, Zeichnung,
-Schärfe, Fenster zurückholen, Fensterhelligkeit), rechts das Bild. Nach jeder
+Links stehen die Regler in Klartext (Helligkeit, Kontrast, Zeichnung,
+Schärfe, Helligkeit des Raums, Was gilt als draußen, Fensterhelligkeit,
+Fensterzeichnung), rechts das Bild. Nach jeder
 Reglerbewegung wird neu gerechnet – auf einem verkleinerten Bild, deshalb in
 rund zwei Sekunden statt einer Minute.
 
@@ -505,10 +506,11 @@ es gibt keinen Schwellwert, der Fenster von Wand unterscheiden müsste.
 |---|---|---|
 | `--hdr` | `on` | `off` fällt auf die alte Belichtungsfusion mit Fenstermaske zurück. |
 | `--hdr-compression` | `0.62` | **Helligkeit des Raums.** Das Bild wird mit einem reinen Faktor auf dieses Niveau belichtet — wie an der Kamera. Ein Faktor verzerrt keine Tonwertabstände: Der Raum wird hell, ohne flach zu werden. In der Oberfläche der Regler **Helligkeit des Raums**. |
-| `--hdr-knee` | `0.60` | **Fenster zurückholen.** Ab diesem Helligkeitsniveau setzt die Lichterschulter an, alles darunter bleibt unangetastet. So bleiben Fenster dicht, ohne dass der Raum mitgezogen wird. In der Oberfläche der Regler **Fenster zurückholen**. |
+| `--hdr-knee` | `1.0` | **Was gilt als draußen.** Ab dieser Helligkeit wird ein Bereich als Fensterfläche behandelt und heruntergezogen. Bewusst über `1.0`: Fenster liegen drei bis vier Blendenstufen über dem Raum, sonnenbeschienene Innenflächen nur eine halbe. Zu tief eingestellt werden auch sie gezogen — dann legt sich ein Schleier über Arbeitsplatten und helle Wände. In der Oberfläche der Regler **Was gilt als draußen**. |
 | `--hdr-detail` | `1.0` | Erhalt der Feinzeichnung. `1.0` = unangetastet. |
 | `--hdr-radius` | `0.02` | Radius der Trennung von Beleuchtung und Zeichnung, als Anteil der Bildbreite. |
-| `--hdr-highlight` | `0.82` | **Fensterhelligkeit** — wohin die Lichterschulter strebt, ohne den Wert je zu erreichen. Der Regler, der den Fenstereindruck tatsächlich bestimmt: Bei `0.98` landet der Himmel dicht unter Weiß und wird zu blassem Cyan (Sättigung 0,141), bei `0.82` behält er Farbe und Verlauf (0,174). In der Oberfläche der Regler **Fensterhelligkeit**. |
+| `--hdr-highlight` | `0.45` | **Fensterhelligkeit** — wohin die Fensterfläche gezogen wird. Das ist die Helligkeit der *Fläche*; der Inhalt (Himmel, Laub, Ziegel) liegt darüber und darunter. Tiefer = dichtere Fenster. In der Oberfläche der Regler **Fensterhelligkeit**. |
+| `--hdr-window-contrast` | `0.55` | **Fensterzeichnung** — wie viel Tonwertumfang die Fensterfläche behält. `1.0` heißt voller Umfang: Die Fläche wird korrekt heruntergezogen und anschließend mit ihren dreieinhalb Blendenstufen wieder nach oben geschoben, brennt also erneut aus. `0` ergibt eine flache Fläche ohne Aussicht. In der Oberfläche der Regler **Fensterzeichnung**. |
 
 #### Warum Tiefen und Lichter getrennt gestaucht werden
 

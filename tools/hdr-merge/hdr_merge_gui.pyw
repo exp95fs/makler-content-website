@@ -223,16 +223,22 @@ REGLER = [
     Regler("raum", "--hdr-compression", "Helligkeit des Raums",
            "Reine Belichtung - der Raum bleibt so, wie die Kamera ihn "
            "gesehen hat.", 0.25, 0.85, 0.62),
-    Regler("fenster", "--hdr-knee", "Fenster zurueckholen",
-           "Ab hier werden die Lichter gestaucht. Darunter passiert "
-           "nichts. Tiefer = dichtere Fenster.", 0.25, 0.85, 0.60),
-    # Der Regler, der den Fenstereindruck tatsaechlich bestimmt. Zu hoch
-    # eingestellt landet der Himmel dicht unter Weiss und wird zu blassem
-    # Cyan - genau der "matschige" Fenstereindruck. Bei 0.82 behaelt er
-    # Farbe und Verlauf (Saettigung 0.174 statt 0.141 bei 0.98).
+    # Ab welcher Helligkeit ein Bereich als "draussen" gilt. Bewusst ueber
+    # 1.0: Fenster liegen drei bis vier Blendenstufen ueber dem Raum,
+    # sonnenbeschienene Innenflaechen nur eine halbe. Zu tief eingestellt
+    # werden auch sie gezogen - dann legt sich ein Schleier ueber
+    # Arbeitsplatten und helle Waende.
+    Regler("fenster", "--hdr-knee", "Was gilt als draussen",
+           "Tiefer = mehr Flaechen werden als Fenster behandelt.",
+           0.60, 2.50, 1.0),
+    # Der Regler, der den Fenstereindruck bestimmt: die Helligkeit der
+    # FLAECHE. Der Inhalt liegt darueber und darunter.
     Regler("fensterhelligkeit", "--hdr-highlight", "Fensterhelligkeit",
-           "Wo die Fenster landen. Hoeher = heller, aber blasser.",
-           0.65, 0.95, 0.82),
+           "Wohin die Fensterflaeche gezogen wird. Tiefer = dichter.",
+           0.25, 0.80, 0.45),
+    Regler("fensterzeichnung", "--hdr-window-contrast", "Fensterzeichnung",
+           "Wieviel Tonwertumfang das Fenster behaelt. Zu hoch = es "
+           "brennt wieder aus.", 0.0, 1.0, 0.55),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,
