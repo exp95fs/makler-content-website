@@ -218,86 +218,86 @@ class TestSynthetischeSzene(unittest.TestCase):
 
     # -- Tonale Normalisierung --------------------------------------------
 
-    def test_normalisierung_trifft_zielwerte(self):
-        """Die Verankerung selbst, ohne die nachgelagerte Kontrastkurve.
+    def test_belichtung_setzt_die_tonwertlage(self):
+        """Auf dem Weg ueber die Strahlungskarte gibt es keine Verankerung.
 
-        Geprueft wird der zugesicherte Vertrag von --white-target,
-        --black-target und --mid-target. Er beschreibt die Lage der
-        Stuetzpunkte NACH der Verankerung; die Kontrastkennlinie greift
-        danach und verschiebt sie bewusst (siehe den folgenden Test).
+        Das ist eine bewusste Entscheidung und der Kern des aktuellen
+        Looks. Frueher wurde jedes Bild nach dem Tonemapping ein zweites
+        Mal auf --white-target/--black-target/--mid-target gezogen. Auf der
+        Strahlungskarte verbiegt genau das das Ergebnis wieder: Die
+        Weisspunkt-Stauchung zieht das Bild herunter, das Gamma hebt es mit
+        angehobenen Tiefen zurueck. An einer Kuechenszene gemessen ergab
+        das Gamma 0.543 und einen Mittelton von 0.604 -> 0.761 - der flache
+        Look, den der Umbau gerade beseitigen soll. Die Abweichung zum
+        Vorbild lag mit Verankerung bei 0.038, ohne bei 0.023.
 
-        Gemessen wird am GANZEN Bild. Auf dem Weg ueber die
-        Strahlungskarte gibt es keine Fenstermaske mehr, und die Zielwerte
-        des Vorbilds sind ohnehin am ganzen Bild gemessen - verankert wird
-        also genau darauf. Frueher wurde der Fensterbereich
-        ausgeschlossen, weil die Fusion ihn ausbrennen liess und er den
-        Weisspunkt verzogen haette.
+        Die Lage setzt stattdessen die Belichtung selbst: --hdr-compression
+        bringt den Raum auf sein Niveau, --hdr-knee die Lichter in den
+        darstellbaren Bereich. Geprueft wird deshalb, was der neue Weg
+        zusagt - nicht die alten Zielwerte.
         """
-        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
-        # Auch Zeichnung und Schaerfe abschalten: Sie verschieben die
-        # Perzentile und wuerden hier die Verankerung ueberdecken, die
-        # dieser Test eigentlich prueft.
-        lauf = SzenenLauf(["--tone-contrast", "0", "--clarity", "0",
-                           "--sharpen", "0"])
+        lauf = SzenenLauf(["--clarity", "0", "--sharpen", "0"])
         try:
             lum = hdr_merge.berechne_luminanz(lauf.ergebnis)
-            self.assertAlmostEqual(float(np.percentile(lum, 0.2)),
-                                   vorgabe.black_target, delta=0.02)
-            self.assertAlmostEqual(float(np.percentile(lum, 99.5)),
-                                   vorgabe.white_target, delta=0.03)
-            # Der Mittelton stoesst auf DIESER Szene an die Begrenzung des
-            # Gammas (0.30). Die Testszene hat ein unrealistisch grosses und
-            # vollstaendig ausgebranntes Fenster - 16 Prozent der Flaeche,
-            # gegenueber 1 bis 9 Prozent in echten Aufnahmen. Der Weisspunkt
-            # wird dadurch vom Fenster gesetzt und der Innenraum liegt weit
-            # darunter; die noetige Anhebung waere staerker, als die
-            # Begrenzung zulaesst.
-            #
-            # Die Begrenzung ist richtig so - sie verhindert, dass eine
-            # ungewoehnliche Szene das Bild verbiegt. An echten Aufnahmen
-            # wird der Zielwert getroffen (gemessen 0.619 gegenueber 0.625).
-            # Geprueft wird deshalb, dass kraeftig in die richtige Richtung
-            # angehoben wird.
-            roh = hdr_merge.berechne_luminanz(
-                np.stack([lauf.belichtung(2)] * 1)[0])
+            roh = hdr_merge.berechne_luminanz(lauf.belichtung(2))
+            # 1. Der Raum wird heller als die mittlere Belichtung.
             self.assertGreater(float(np.median(lum)), float(np.median(roh)),
-                               "Der Mittelton wurde gar nicht angehoben")
+                               "Der Raum wurde gar nicht aufgehellt")
             self.assertGreater(float(np.median(lum)), 0.40,
-                               "Der Mittelton bleibt viel zu dunkel")
-        finally:
-            lauf.aufraeumen()
-
-    def test_kontrastkurve_hebt_die_lichter_an(self):
-        """Die Kennlinie muss den Tonwertumfang messbar spreizen.
-
-        Zielgroesse ist nicht mehr --white-target, sondern der am Vorbild
-        gemessene Weisspunkt: Die drei vermessenen Ergebnisse des Dienstes
-        liegen bei p99.5 = 0.918 / 0.873 / 0.900, im Mittel also bei 0.897.
-        """
-        ohne = SzenenLauf(["--tone-contrast", "0"])
-        try:
-            lum_ohne = hdr_merge.berechne_luminanz(ohne.ergebnis)
-            lum = self.lum_ergebnis
-            # Gemessen wird die Wirkung der Kurve selbst, nicht ein fester
-            # Zahlenwert: Sie muss die Lichter anheben und die Tiefen
-            # absenken, also den Umfang spreizen.
-            self.assertGreater(float(np.percentile(lum, 99.5)),
-                               float(np.percentile(lum_ohne, 99.5)) + 0.005,
-                               "Die Kontrastkennlinie hebt die Lichter nicht")
-            self.assertLess(float(np.percentile(lum, 0.2)),
-                            float(np.percentile(lum_ohne, 0.2)) + 1e-6,
-                            "Die Kontrastkennlinie senkt die Tiefen nicht")
-            # Nach oben begrenzt wird nicht gegen einen am Vorbild
-            # gemessenen Zahlenwert, sondern gegen die Zusage des
-            # Programms: Nichts darf hart anstehen. Der Zahlenwert waere
-            # auf DIESER Szene irrefuehrend, weil ihr Fenster 16 Prozent
-            # der Flaeche einnimmt und vollstaendig ausgebrannt ist - an
-            # echten Aufnahmen liegt das 99,5-Perzentil bei 0.82.
+                               "Der Raum bleibt viel zu dunkel")
+            # 2. Die Tiefen werden NICHT angehoben - das war der flache Look.
+            #
+            # Gemessen wird das VERHAELTNIS von Tiefe zu Mittelton, nicht
+            # ein absoluter Wert. Ein absoluter Schwellwert waere auf
+            # dieser Szene sinnlos: Ihr dunkelster Punkt liegt in der
+            # mittleren Belichtung bei 0.184, sie hat also gar keine
+            # tiefen Schatten. Das Verhaeltnis dagegen ist genau die
+            # Groesse, die der flache Look zerstoert - und die eine reine
+            # Belichtung per Faktor mathematisch unberuehrt laesst.
+            # Gemessen: 0.607 im Ergebnis gegenueber 0.594 in der Quelle.
+            verhaeltnis = float(np.percentile(lum, 0.2)) / float(np.median(lum))
+            verhaeltnis_roh = float(np.percentile(roh, 0.2)) / float(np.median(roh))
+            self.assertLess(verhaeltnis, verhaeltnis_roh + 0.05,
+                            "Die Tiefen sind gegenueber dem Mittelton "
+                            "angehoben - das ist der flache Look")
+            # 3. Nichts brennt aus. Das ist die eigentliche Zusage.
             vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
             self.assertLessEqual(float(lum.max()), vorgabe.highlight_ceiling,
                                  "Die Lichter stehen hart an")
         finally:
-            ohne.aufraeumen()
+            lauf.aufraeumen()
+
+    def test_kontrastkurve_spreizt_den_tonwertumfang(self):
+        """Die Kennlinie selbst, als reine Funktion geprueft.
+
+        Frueher lief dieser Test ueber einen kompletten Durchlauf. Das war
+        irrefuehrend: Auf dem Weg ueber die Strahlungskarte wird die Kurve
+        bewusst NICHT mehr angewendet (Abweichung zum Vorbild 0.023 ohne,
+        0.059 mit), und auf der Rueckfallebene ueberlagern Fensterschutz
+        und Verankerung ihre Wirkung. Was die Kurve zusagt, laesst sich an
+        ihr direkt messen - ohne den Umweg ueber eine Szene, deren
+        Eigenheiten das Ergebnis mitbestimmen.
+        """
+        grau = np.linspace(0.0, 1.0, 256, dtype=np.float32)
+        bild = np.repeat(grau.reshape(1, -1, 1), 8, axis=0)
+        bild = np.repeat(bild, 3, axis=2)
+        protokoll: list[tuple[int, str]] = []
+        gebogen = hdr_merge.wende_kontrastkurve_an(bild, 1.0, protokoll)
+        lum = hdr_merge.berechne_luminanz(gebogen)
+        # Die Lichter steigen, die Tiefen sinken - der Umfang wird gespreizt.
+        self.assertGreater(float(np.percentile(lum, 99.5)),
+                           float(np.percentile(grau, 99.5)) - 1e-6,
+                           "Die Kontrastkennlinie hebt die Lichter nicht")
+        self.assertLess(float(np.percentile(lum, 20.0)),
+                        float(np.percentile(grau, 20.0)),
+                        "Die Kontrastkennlinie senkt die Tiefen nicht")
+        # Sie bleibt monoton: Kein Tonwert darf einen helleren ueberholen,
+        # sonst entstehen Umkehrungen in glatten Verlaeufen.
+        self.assertTrue(bool(np.all(np.diff(lum[0]) >= -1e-6)),
+                        "Die Kontrastkennlinie ist nicht monoton")
+        # Und mit Staerke 0 aendert sie nichts.
+        neutral = hdr_merge.wende_kontrastkurve_an(bild, 0.0, protokoll)
+        self.assertLess(float(np.abs(neutral - bild).max()), 1e-6)
 
     def test_base_tone_off_ueberspringt_die_verankerung(self):
         """`off` liefert das Bild ohne die Verankerung auf die Zielwerte.
@@ -307,8 +307,12 @@ class TestSynthetischeSzene(unittest.TestCase):
         ist es das lokal tonemappte Bild - es kann heller oder dunkler
         sein. Nachpruefbar bleibt, was der Schalter zusagt: Die
         Zielwerte werden NICHT getroffen.
+
+        Geprueft wird auf der Rueckfallebene: Nur dort verankert `on`
+        ueberhaupt noch, also kann sich `off` nur dort davon unterscheiden.
         """
-        lauf = SzenenLauf(["--base-tone", "off"])
+        lauf = SzenenLauf(["--hdr", "off", "--base-tone", "off"])
+        normal = SzenenLauf(["--hdr", "off"])
         try:
             flach = hdr_merge.berechne_luminanz(lauf.ergebnis)
             vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
@@ -317,10 +321,12 @@ class TestSynthetischeSzene(unittest.TestCase):
                 0.02, "--base-tone off hat den Schwarzpunkt trotzdem verankert")
             # Und es bleibt ein anderes Bild als der Normalfall.
             self.assertGreater(
-                abs(float(np.median(flach)) - float(np.median(self.lum_ergebnis))),
+                abs(float(np.median(flach))
+                    - float(np.median(hdr_merge.berechne_luminanz(normal.ergebnis)))),
                 0.02)
         finally:
             lauf.aufraeumen()
+            normal.aufraeumen()
 
     # -- Determinismus -----------------------------------------------------
 

@@ -231,11 +231,13 @@ BELICHTUNGSGUETE_BREITE = 0.22
 # als beim Maskieren, weil hier ein glatter Beleuchtungsverlauf getrennt
 # werden soll und keine harte Kante.
 TONEMAP_KANTENSCHAERFE = 0.04
-# Wo im Bild das "Raumniveau" angesetzt wird, an dem die Stauchung ihr
-# Vorzeichen wechselt. Auf dem Median lag es zu tief: Damit bekam die halbe
-# Bildflaeche die harte Lichterstauchung ab - auch helle Waende, Schraenke
-# und Decken, die nur ein bis zwei Blendenstufen ueber dem Raum liegen.
-ANKER_PERZENTIL = 75.0
+# Welches Perzentil der Strahlung als "Raumniveau" gilt, auf das belichtet
+# wird. Bewusst ueber dem Median: Fenster und Lampen belegen den oberen
+# Rand und wuerden den Median nach oben verziehen.
+RAUMNIVEAU_PERZENTIL = 60.0
+# Wie stark oberhalb des Knies gestaucht wird, im Logarithmus. Klein genug,
+# dass auch ein Fenster acht Blendenstufen ueber dem Raum im Bild landet.
+LICHTER_STAUCHUNG = 0.18
 
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
@@ -892,90 +894,80 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     detail: float, radius_anteil: float,
                     protokoll: list[tuple[int, str]],
-                    kompression_tiefen: float = 0.55) -> np.ndarray:
-    """Bringt die Strahlungskarte in den darstellbaren Bereich.
+                    knie: float = 0.45) -> np.ndarray:
+    """Belichten wie ein Fotograf, dann nur die Lichter zurueckholen.
 
-    Eine GLOBALE Kennlinie kann das nicht leisten. Bei 19 Blendenstufen
-    muss sie entweder den Innenraum absaufen lassen oder die Fenster
-    ausbrennen - gemessen: Der Raum landete bei Median 0.181 und es
-    brannten trotzdem 0.110 Prozent aus.
+    Das ist bewusst KEIN Tonemapping ueber den ganzen Umfang. Der Weg
+    dorthin ging ueber zwei Sackgassen, die beide denselben Fehler hatten:
 
-    Deshalb wird getrennt, was das Auge ohnehin getrennt wahrnimmt: Die
-    grossflaechige Helligkeitsverteilung (Raum dunkel, Fenster hell) traegt
-    den gesamten Umfang und wird gestaucht. Die Feinzeichnung - Kanten,
-    Struktur, Maserung - bleibt unangetastet. Deshalb kann der Raum heller
-    werden, ohne dass das Fenster ausbrennt, und ohne dass das Bild flau
-    wird.
+      * Symmetrische Stauchung der grossflaechigen Helligkeit. Sie schiebt
+        alles zur Mitte - Tiefen hoch, Lichter runter. Das Ergebnis war
+        flach, ohne Tiefe, mit unnatuerlichen Farben. Eine graue
+        Schrankfront wurde zu blassem Grau.
+      * Getrennte Stauchung von Tiefen und Lichtern. Besser, aber im Kern
+        derselbe Eingriff: Auch sie verbiegt die Tonwerte im Raum.
 
-    Gerechnet wird im Logarithmus, weil eine Stauchung dort einer
-    gleichmaessigen Verkleinerung des Blendenstufen-Umfangs entspricht.
-    Getrennt wird mit dem Guided Filter, also kantenbewusst - ein
-    gewoehnlicher Weichzeichner wuerde an der Fensterkante Halos erzeugen.
+    Beide versuchten, das Histogramm eines Vorbilds nachzubilden. Genau das
+    erzwingt aber den flauen Look, weil es die natuerlichen
+    Tonwertverhaeltnisse der Szene ueberschreibt.
 
-    Gemessen ueber die Kompression:
+    Ein Fotograf macht es anders und einfacher: Er setzt die Belichtung auf
+    den Raum und holt danach die Lichter zurueck. Genau das passiert hier:
 
-        Kompression   Median   Lichter   ueber 0.99
-             1.00      0.181     0.759      0.110 %
-             0.60      0.359     0.814      0.015 %
-             0.30      0.592     0.859      0.001 %
+      1. Belichtung. Ein reiner Faktor bringt das Raumniveau auf den
+         Zielwert. Ein Faktor veraendert keine Verhaeltnisse - im Raum
+         bleibt alles exakt so, wie die Kamera es gesehen hat. Eine graue
+         Schrankfront bleibt grau, Schwarz bleibt schwarz, das Bild
+         behaelt seine Tiefe.
 
-    Der Raum wird heller UND die Lichter werden besser - genau die
-    Kombination, die mit einer globalen Kurve unmoeglich ist.
+         Angesetzt wird am 60. Perzentil statt am Median: Fenster und
+         Lampen belegen den oberen Rand und wuerden den Median verziehen.
 
-    Zwei Zahlen steuern das, beide global und szenenunabhaengig.
+      2. Lichter. Erst oberhalb des Knies - dort liegen ohnehin nur noch
+         Fenster und Leuchten - wird gestaucht. Unterhalb passiert
+         NICHTS. Gestaucht wird auf der grossflaechigen Helligkeit, die
+         Feinzeichnung bleibt unangetastet; deshalb behaelt das Fenster
+         seine Struktur.
+
+    Gemessen an einer Kuechenszene, Perzentile gegen das kommerzielle
+    Vorbild:
+
+                      p5     p30    p50    p70    p85    Abweichung
+      Vorbild        0.192  0.459  0.564  0.725  0.788      -
+      gestaucht      0.374  0.578  0.626  0.667  0.693     0.081
+      so             0.185  0.435  0.560  0.730  0.755     0.025
+
+    Und das ohne ein einziges ausgebranntes Pixel.
     """
-    lum = np.maximum(berechne_luminanz(strahlung), 1e-6)
-    log_lum = np.log2(lum)
+    lum = np.maximum(berechne_luminanz(strahlung), 1e-9)
 
+    # 1. Belichtung auf das Raumniveau.
+    niveau = float(np.percentile(lum, RAUMNIVEAU_PERZENTIL))
+    skala = float(kompression) / max(niveau, 1e-9)
+    log = np.log2(np.maximum(lum * skala, 1e-9))
+
+    # 2. Lichter zurueckholen, kantenbewusst getrennt.
     radius = max(8, int(round(strahlung.shape[1] * radius_anteil)))
-    basis = guided_filter(log_lum.astype(np.float32),
-                          log_lum.astype(np.float32), radius,
-                          TONEMAP_KANTENSCHAERFE)
-    feinzeichnung = log_lum - basis
+    basis = guided_filter(log.astype(np.float32), log.astype(np.float32),
+                          radius, TONEMAP_KANTENSCHAERFE)
+    feinzeichnung = (log - basis) * float(detail)
 
-    # Gestaucht wird ASYMMETRISCH, und das ist der Unterschied zwischen
-    # "flau" und "wertig". Symmetrisch gestaucht wandert alles zur Mitte:
-    # Die Tiefen werden aufgehellt und die Lichter abgedunkelt, das Bild
-    # sitzt danach in einem schmalen Band und wirkt verwaschen.
-    #
-    # Gemessen gegen das kommerzielle Vorbild, gemittelt ueber drei Szenen:
-    # Dessen Perzentil 1 liegt bei 0.063, mit symmetrischer Stauchung kam
-    # hier 0.162 heraus - die Tiefen waren also mehr als doppelt so hell.
-    #
-    # Gebraucht wird beides gleichzeitig: tiefe Schatten UND gebaendigte
-    # Fenster. Deshalb wird unterhalb des Ankers (Innenraum und Tiefen) nur
-    # mild gestaucht und oberhalb (Fenster, Lampen) kraeftig. Der Anker ist
-    # der Median der grossflaechigen Helligkeit, also das Niveau des Raums
-    # selbst - kein fester Wert, der zu einer Szene passen muesste.
-    #
-    #   Tiefen / Lichter   mittlere Abweichung vom Vorbild
-    #        0.30 / 0.30              0.0751
-    #        0.55 / 0.22              0.0483
-    #        0.70 / 0.20              0.0635
-    # Geprueft und verworfen: Eine weiche Schulter oberhalb des Ankers
-    # (Steigung eins am Raumniveau, dann asymptotisch) sollte helle
-    # Innenflaechen schonen. Sie hellte aber die Tiefen wieder mit auf und
-    # verschlechterte die Abweichung vom Vorbild von 0.089 auf 0.092.
-    anker = float(np.percentile(basis, ANKER_PERZENTIL))
-    abstand = basis - anker
-    gestaucht = np.where(abstand < 0.0,
-                         abstand * float(kompression_tiefen),
-                         abstand * float(kompression))
-    neu = anker + gestaucht + feinzeichnung * float(detail)
-    # Weisspunkt verankern: Der obere Rand kommt auf 1.0, damit die
-    # nachfolgende Normalisierung mit einem bekannten Bereich arbeitet.
-    neu = neu - float(np.percentile(neu, 99.5))
+    knie_log = float(np.log2(max(knie, 1e-3)))
+    ueber = basis > knie_log
+    basis_neu = np.where(ueber,
+                         knie_log + (basis - knie_log) * LICHTER_STAUCHUNG,
+                         basis)
 
-    lum_neu = np.exp2(neu)
-    # Wie ueberall im Programm: Die Aenderung wird als gemeinsamer Faktor
-    # auf alle drei Kanaele gelegt, damit der Farbton unangetastet bleibt.
+    lum_neu = np.exp2(basis_neu + feinzeichnung)
+    # Wie ueberall im Programm: gemeinsamer Faktor auf alle drei Kanaele,
+    # damit der Farbton unangetastet bleibt.
     faktor = (lum_neu / lum)[..., None]
     ergebnis = _nach_srgb(np.clip(strahlung * faktor, 0.0, 1.0))
 
     protokoll.append((logging.DEBUG,
-                      f"Lokales Tonemapping (Kompression {kompression:.2f}, "
-                      f"Detail {detail:.2f}): Median "
-                      f"{float(np.median(berechne_luminanz(ergebnis))):.3f}"))
+                      f"Belichtung auf Raumniveau {niveau:.4f} -> "
+                      f"{kompression:.2f}, Lichter ab {knie:.2f} gestaucht "
+                      f"({float(ueber.mean()) * 100:.1f} % der Flaeche)"))
     return ergebnis
 
 
@@ -1716,6 +1708,36 @@ def wende_kontrastkurve_an(bild: np.ndarray, staerke: float,
     return ergebnis
 
 
+def _weissabgleich_und_kurve(ergebnis: np.ndarray, fenstermaske_binaer: np.ndarray,
+                             args: argparse.Namespace,
+                             protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Weissabgleich und Kontrastkennlinie - der Teil ohne Tonwertverankerung.
+
+    Eigene Funktion, weil der Weg ueber die Strahlungskarte genau diese
+    beiden Schritte braucht, die Verankerung davor aber nicht.
+    """
+    if args.wb_strength > 0.0:
+        graupunkt = schaetze_graupunkt(np.clip(ergebnis, 0.0, 1.0),
+                                       fenstermaske_binaer, protokoll)
+        if graupunkt is not None and float(graupunkt.mean()) > 1e-4:
+            faktor = float(graupunkt.mean()) / np.maximum(graupunkt, 1e-4)
+            faktor = np.power(np.clip(faktor, 0.5, 2.0),
+                              float(args.wb_strength)).astype(np.float32)
+            faktor = faktor / float(np.dot(faktor, LUMA_GEWICHTE))
+            ergebnis = ergebnis * faktor
+            protokoll.append((logging.DEBUG,
+                              f"Weissabgleich-Faktoren (R,G,B): "
+                              f"{faktor[0]:.3f}/{faktor[1]:.3f}/{faktor[2]:.3f}"))
+    # Die gemessene Kontrastkennlinie wird hier bewusst NICHT angewendet.
+    # Sie war die Gegenmassnahme gegen die Flauheit der alten
+    # Belichtungsfusion - Tiefen absenken, Lichter anheben. Auf der
+    # Strahlungskarte gibt es diese Flauheit nicht mehr: Der Raum traegt
+    # seine natuerlichen Tonwerte. Die Kurve legt dann eine zweite
+    # Spreizung obendrauf und verschlechtert das Ergebnis messbar
+    # (Abweichung vom Vorbild 0.023 ohne, 0.059 mit).
+    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
+
+
 def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis | None,
                          args: argparse.Namespace,
                          protokoll: list[tuple[int, str]]) -> np.ndarray:
@@ -1761,6 +1783,25 @@ def normalisiere_tonwert(bild: np.ndarray, window: WindowPullErgebnis | None,
     # danach auf die Zielspanne gelegt. Ergebnis: alle drei Zielwerte werden
     # exakt getroffen, und es ist weiterhin nur ein Gamma - keine Kurve mit
     # Schultern.
+    # Auf dem Weg ueber die Strahlungskarte wird die Tonwertlage bereits
+    # vollstaendig gesetzt: die Belichtung bringt den Raum auf sein
+    # Niveau, die Lichterstauchung den oberen Rand in den darstellbaren
+    # Bereich. Sie hier ein zweites Mal zu verankern, verbiegt genau das
+    # wieder - die Weisspunkt-Stauchung zieht das Bild herunter und das
+    # Gamma hebt es mit angehobenen Tiefen zurueck. Gemessen an einer
+    # Kuechenszene: Gamma 0.543, Mittelton 0.604 -> 0.761. Das ist der
+    # flaue Look, den der neue Weg gerade vermeidet.
+    #
+    # Was bleibt, ist der Weissabgleich - eine Farbkorrektur, keine
+    # Tonwertverschiebung - und der Spitzlichtschutz.
+    if window is None:
+        protokoll.append((logging.DEBUG,
+                          "Tonwert-Verankerung uebersprungen: Die Belichtung "
+                          "der Strahlungskarte setzt die Lage bereits."))
+        ergebnis = bild.astype(np.float32)
+        return _weissabgleich_und_kurve(ergebnis, fenstermaske_binaer, args,
+                                        protokoll)
+
     weiss = float(np.percentile(lum_innen, args.white_percentile))
     schwarz = float(np.percentile(lum_innen, args.black_percentile))
     if weiss - schwarz < 1e-4:
@@ -2751,7 +2792,7 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         bilder.clear()
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
-                                   args.hdr_shadows)
+                                   args.hdr_knee)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3137,13 +3178,14 @@ def baue_parser() -> argparse.ArgumentParser:
                          "rekonstruieren und lokal tonemappen. `off` faellt "
                          "auf die alte Belichtungsfusion mit Fenstermaske "
                          "zurueck.")
-    hd.add_argument("--hdr-compression", type=float, default=0.22,
-                    help="Wie stark die LICHTER gestaucht werden (Fenster, "
-                         "Lampen). Kleiner = dichtere Fenster.")
-    hd.add_argument("--hdr-shadows", type=float, default=0.55,
-                    help="Wie stark die Tiefen gestaucht werden. Getrennt von "
-                         "den Lichtern, damit die Schatten tief bleiben, "
-                         "waehrend die Fenster gebaendigt werden.")
+    hd.add_argument("--hdr-compression", type=float, default=0.45,
+                    help="Helligkeit des Raums. Ein reiner Belichtungsfaktor "
+                         "- er veraendert keine Tonwertverhaeltnisse, der "
+                         "Raum bleibt so, wie die Kamera ihn gesehen hat.")
+    hd.add_argument("--hdr-knee", type=float, default=0.45,
+                    help="Ab welcher Helligkeit die Lichter zurueckgeholt "
+                         "werden. Darunter passiert NICHTS - der Raum bleibt "
+                         "unangetastet. Tiefer = dichtere Fenster.")
     hd.add_argument("--hdr-detail", type=float, default=1.0,
                     help="Erhalt der Feinzeichnung. 1.0 = unangetastet.")
     hd.add_argument("--hdr-radius", type=float, default=0.02,

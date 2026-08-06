@@ -216,13 +216,12 @@ REGLER = [
     # Der Regler, der beim Weg ueber die Strahlungskarte an die Stelle der
     # gesamten Fensterbehandlung tritt. Kleiner = hellerer Raum, ohne dass
     # die Fenster ausbrennen - das leistet keine globale Kurve.
-    Regler("lichter", "--hdr-compression", "Fenster daempfen",
-           "Kleiner = dichtere Fenster, mehr Zeichnung draussen.",
-           0.10, 0.60, 0.22),
-    Regler("tiefen", "--hdr-shadows", "Tiefe der Schatten",
-           "Groesser = tiefere Schatten. Getrennt von den Fenstern - das "
-           "ist der Unterschied zwischen flau und wertig.",
-           0.30, 1.00, 0.55),
+    Regler("raum", "--hdr-compression", "Helligkeit des Raums",
+           "Reine Belichtung - der Raum bleibt so, wie die Kamera ihn "
+           "gesehen hat.", 0.25, 0.70, 0.45),
+    Regler("fenster", "--hdr-knee", "Fenster zurueckholen",
+           "Ab hier werden die Lichter gestaucht. Darunter passiert "
+           "nichts. Tiefer = dichtere Fenster.", 0.25, 0.75, 0.45),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,

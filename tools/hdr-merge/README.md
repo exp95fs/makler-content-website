@@ -504,8 +504,8 @@ es gibt keinen Schwellwert, der Fenster von Wand unterscheiden müsste.
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--hdr` | `on` | `off` fällt auf die alte Belichtungsfusion mit Fenstermaske zurück. |
-| `--hdr-compression` | `0.22` | Wie stark die **Lichter** gestaucht werden (Fenster, Lampen). In der Oberfläche der Regler **Kontrastumfang**. Kleiner = dichtere Fenster. |
-| `--hdr-shadows` | `0.55` | Wie stark die **Tiefen** gestaucht werden. Getrennt von den Lichtern — das ist der Unterschied zwischen „flau" und „wertig": Symmetrisch gestaucht wandert alles zur Mitte, die Tiefen werden aufgehellt und das Bild sitzt in einem schmalen Band. Gemessen am Vorbild: dessen Perzentil 1 liegt bei 0,063; symmetrisch gestaucht kam hier 0,162 heraus. |
+| `--hdr-compression` | `0.45` | **Helligkeit des Raums.** Das Bild wird mit einem reinen Faktor auf dieses Niveau belichtet — wie an der Kamera. Ein Faktor verzerrt keine Tonwertabstände: Der Raum wird hell, ohne flach zu werden. In der Oberfläche der Regler **Helligkeit des Raums**. |
+| `--hdr-knee` | `0.45` | **Fenster zurückholen.** Ab diesem Helligkeitsniveau werden die Lichter gestaucht, alles darunter bleibt unangetastet. So bleiben Fenster dicht, ohne dass der Raum mitgezogen wird. In der Oberfläche der Regler **Fenster zurückholen**. |
 | `--hdr-detail` | `1.0` | Erhalt der Feinzeichnung. `1.0` = unangetastet. |
 | `--hdr-radius` | `0.02` | Radius der Trennung von Beleuchtung und Zeichnung, als Anteil der Bildbreite. |
 
