@@ -231,6 +231,11 @@ BELICHTUNGSGUETE_BREITE = 0.22
 # als beim Maskieren, weil hier ein glatter Beleuchtungsverlauf getrennt
 # werden soll und keine harte Kante.
 TONEMAP_KANTENSCHAERFE = 0.04
+# Wo im Bild das "Raumniveau" angesetzt wird, an dem die Stauchung ihr
+# Vorzeichen wechselt. Auf dem Median lag es zu tief: Damit bekam die halbe
+# Bildflaeche die harte Lichterstauchung ab - auch helle Waende, Schraenke
+# und Decken, die nur ein bis zwei Blendenstufen ueber dem Raum liegen.
+ANKER_PERZENTIL = 75.0
 
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
@@ -886,7 +891,8 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     detail: float, radius_anteil: float,
-                    protokoll: list[tuple[int, str]]) -> np.ndarray:
+                    protokoll: list[tuple[int, str]],
+                    kompression_tiefen: float = 0.55) -> np.ndarray:
     """Bringt die Strahlungskarte in den darstellbaren Bereich.
 
     Eine GLOBALE Kennlinie kann das nicht leisten. Bei 19 Blendenstufen
@@ -927,7 +933,35 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                           TONEMAP_KANTENSCHAERFE)
     feinzeichnung = log_lum - basis
 
-    neu = basis * float(kompression) + feinzeichnung * float(detail)
+    # Gestaucht wird ASYMMETRISCH, und das ist der Unterschied zwischen
+    # "flau" und "wertig". Symmetrisch gestaucht wandert alles zur Mitte:
+    # Die Tiefen werden aufgehellt und die Lichter abgedunkelt, das Bild
+    # sitzt danach in einem schmalen Band und wirkt verwaschen.
+    #
+    # Gemessen gegen das kommerzielle Vorbild, gemittelt ueber drei Szenen:
+    # Dessen Perzentil 1 liegt bei 0.063, mit symmetrischer Stauchung kam
+    # hier 0.162 heraus - die Tiefen waren also mehr als doppelt so hell.
+    #
+    # Gebraucht wird beides gleichzeitig: tiefe Schatten UND gebaendigte
+    # Fenster. Deshalb wird unterhalb des Ankers (Innenraum und Tiefen) nur
+    # mild gestaucht und oberhalb (Fenster, Lampen) kraeftig. Der Anker ist
+    # der Median der grossflaechigen Helligkeit, also das Niveau des Raums
+    # selbst - kein fester Wert, der zu einer Szene passen muesste.
+    #
+    #   Tiefen / Lichter   mittlere Abweichung vom Vorbild
+    #        0.30 / 0.30              0.0751
+    #        0.55 / 0.22              0.0483
+    #        0.70 / 0.20              0.0635
+    # Geprueft und verworfen: Eine weiche Schulter oberhalb des Ankers
+    # (Steigung eins am Raumniveau, dann asymptotisch) sollte helle
+    # Innenflaechen schonen. Sie hellte aber die Tiefen wieder mit auf und
+    # verschlechterte die Abweichung vom Vorbild von 0.089 auf 0.092.
+    anker = float(np.percentile(basis, ANKER_PERZENTIL))
+    abstand = basis - anker
+    gestaucht = np.where(abstand < 0.0,
+                         abstand * float(kompression_tiefen),
+                         abstand * float(kompression))
+    neu = anker + gestaucht + feinzeichnung * float(detail)
     # Weisspunkt verankern: Der obere Rand kommt auf 1.0, damit die
     # nachfolgende Normalisierung mit einem bekannten Bereich arbeitet.
     neu = neu - float(np.percentile(neu, 99.5))
@@ -2716,7 +2750,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
                                          protokoll)
         bilder.clear()
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
-                                   args.hdr_detail, args.hdr_radius, protokoll)
+                                   args.hdr_detail, args.hdr_radius, protokoll,
+                                   args.hdr_shadows)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3102,10 +3137,13 @@ def baue_parser() -> argparse.ArgumentParser:
                          "rekonstruieren und lokal tonemappen. `off` faellt "
                          "auf die alte Belichtungsfusion mit Fenstermaske "
                          "zurueck.")
-    hd.add_argument("--hdr-compression", type=float, default=0.30,
-                    help="Wie stark die grossflaechige Helligkeitsverteilung "
-                         "gestaucht wird. Kleiner = hellerer Raum bei "
-                         "gleichbleibend dichten Fenstern.")
+    hd.add_argument("--hdr-compression", type=float, default=0.22,
+                    help="Wie stark die LICHTER gestaucht werden (Fenster, "
+                         "Lampen). Kleiner = dichtere Fenster.")
+    hd.add_argument("--hdr-shadows", type=float, default=0.55,
+                    help="Wie stark die Tiefen gestaucht werden. Getrennt von "
+                         "den Lichtern, damit die Schatten tief bleiben, "
+                         "waehrend die Fenster gebaendigt werden.")
     hd.add_argument("--hdr-detail", type=float, default=1.0,
                     help="Erhalt der Feinzeichnung. 1.0 = unangetastet.")
     hd.add_argument("--hdr-radius", type=float, default=0.02,

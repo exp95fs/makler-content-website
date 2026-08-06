@@ -504,9 +504,29 @@ es gibt keinen Schwellwert, der Fenster von Wand unterscheiden müsste.
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--hdr` | `on` | `off` fällt auf die alte Belichtungsfusion mit Fenstermaske zurück. |
-| `--hdr-compression` | `0.30` | Wie stark die großflächige Helligkeitsverteilung gestaucht wird. In der Oberfläche der Regler **Kontrastumfang**. Kleiner = hellerer Raum bei gleichbleibend dichten Fenstern. |
+| `--hdr-compression` | `0.22` | Wie stark die **Lichter** gestaucht werden (Fenster, Lampen). In der Oberfläche der Regler **Kontrastumfang**. Kleiner = dichtere Fenster. |
+| `--hdr-shadows` | `0.55` | Wie stark die **Tiefen** gestaucht werden. Getrennt von den Lichtern — das ist der Unterschied zwischen „flau" und „wertig": Symmetrisch gestaucht wandert alles zur Mitte, die Tiefen werden aufgehellt und das Bild sitzt in einem schmalen Band. Gemessen am Vorbild: dessen Perzentil 1 liegt bei 0,063; symmetrisch gestaucht kam hier 0,162 heraus. |
 | `--hdr-detail` | `1.0` | Erhalt der Feinzeichnung. `1.0` = unangetastet. |
 | `--hdr-radius` | `0.02` | Radius der Trennung von Beleuchtung und Zeichnung, als Anteil der Bildbreite. |
+
+#### Warum Tiefen und Lichter getrennt gestaucht werden
+
+Symmetrisch gestaucht wandert alles zur Mitte: Die Tiefen werden aufgehellt,
+die Lichter abgedunkelt, das Bild sitzt in einem schmalen Band und wirkt flau.
+Gebraucht wird aber beides gleichzeitig — tiefe Schatten **und** gebändigte
+Fenster. Gemessen als Perzentil-Profil gegen den kommerziellen Dienst,
+gemittelt über drei Szenen:
+
+| | p1 | p5 | p15 | p50 | p85 | p95 | Abweichung |
+|---|---|---|---|---|---|---|---|
+| Dienst | 0,063 | 0,198 | 0,417 | 0,658 | 0,788 | 0,830 | – |
+| symmetrisch | 0,189 | 0,374 | 0,503 | 0,626 | 0,693 | 0,756 | 0,081 |
+| **getrennt** | 0,131 | 0,256 | 0,423 | 0,626 | 0,721 | 0,769 | **0,044** |
+
+Dazu liegt das „Raumniveau", an dem die Stauchung ihr Vorzeichen wechselt,
+nicht auf dem Median, sondern auf dem 75. Perzentil. Auf dem Median bekam die
+halbe Bildfläche die harte Lichterstauchung ab — auch helle Wände, Schränke
+und Decken, die nur ein bis zwei Blendenstufen über dem Raum liegen.
 
 ### Zeichnung und Schärfe
 

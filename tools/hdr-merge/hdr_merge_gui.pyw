@@ -206,7 +206,7 @@ class Regler:
 # eine Oberflaeche mit vierzig Reglern hilft niemandem.
 REGLER = [
     Regler("helligkeit", "--mid-target", "Helligkeit",
-           "Wie hell der Raum insgesamt wird.", 0.42, 0.74, 0.587),
+           "Wie hell der Raum insgesamt wird.", 0.42, 0.80, 0.587),
     Regler("kontrast", "--tone-contrast", "Kontrast",
            "Die am Vorbild gemessene Kennlinie. 0 = flach.", 0.0, 1.5, 1.0),
     Regler("zeichnung", "--clarity", "Zeichnung",
@@ -216,9 +216,13 @@ REGLER = [
     # Der Regler, der beim Weg ueber die Strahlungskarte an die Stelle der
     # gesamten Fensterbehandlung tritt. Kleiner = hellerer Raum, ohne dass
     # die Fenster ausbrennen - das leistet keine globale Kurve.
-    Regler("umfang", "--hdr-compression", "Kontrastumfang",
-           "Kleiner = hellerer Raum bei gleichbleibend dichten Fenstern.",
-           0.15, 0.75, 0.30),
+    Regler("lichter", "--hdr-compression", "Fenster daempfen",
+           "Kleiner = dichtere Fenster, mehr Zeichnung draussen.",
+           0.10, 0.60, 0.22),
+    Regler("tiefen", "--hdr-shadows", "Tiefe der Schatten",
+           "Groesser = tiefere Schatten. Getrennt von den Fenstern - das "
+           "ist der Unterschied zwischen flau und wertig.",
+           0.30, 1.00, 0.55),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,
