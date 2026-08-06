@@ -986,9 +986,15 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
     decke_log = float(np.log2(max(decke, knie + 1e-3)))
     kopf = max(decke_log - knie_log, 1e-3)
     ueber = basis > knie_log
+    # np.where wertet BEIDE Zweige auf dem ganzen Bild aus. Ohne das
+    # Abschneiden liefe der Exponent fuer Pixel unterhalb des Knies ins
+    # Positive und bei kleinem Kopfraum in den Ueberlauf (inf). Das
+    # Ergebnis wurde zwar verworfen, aber eine Rechnung, die inf erzeugt,
+    # ist ein Fehler und keine Nebensache.
+    ueberschuss = np.maximum(basis - knie_log, 0.0)
     basis_neu = np.where(
         ueber,
-        knie_log + kopf * (1.0 - np.exp(-(basis - knie_log) / kopf)),
+        knie_log + kopf * (1.0 - np.exp(-ueberschuss / kopf)),
         basis)
 
     lum_neu = np.exp2(basis_neu + feinzeichnung)
