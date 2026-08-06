@@ -513,8 +513,26 @@ Ergebnis mit diesen Werten bei 0,78 bis 1,20 des Vorbilds.
 |---|---|---|
 | `--clarity` | `1.0` | Lokaler Kontrast über den Guided Filter. Kantenbewusst, damit an harten Kontrastkanten (Fensterrahmen gegen helle Aussicht) keine hellen Säume entstehen. `0` = aus. |
 | `--clarity-radius` | `0.005` | Radius als Anteil der Bildbreite. |
-| `--sharpen` | `0.6` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
-| `--sharpen-radius` | `0.0006` | Radius als Anteil der Bildbreite. |
+| `--sharpen` | `1.0` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
+| `--sharpen-radius` | `1.0` | Radius **in Pixeln**, nicht als Anteil der Bildbreite. Die auszugleichende Unschärfe stammt aus Demosaicing und Sensor-Tiefpass und ist eine feste Pixel-Eigenschaft – sie wird nicht größer, nur weil der Sensor mehr Megapixel hat. Siehe die Messung unten. |
+
+#### Warum der Schärfe-Radius absolut ist
+
+Er war zunächst ein Anteil der Bildbreite und ergab auf einer
+33-Megapixel-Aufnahme **4,2 px Sigma**. Das ist kein Capture Sharpening mehr,
+sondern ein breiter Saum um jede Kante — gemessen an derselben Aufnahme:
+
+| Sigma | feine Kanten | breite Halos | Verhältnis |
+|---|---|---|---|
+| ohne Schärfen | 0,00945 | 0,02431 | 0,389 |
+| 1,0 px | 0,01402 | 0,02496 | **0,562** |
+| 1,5 px | 0,01461 | 0,02569 | **0,569** |
+| 4,2 px (alt) | 0,01495 | **0,03063** | 0,488 |
+
+Bei 4,2 px springt die Energie in breiten Übergängen um 26 % hoch, während die
+feinen Kanten kaum mehr gewinnen als bei 1,0 px. Genau dieser breite Saum ist
+der Eindruck „da liegt ein Filter drüber" — und die eigentlichen Kanten
+bleiben trotzdem weich.
 
 ### Perspektive und Ausgabe
 

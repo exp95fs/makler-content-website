@@ -199,6 +199,11 @@ AUSBRENN_CLOSE_ANTEIL = 0.005
 # einem Insektengitter bei 1.7, freie Aussicht bei 3.5).
 AUSSICHT_RAMPE = 0.5
 
+# Unterhalb dieser Abweichung wird ein Bild NICHT neu gerechnet. Eine halbe
+# Pixelbreite ist die Grenze, ab der eine Verschiebung im Ergebnis ueberhaupt
+# sichtbar werden kann; darunter kostet das Interpolieren nur Schaerfe.
+AUSRICHT_SCHWELLE_PX = 0.5
+
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
 # sonst clippen wuerde. Alles darunter - helle Waende, Arbeitsplatten,
@@ -300,8 +305,13 @@ def komprimiere_lichter_in_maske(bild: np.ndarray, maske_weich: np.ndarray,
         # 132-MB-Zwischenarrays - die Einzelschritte summieren sich auf 2.9
         # Sekunden, die Funktion braucht 11.9. Der Verzicht bleibt trotzdem
         # richtig: Arbeit ohne Wirkung gehoert nicht in den Rechenweg.
-        verhaeltnis = (fuehrung / basis if exponent == 1.0
-                       else np.power(fuehrung / basis, exponent))
+        # Die Basis muss vor dem Potenzieren nichtnegativ sein: Eine
+        # negative Zahl hoch 0.9 ist nicht definiert, NumPy liefert dafuer
+        # NaN - und ein einziges NaN breitet sich ueber alle folgenden
+        # Rechenschritte aus. Negative Werte koennen hier auftreten, weil
+        # das Bild an dieser Stelle noch nicht begrenzt ist.
+        anteil = np.maximum(fuehrung, 0.0) / basis
+        verhaeltnis = anteil if exponent == 1.0 else np.power(anteil, exponent)
         ziel = weicher_rolloff(basis, knie, obergrenze, rate) * verhaeltnis
         # Die Feinzeichnung darf die Obergrenze nicht reissen. Der winzige
         # Abschlag haelt die Zusage auch dann ein, wenn die Obergrenze in
@@ -731,9 +741,35 @@ def richte_reihe_aus(bilder: list[np.ndarray], referenz_index: int,
         warp_voll = warp.copy()
         warp_voll[0, 2] *= 4.0
         warp_voll[1, 2] *= 4.0
+
+        # Bei Stativaufnahmen ist nichts auszurichten - und dann darf auch
+        # nichts gerechnet werden. Jede Warp-Operation interpoliert das
+        # gesamte Bild neu und kostet dabei Kantenschaerfe, auch wenn sie
+        # es nur um ein Drittelpixel verschiebt. Gemessen an einer echten
+        # Stativreihe: gefundene Verschiebung 0.16 und 0.38 px, Drehung
+        # 0.003 Grad - und trotzdem 5.6 % weniger Kantenschaerfe
+        # (Verhaeltnis Hoch- zu Mittelfrequenz 0.3626 auf 0.3423). Das ist
+        # reiner Verlust fuer eine Korrektur, die niemand sieht.
+        verschiebung = float(np.hypot(warp_voll[0, 2], warp_voll[1, 2]))
+        drehung = abs(float(np.degrees(np.arctan2(warp[1, 0], warp[0, 0]))))
+        # Die Drehung wirkt am Bildrand am staerksten; dort entspricht sie
+        # rund (Winkel im Bogenmass) mal der halben Bilddiagonale.
+        drehweg = float(np.radians(drehung) * np.hypot(w, h) / 2.0)
+        if max(verschiebung, drehweg) < AUSRICHT_SCHWELLE_PX:
+            protokoll.append((logging.DEBUG,
+                              f"Bild {i + 1} steht bereits deckungsgleich "
+                              f"({verschiebung:.2f} px, {drehung:.3f} Grad) - "
+                              f"nicht neu gerechnet, das erhaelt die "
+                              f"Kantenschaerfe."))
+            continue
+
         bilder[i] = cv2.warpAffine(
             bild, warp_voll, (w, h),
-            flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP,
+            # Lanczos statt bilinear: Wenn schon interpoliert werden muss,
+            # dann mit dem Verfahren, das die feinen Kanten am besten
+            # erhaelt. Bilinear ist ein Tiefpass und macht genau das
+            # weich, worauf es hier ankommt.
+            flags=cv2.INTER_LANCZOS4 + cv2.WARP_INVERSE_MAP,
             borderMode=cv2.BORDER_REPLICATE)
         del bild
     return bilder
@@ -1347,7 +1383,21 @@ def verstaerke_zeichnung(bild: np.ndarray, clarity: float, clarity_radius: float
         neu = neu + clarity * (neu - basis)
 
     if schaerfe > 0.0:
-        sigma = max(0.6, breite * schaerfe_radius)
+        # Der Radius ist eine ABSOLUTE Pixelangabe, nicht wie beim lokalen
+        # Kontrast ein Anteil der Bildbreite. Das ist keine Feinheit,
+        # sondern der Unterschied zwischen Schaerfe und Filterlook: Die
+        # Unschaerfe, die hier ausgeglichen wird, stammt aus Demosaicing
+        # und Sensor-Tiefpass und ist eine feste Eigenschaft in Pixeln -
+        # sie wird nicht groesser, nur weil der Sensor mehr Megapixel hat.
+        #
+        # Frueher war der Wert ein Anteil der Breite und ergab auf einer
+        # 33-Megapixel-Aufnahme 4.2 px Sigma. Gemessen an derselben
+        # Aufnahme kostet das teuer: Die Energie in breiten Uebergaengen
+        # stieg um 26 % (0.0243 auf 0.0306), waehrend die feinen Kanten
+        # kaum mehr gewannen als bei 1.0 px. Breite Saeume um jede Kante
+        # sind genau der Eindruck "da liegt ein Filter drueber" - und die
+        # eigentlichen Kanten bleiben trotzdem weich.
+        sigma = max(0.4, float(schaerfe_radius))
         weich = cv2.GaussianBlur(neu, (0, 0), sigma)
         neu = neu + schaerfe * (neu - weich)
 
@@ -2372,17 +2422,28 @@ def berechne_vorschau(bilder_klein: Sequence[np.ndarray],
                       args: argparse.Namespace) -> np.ndarray:
     """Vorschaubild aus bereits verkleinerten Belichtungen.
 
-    Nimmt exakt denselben Weg wie der Endlauf (siehe ``verarbeite_bilder``),
-    nur ohne die Geometrieschritte - die aendern den Ausschnitt, nicht den
-    Look, und kosten in der Vorschau nur Zeit.
+    Nimmt denselben Weg wie der Endlauf (siehe ``verarbeite_bilder``),
+    einschliesslich des Aufrichtens: Wer das Haekchen setzt, muss die
+    Wirkung sehen koennen. Frueher blieb es hier aussen vor, mit dem
+    Ergebnis, dass das Haekchen in der Vorschau nichts tat und wie ein
+    kaputter Schalter wirkte.
 
-    Alle Radien im Programm sind Anteile der Bildbreite, deshalb wirken
-    Zeichnung, Schaerfe und Masken auf dem kleinen Bild massstabsgetreu wie
-    auf dem grossen.
+    Uebersprungen wird nur die Objektivkorrektur: Sie braucht die volle
+    Aufloesung, um die Verzeichnung ueberhaupt zu schaetzen.
+
+    Die Radien fuer Zeichnung und Masken sind Anteile der Bildbreite und
+    wirken deshalb massstabsgetreu. Der Schaerferadius ist dagegen absolut
+    in Pixeln - auf dem verkleinerten Bild wirkt die Schaerfe also staerker
+    als spaeter im Endergebnis. Das ist der ehrlichere Kompromiss: Bei
+    massstabsgetreuer Umrechnung waere die Schaerfe in der Vorschau
+    unsichtbar, weil sie unter die Aufloesung der Anzeige fiele.
     """
     protokoll: list[tuple[int, str]] = []
-    ergebnis, _, _, _, _ = verarbeite_bilder(
+    ergebnis, _, _, _, tags = verarbeite_bilder(
         [b.copy() for b in bilder_klein], args, protokoll)
+    if getattr(args, "straighten", False):
+        ergebnis = begradige_perspektive(ergebnis, args.straighten_max_deg,
+                                         protokoll, tags or {})
     return veredle_ergebnis(ergebnis, args, protokoll)
 
 
@@ -2867,11 +2928,14 @@ def baue_parser() -> argparse.ArgumentParser:
     z.add_argument("--clarity-radius", type=float, default=0.005,
                    help="Radius des lokalen Kontrasts als Anteil der "
                         "Bildbreite.")
-    z.add_argument("--sharpen", type=float, default=0.6,
+    z.add_argument("--sharpen", type=float, default=1.0,
                    help="Capture Sharpening. Gleicht die Weichheit der "
                         "RAW-Entwicklung aus (0 = aus).")
-    z.add_argument("--sharpen-radius", type=float, default=0.0006,
-                   help="Radius des Schaerfens als Anteil der Bildbreite.")
+    z.add_argument("--sharpen-radius", type=float, default=1.0,
+                   help="Radius des Schaerfens in PIXELN (nicht als Anteil "
+                        "der Bildbreite). Die auszugleichende Unschaerfe "
+                        "stammt vom Sensor und ist unabhaengig von der "
+                        "Bildgroesse.")
 
     s = p.add_argument_group("Perspektive")
     s.add_argument("--lens-k1", type=float, default=0.0,

@@ -212,7 +212,7 @@ REGLER = [
     Regler("zeichnung", "--clarity", "Zeichnung",
            "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 1.0),
     Regler("schaerfe", "--sharpen", "Schaerfe",
-           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 1.5, 0.6),
+           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.0, 1.0),
     Regler("fenster", "--window-strength", "Fenster zurueckholen",
            "Wie stark die Aussicht aus der dunklen Aufnahme kommt.",
            0.0, 1.0, 1.0),
@@ -428,9 +428,24 @@ class Anwendung(tk.Tk):
         self.ausrichten = tk.BooleanVar(value=True)
         self.aufrichten = tk.BooleanVar(value=False)
         ttk.Checkbutton(schalter, text="Bilder zueinander ausrichten",
-                        variable=self.ausrichten).pack(anchor="w")
+                        variable=self.ausrichten,
+                        command=self._vorschau_anfordern).pack(anchor="w")
         ttk.Checkbutton(schalter, text="Stuerzende Linien aufrichten",
-                        variable=self.aufrichten).pack(anchor="w", pady=(4, 0))
+                        variable=self.aufrichten,
+                        command=self._vorschau_anfordern).pack(anchor="w",
+                                                               pady=(4, 0))
+        # Der Weissabgleich der Rohentwicklung. Gemessen an einer Dachkueche
+        # mit Mischlicht bringt "automatisch" die neutralen Flaechen
+        # deutlich naeher an neutral (Abstand 0.180 auf 0.140). Voreingestellt
+        # bleibt die Kameraeinstellung, weil sie ueber eine ganze Serie
+        # hinweg garantiert gleich bleibt - die Automatik entscheidet je
+        # Bild neu und kann zwei Aufnahmen desselben Raums unterschiedlich
+        # abstimmen.
+        self.auto_wb = tk.BooleanVar(value=False)
+        ttk.Checkbutton(schalter,
+                        text="Weissabgleich automatisch statt Kamera",
+                        variable=self.auto_wb,
+                        command=self._lade_neu).pack(anchor="w", pady=(4, 0))
 
         leiste.rowconfigure(6, weight=1)
 
@@ -530,6 +545,7 @@ class Anwendung(tk.Tk):
                 setattr(args, regler.schalter.lstrip("-").replace("-", "_"),
                         float(self.werte[regler.schluessel].get()))
             args.no_align = not self.ausrichten.get()
+            args.straighten = bool(self.aufrichten.get())
             bild = hdr_merge.berechne_vorschau(self.vorschau_bilder, args)
         except Exception as fehler:      # pragma: no cover - Oberflaeche
             self.meldungen.put(("fehler", f"Vorschau fehlgeschlagen: {fehler}"))
@@ -783,12 +799,27 @@ class Anwendung(tk.Tk):
         threading.Thread(target=self._lade_vorschau_reihe,
                          args=(index,), daemon=True).start()
 
+    def _lade_neu(self) -> None:
+        """Erzwingt ein erneutes Laden der Vorschau-Reihe.
+
+        Noetig fuer alles, was schon in der Rohentwicklung wirkt - der
+        Weissabgleich zum Beispiel. Ein blosses Neurechnen wuerde die
+        bereits entwickelten Bilder weiterverwenden und die Aenderung
+        stillschweigend verschlucken.
+        """
+        aktuell = self.vorschau_reihe
+        self.vorschau_reihe = -1
+        if aktuell >= 0:
+            self.reihen_liste.current(aktuell)
+            self._reihe_gewechselt()
+
     def _lade_vorschau_reihe(self, index: int) -> None:
         try:
             sys.path.insert(0, str(ORDNER))
             import hdr_merge
-            klein = hdr_merge.lade_reihe_klein(self.reihen[index],
-                                               VORSCHAU_BREITE)
+            klein = hdr_merge.lade_reihe_klein(
+                self.reihen[index], VORSCHAU_BREITE,
+                "auto" if self.auto_wb.get() else "camera")
         except Exception as fehler:
             self.meldungen.put(("fehler", f"Laden fehlgeschlagen: {fehler}"))
             return
@@ -800,6 +831,7 @@ class Anwendung(tk.Tk):
             self.werte[regler.schluessel].set(regler.standard)
         self.ausrichten.set(True)
         self.aufrichten.set(False)
+        self.auto_wb.set(False)
         self._vorschau_anfordern(verzoegerung=10)
 
     # -- Verarbeitung -----------------------------------------------------
@@ -820,6 +852,8 @@ class Anwendung(tk.Tk):
             argumente.append("--no-align")
         if self.aufrichten.get():
             argumente.append("--straighten")
+        if self.auto_wb.get():
+            argumente += ["--raw-wb", "auto"]
         return argumente
 
     def _starte_verarbeitung(self) -> None:
