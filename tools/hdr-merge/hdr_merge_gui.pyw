@@ -206,19 +206,19 @@ class Regler:
 # eine Oberflaeche mit vierzig Reglern hilft niemandem.
 REGLER = [
     Regler("helligkeit", "--mid-target", "Helligkeit",
-           "Wie hell der Raum insgesamt wird.", 0.42, 0.74, 0.58),
+           "Wie hell der Raum insgesamt wird.", 0.42, 0.74, 0.587),
     Regler("kontrast", "--tone-contrast", "Kontrast",
            "Die am Vorbild gemessene Kennlinie. 0 = flach.", 0.0, 1.5, 1.0),
     Regler("zeichnung", "--clarity", "Zeichnung",
            "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 1.0),
     Regler("schaerfe", "--sharpen", "Schaerfe",
-           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.0, 1.0),
-    Regler("fenster", "--window-strength", "Fenster zurueckholen",
-           "Wie stark die Aussicht aus der dunklen Aufnahme kommt.",
-           0.0, 1.0, 1.0),
-    Regler("fensterhelligkeit", "--window-ceiling", "Fensterhelligkeit",
-           "Heller = luftiger, dunkler = mehr Zeichnung draussen.",
-           0.55, 0.92, 0.75),
+           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.5, 1.2),
+    # Der Regler, der beim Weg ueber die Strahlungskarte an die Stelle der
+    # gesamten Fensterbehandlung tritt. Kleiner = hellerer Raum, ohne dass
+    # die Fenster ausbrennen - das leistet keine globale Kurve.
+    Regler("umfang", "--hdr-compression", "Kontrastumfang",
+           "Kleiner = hellerer Raum bei gleichbleibend dichten Fenstern.",
+           0.15, 0.75, 0.30),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,
@@ -546,7 +546,8 @@ class Anwendung(tk.Tk):
                         float(self.werte[regler.schluessel].get()))
             args.no_align = not self.ausrichten.get()
             args.straighten = bool(self.aufrichten.get())
-            bild = hdr_merge.berechne_vorschau(self.vorschau_bilder, args)
+            bild = hdr_merge.berechne_vorschau(self.vorschau_bilder, args,
+                                               self.vorschau_evs)
         except Exception as fehler:      # pragma: no cover - Oberflaeche
             self.meldungen.put(("fehler", f"Vorschau fehlgeschlagen: {fehler}"))
             return
@@ -793,6 +794,7 @@ class Anwendung(tk.Tk):
             return
         self.vorschau_reihe = index
         self.vorschau_bilder = []
+        self.vorschau_evs = [a.ev for a in self.reihen[index]]
         self.vorschau_status.configure(text="Reihe wird geladen …")
         self.bild_flaeche.configure(image="", text="Reihe wird geladen …")
         self.foto = None

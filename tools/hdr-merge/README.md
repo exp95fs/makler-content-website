@@ -468,9 +468,9 @@ sind 0,11).
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--base-tone` | `on` | `off` liefert die flache Rohfusion. |
-| `--white-target` | `0.78` | Zielwert für den Weißpunkt des Innenraums. Am Vorbild kalibriert: die nachgelagerte Kontrastkennlinie hebt den Weißpunkt noch um rund 0,06, entsprechend liegt der Zielwert darunter. |
-| `--black-target` | `0.035` | Zielwert für den Schwarzpunkt. |
-| `--mid-target` | `0.58` | Zielwert für den Mittelton. Ebenfalls am Vorbild kalibriert (siehe `--white-target`). |
+| `--white-target` | `0.755` | Zielwert für den Weißpunkt des Innenraums. Am Vorbild kalibriert: die nachgelagerte Kontrastkennlinie hebt den Weißpunkt noch um rund 0,06, entsprechend liegt der Zielwert darunter. |
+| `--black-target` | `0.053` | Zielwert für den Schwarzpunkt. |
+| `--mid-target` | `0.587` | Zielwert für den Mittelton. Ebenfalls am Vorbild kalibriert (siehe `--white-target`). |
 | `--mid-mode` | `lift` | `lift` hellt nur auf (weiße Wände bleiben weiß); `exact` erzwingt den Zielwert in beide Richtungen. |
 | `--white-percentile` | `99.5` | Perzentil für den Weißpunkt. |
 | `--black-percentile` | `0.2` | Perzentil für den Schwarzpunkt. |
@@ -495,6 +495,19 @@ unangetastet. Wer den zurückhaltenden Look des Dienstes will, zieht den Regler
 auf 1 und sieht die Wirkung sofort in der Vorschau.
 | `--color-match-target` | `0.098` | Zielwert der Sättigung, am Dienst gemessen. Wirkt nur zusammen mit `--color-match`. |
 
+### Strahlungskarte (Standardweg)
+
+Aus den EV-Werten der Aufnahmen wird eine echte Strahlungskarte
+rekonstruiert und anschließend lokal tonemappt. **Ohne jede Fenstermaske** —
+es gibt keinen Schwellwert, der Fenster von Wand unterscheiden müsste.
+
+| Parameter | Standard | Wirkung |
+|---|---|---|
+| `--hdr` | `on` | `off` fällt auf die alte Belichtungsfusion mit Fenstermaske zurück. |
+| `--hdr-compression` | `0.30` | Wie stark die großflächige Helligkeitsverteilung gestaucht wird. In der Oberfläche der Regler **Kontrastumfang**. Kleiner = hellerer Raum bei gleichbleibend dichten Fenstern. |
+| `--hdr-detail` | `1.0` | Erhalt der Feinzeichnung. `1.0` = unangetastet. |
+| `--hdr-radius` | `0.02` | Radius der Trennung von Beleuchtung und Zeichnung, als Anteil der Bildbreite. |
+
 ### Zeichnung und Schärfe
 
 Das Aufhellen kostet Zeichnung, und zwar messbar: Eine Holzwand steigt von
@@ -513,7 +526,7 @@ Ergebnis mit diesen Werten bei 0,78 bis 1,20 des Vorbilds.
 |---|---|---|
 | `--clarity` | `1.0` | Lokaler Kontrast über den Guided Filter. Kantenbewusst, damit an harten Kontrastkanten (Fensterrahmen gegen helle Aussicht) keine hellen Säume entstehen. `0` = aus. |
 | `--clarity-radius` | `0.005` | Radius als Anteil der Bildbreite. |
-| `--sharpen` | `1.0` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
+| `--sharpen` | `1.2` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
 | `--sharpen-radius` | `1.0` | Radius **in Pixeln**, nicht als Anteil der Bildbreite. Die auszugleichende Unschärfe stammt aus Demosaicing und Sensor-Tiefpass und ist eine feste Pixel-Eigenschaft – sie wird nicht größer, nur weil der Sensor mehr Megapixel hat. Siehe die Messung unten. |
 
 #### Warum der Schärfe-Radius absolut ist
