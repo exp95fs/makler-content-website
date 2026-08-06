@@ -60,6 +60,14 @@ class Attrappe:
     def __iter__(self):
         return iter(())
 
+    # Abfragen zur Fenstergroesse muessen Zahlen liefern - mit ihnen wird
+    # gerechnet. Werte wie bei einem realen Fenster.
+    def winfo_width(self):
+        return 1160
+
+    def winfo_height(self):
+        return 880
+
 
 class Variable(Attrappe):
     """StringVar/BooleanVar/DoubleVar - der Wert muss echt sein."""
@@ -73,6 +81,42 @@ class Variable(Attrappe):
 
     def set(self, wert):
         self._wert = wert
+
+
+class Bild(Attrappe):
+    """Ersatz fuer tk.PhotoImage - so streng wie das echte Tk.
+
+    Entscheidend ist die Strenge: Tk nimmt base64-Text nur fuer Formate an,
+    deren Handler das koennen (GIF, PNG). Der PPM-Handler liest
+    ausschliesslich Rohbytes und wirft bei base64 einen Fehler. Genau
+    daran ist die Oberflaeche einmal gestorben - die Ausnahme riss die
+    Meldungsschleife mit und das ganze Fenster stand still.
+
+    Dieser Ersatz bildet die Regel nach, damit derselbe Fehler nicht noch
+    einmal unbemerkt hineinkommt.
+    """
+
+    zuletzt: dict = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        daten = kwargs.get("data")
+        datei = kwargs.get("file")
+        if daten is None and datei is None:
+            raise ValueError("PhotoImage ohne data oder file")
+        if daten is not None:
+            import base64 as b64
+            roh = b64.b64decode(daten, validate=False)
+            if roh[:8] == b"\x89PNG\r\n\x1a\n":
+                Bild.zuletzt = {"format": "PNG", "bytes": len(roh)}
+            elif roh[:2] in (b"P6", b"P5"):
+                raise RuntimeError(
+                    "couldn't recognize image data - Tk nimmt PPM nicht "
+                    "als base64 an")
+            else:
+                raise RuntimeError("couldn't recognize image data")
+        else:
+            Bild.zuletzt = {"format": "Datei", "pfad": str(datei)}
 
 
 class Fenster(Attrappe):
@@ -94,6 +138,7 @@ def baue_tkinter_ersatz() -> tuple[types.ModuleType, types.ModuleType]:
                  "PhotoImage", "Menu", "Scrollbar"):
         setattr(tk, name, Attrappe)
     tk.Tk = Fenster
+    tk.PhotoImage = Bild
     tk.StringVar = Variable
     tk.BooleanVar = Variable
     tk.DoubleVar = Variable
@@ -259,6 +304,74 @@ class TestOberflaecheLaedt(unittest.TestCase):
         anwendung.vorschau_marke = 5          # inzwischen weitergedreht
         anwendung._vorschau_rechnen(4)        # veralteter Auftrag
         self.assertTrue(anwendung.meldungen.empty())
+
+    # -- Der Absturz, der die ganze Oberflaeche lahmgelegt hat -------------
+
+    def test_bild_wird_als_png_uebergeben(self):
+        """PNG, nicht PPM - sonst lehnt Tk die base64-Daten ab.
+
+        Das war die Ursache: Der PPM-Handler liest nur Rohbytes. Die
+        Ausnahme riss die Meldungsschleife mit, und das Fenster stand
+        still - auch fuer den Fortschritt der laufenden Verarbeitung.
+        """
+        import numpy as np
+        anwendung = self.gui.Anwendung()
+        Bild.zuletzt = {}
+        anwendung._zeichne_bild(
+            np.random.default_rng(1).random((80, 120, 3)).astype(np.float32))
+        self.assertEqual(Bild.zuletzt.get("format"), "PNG",
+                         "Vorschaubild wurde nicht als PNG uebergeben")
+        self.assertGreater(Bild.zuletzt.get("bytes", 0), 100)
+
+    def test_meldungsschleife_ueberlebt_eine_kaputte_meldung(self):
+        """Die wichtigste Zusage: Die Schleife darf niemals sterben.
+
+        Sie ist der einzige Weg, auf dem Fortschritt, Vorschau und die
+        Meldung "fertig" ins Fenster gelangen. Stirbt sie, friert alles
+        ein - auch wenn die Verarbeitung im Hintergrund weiterlaeuft.
+        """
+        anwendung = self.gui.Anwendung()
+        # Eine Nutzlast, an der der Zweig zwangslaeufig scheitert.
+        anwendung.meldungen.put(("vorschau", None))
+        anwendung.aufgeschoben.clear()
+        anwendung._verarbeite_meldungen()
+        self.assertTrue(
+            any(rueckruf == anwendung._verarbeite_meldungen
+                for _, rueckruf in anwendung.aufgeschoben),
+            "Die Meldungsschleife hat sich nicht erneut eingeplant")
+
+    def test_kaputte_meldung_landet_im_protokoll(self):
+        anwendung = self.gui.Anwendung()
+        anwendung.meldungen.put(("vorschau", None))
+        anwendung._verarbeite_meldungen()
+        self.assertTrue(any("fehlgeschlagen" in zeile
+                            for zeile, _ in anwendung.protokoll_zeilen),
+                        "Der Fehler wurde stillschweigend verschluckt")
+
+    def test_schleife_arbeitet_nach_einem_fehler_weiter(self):
+        """Nach einer kaputten Meldung muessen die naechsten ankommen."""
+        anwendung = self.gui.Anwendung()
+        anwendung.meldungen.put(("vorschau", None))     # scheitert
+        anwendung.meldungen.put(("zeile", "[A] Fertig: A_hdr.tif"))
+        anwendung.reihen = [object(), object()]
+        anwendung._verarbeite_meldungen()
+        self.assertTrue(any("A_hdr.tif" in zeile
+                            for zeile, _ in anwendung.protokoll_zeilen),
+                        "Die Meldung nach dem Fehler kam nicht an")
+
+    def test_verarbeitung_laeuft_ungepuffert(self):
+        """Ohne -u erscheint der Fortschritt erst am Ende des Laufs.
+
+        Python haelt die Protokollzeilen sonst im Blockpuffer zurueck,
+        solange stdout eine Pipe ist - bei dreissig Reihen also eine halbe
+        Stunde Stillstand.
+        """
+        anwendung = self.gui.Anwendung()
+        argumente = anwendung._baue_argumente(Path("/ein"), Path("/aus"))
+        self.assertIn("-u", argumente)
+        self.assertLess(argumente.index("-u"),
+                        argumente.index(str(self.gui.HDR_MERGE)),
+                        "-u muss vor dem Programmnamen stehen")
 
     def test_regler_bleiben_innerhalb_ihrer_grenzen(self):
         for regler in self.gui.REGLER:

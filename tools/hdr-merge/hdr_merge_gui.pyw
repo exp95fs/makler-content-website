@@ -28,9 +28,11 @@ Zwei Dinge sind an der Aufteilung wichtig:
 
 Verwendet ausschliesslich tkinter aus der Standardbibliothek, also keine
 zusaetzliche Abhaengigkeit. Auch die Bildanzeige kommt ohne Pillow aus: Das
-Vorschaubild wird als PPM im Speicher erzeugt und direkt an tk.PhotoImage
-uebergeben. Die Endung .pyw sorgt unter Windows dafuer, dass kein schwarzes
-Konsolenfenster mitstartet.
+Vorschaubild wird als PNG im Speicher erzeugt und base64-kodiert an
+tk.PhotoImage uebergeben. PNG und nicht PPM, weil Tk base64 nur fuer die
+Formate annimmt, deren Handler das ausdruecklich koennen - PPM gehoert
+nicht dazu. Die Endung .pyw sorgt unter Windows dafuer, dass kein
+schwarzes Konsolenfenster mitstartet.
 
 Ein Ordner kann auch direkt auf das Programmsymbol gezogen werden - er wird
 dann als Argument uebergeben und sofort analysiert.
@@ -45,6 +47,7 @@ import queue
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -553,7 +556,20 @@ class Anwendung(tk.Tk):
         return self.vorschau_bilder[len(self.vorschau_bilder) // 2]
 
     def _zeichne_bild(self, bild) -> None:
-        """Zeigt ein Float-RGB-Bild ohne Umweg ueber Pillow an."""
+        """Zeigt ein Float-RGB-Bild ohne Umweg ueber Pillow an.
+
+        Uebergeben wird PNG, nicht PPM. Das ist der Kern eines Fehlers, der
+        die gesamte Oberflaeche lahmgelegt hat: Tk nimmt Bilddaten als
+        base64-Text nur fuer die Formate an, deren Handler das ausdruecklich
+        koennen - GIF und PNG. Der PPM-Handler liest ausschliesslich
+        Rohbytes und quittiert base64 mit einem Fehler. Der wiederum riss
+        die Meldungsschleife mit, und das Fenster stand still.
+
+        Beide Wege bleiben erhalten: PNG ueber den Speicher als Regelfall,
+        eine PPM-Datei als Rueckfallebene fuer sehr alte Tk-Fassungen, die
+        PNG noch nicht kennen (vor 8.6). So haengt die Anzeige nicht an
+        einer einzigen Annahme ueber die Tk-Version des Anwenders.
+        """
         import numpy as np
         import cv2
 
@@ -564,12 +580,23 @@ class Anwendung(tk.Tk):
         ziel = (max(int(w * skalierung), 1), max(int(h * skalierung), 1))
         klein = cv2.resize(np.clip(bild, 0.0, 1.0), ziel,
                            interpolation=cv2.INTER_AREA)
-        acht_bit = (klein * 255.0 + 0.5).astype(np.uint8)
+        acht_bit = np.ascontiguousarray((klein * 255.0 + 0.5).astype(np.uint8))
+
+        erfolg, puffer = cv2.imencode(".png",
+                                      cv2.cvtColor(acht_bit, cv2.COLOR_RGB2BGR))
+        if erfolg:
+            try:
+                daten = base64.b64encode(puffer.tobytes()).decode("ascii")
+                self.foto = tk.PhotoImage(data=daten)
+                self.bild_flaeche.configure(image=self.foto, text="")
+                return
+            except Exception:
+                pass    # sehr altes Tk ohne PNG - unten weiter
 
         kopf = f"P6 {ziel[0]} {ziel[1]} 255 ".encode("ascii")
-        # tkinter erwartet die Daten als ASCII-Text, nicht als Bytes.
-        daten = base64.b64encode(kopf + acht_bit.tobytes()).decode("ascii")
-        self.foto = tk.PhotoImage(data=daten, format="PPM")
+        pfad = Path(tempfile.gettempdir()) / "hdr_merge_vorschau.ppm"
+        pfad.write_bytes(kopf + acht_bit.tobytes())
+        self.foto = tk.PhotoImage(file=str(pfad))
         self.bild_flaeche.configure(image=self.foto, text="")
 
     # -- Meldungen --------------------------------------------------------
@@ -583,31 +610,56 @@ class Anwendung(tk.Tk):
             self.protokoll_text.configure(state="disabled")
 
     def _verarbeite_meldungen(self) -> None:
+        """Die Meldungsschleife - sie darf unter keinen Umstaenden sterben.
+
+        Sie ist der einzige Weg, auf dem Ergebnisse aus den Arbeitsfaeden
+        und aus der laufenden Verarbeitung ins Fenster gelangen. Frueher
+        stand das Wiedereinplanen NACH dem try-Block: Warf einer der
+        Zweige eine Ausnahme, wurde die Zeile nie erreicht - und damit war
+        die gesamte Oberflaeche tot. Nicht nur die Vorschau: auch der
+        Fortschrittsbalken, die Statuszeile und die Meldung "fertig". Das
+        Fenster blieb in genau dem Zustand stehen, in dem es gerade war,
+        waehrend die Verarbeitung im Hintergrund unbemerkt weiterlief.
+
+        Genau das ist passiert. Deshalb steht das Wiedereinplanen jetzt in
+        einem finally, und jede einzelne Meldung wird fuer sich
+        abgesichert: Eine kaputte Meldung darf hoechstens sich selbst
+        kosten, niemals die Schleife.
+        """
         try:
             while True:
-                art, nutzlast = self.meldungen.get_nowait()
-                if art == "zeile":
-                    self._zeige_zeile(nutzlast)
-                elif art == "vorschau":
-                    self.roh_vorschau = nutzlast
-                    if not self.zeige_original:
-                        self._zeichne_bild(nutzlast)
-                    self.vorschau_status.configure(
-                        text=f"Vorschau {nutzlast.shape[1]} × {nutzlast.shape[0]} px")
-                elif art == "reihen":
-                    self._zeige_analyse(nutzlast)
-                elif art == "geladen":
-                    self.vorschau_bilder = nutzlast
-                    self._vorschau_anfordern(verzoegerung=10)
-                elif art == "fehler":
-                    self.status.set(nutzlast)
-                    self.vorschau_status.configure(text="")
-                    self._schreibe(nutzlast, "fehler")
-                elif art == "fertig":
-                    self._verarbeitung_beendet(nutzlast)
-        except queue.Empty:
-            pass
-        self.after(100, self._verarbeite_meldungen)
+                try:
+                    art, nutzlast = self.meldungen.get_nowait()
+                except queue.Empty:
+                    break
+                try:
+                    self._behandle_meldung(art, nutzlast)
+                except Exception as fehler:      # pragma: no cover
+                    self._schreibe(f"ERROR Meldung '{art}' fehlgeschlagen: "
+                                   f"{fehler!r}", "fehler")
+        finally:
+            self.after(100, self._verarbeite_meldungen)
+
+    def _behandle_meldung(self, art: str, nutzlast) -> None:
+        if art == "zeile":
+            self._zeige_zeile(nutzlast)
+        elif art == "vorschau":
+            self.roh_vorschau = nutzlast
+            if not self.zeige_original:
+                self._zeichne_bild(nutzlast)
+            self.vorschau_status.configure(
+                text=f"Vorschau {nutzlast.shape[1]} × {nutzlast.shape[0]} px")
+        elif art == "reihen":
+            self._zeige_analyse(nutzlast)
+        elif art == "geladen":
+            self.vorschau_bilder = nutzlast
+            self._vorschau_anfordern(verzoegerung=10)
+        elif art == "fehler":
+            self.status.set(nutzlast)
+            self.vorschau_status.configure(text="")
+            self._schreibe(nutzlast, "fehler")
+        elif art == "fertig":
+            self._verarbeitung_beendet(nutzlast)
 
     def _zeige_zeile(self, zeile: str) -> None:
         kennzeichen = ""
@@ -753,7 +805,12 @@ class Anwendung(tk.Tk):
     # -- Verarbeitung -----------------------------------------------------
 
     def _baue_argumente(self, eingabe: Path, ausgabe: Path) -> list[str]:
-        argumente = [python_programm(), str(HDR_MERGE), str(eingabe),
+        # "-u" ist nicht kosmetisch: Ohne ungepufferte Ausgabe haelt Python
+        # die Protokollzeilen im Blockpuffer zurueck, solange stdout eine
+        # Pipe ist. Der Fortschritt erschiene dann erst, wenn der ganze
+        # Lauf fertig ist - bei dreissig Reihen also nach einer halben
+        # Stunde Stillstand.
+        argumente = [python_programm(), "-u", str(HDR_MERGE), str(eingabe),
                      str(ausgabe), "--verbose", "--compression", "none"]
         for regler in REGLER:
             wert = float(self.werte[regler.schluessel].get())

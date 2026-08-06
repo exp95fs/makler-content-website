@@ -207,8 +207,8 @@ Oberfläche zeigt dieselbe Aussage nach dem Lauf in der Statuszeile.
 ### Tests
 
 ```bat
-python test_hdr_merge.py     :: Bildverarbeitung (83 Tests)
-python test_gui.py           :: Oberfläche (10 Tests)
+python test_hdr_merge.py     :: Bildverarbeitung (86 Tests)
+python test_gui.py           :: Oberfläche (15 Tests)
 ```
 
 `test_gui.py` stellt tkinter durch einen Ersatz, der jeden Aufruf annimmt.
@@ -218,6 +218,14 @@ Umgebung. Das fängt nicht alles (ob eine ttk-Option gültig ist, weiß nur das
 echte tkinter), aber die häufigsten Fehler: falsch geschriebene
 Methodennamen, in falscher Reihenfolge angelegte Variablen, kaputte
 Signaturen. Zwei der Tests rechnen eine echte Vorschau durch.
+
+Der `PhotoImage`-Ersatz ist bewusst **streng**: Er lehnt base64-Daten für
+Formate ab, die das echte Tk nicht als base64 annimmt. Genau daran ist die
+Oberfläche einmal gestorben — sie übergab PPM als base64, Tk wies es zurück,
+und weil die Meldungsschleife das Wiedereinplanen erst nach dem `try`-Block
+hatte, stand danach das ganze Fenster still: keine Vorschau, kein
+Fortschritt, kein „fertig", während die Verarbeitung im Hintergrund
+weiterlief. Vier Tests decken das jetzt ab.
 
 `benchmark_fotello.py` misst ein beliebiges Ergebnis gegen diese Zielwerte:
 
