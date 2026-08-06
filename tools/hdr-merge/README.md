@@ -504,10 +504,11 @@ es gibt keinen Schwellwert, der Fenster von Wand unterscheiden müsste.
 | Parameter | Standard | Wirkung |
 |---|---|---|
 | `--hdr` | `on` | `off` fällt auf die alte Belichtungsfusion mit Fenstermaske zurück. |
-| `--hdr-compression` | `0.45` | **Helligkeit des Raums.** Das Bild wird mit einem reinen Faktor auf dieses Niveau belichtet — wie an der Kamera. Ein Faktor verzerrt keine Tonwertabstände: Der Raum wird hell, ohne flach zu werden. In der Oberfläche der Regler **Helligkeit des Raums**. |
-| `--hdr-knee` | `0.45` | **Fenster zurückholen.** Ab diesem Helligkeitsniveau werden die Lichter gestaucht, alles darunter bleibt unangetastet. So bleiben Fenster dicht, ohne dass der Raum mitgezogen wird. In der Oberfläche der Regler **Fenster zurückholen**. |
+| `--hdr-compression` | `0.62` | **Helligkeit des Raums.** Das Bild wird mit einem reinen Faktor auf dieses Niveau belichtet — wie an der Kamera. Ein Faktor verzerrt keine Tonwertabstände: Der Raum wird hell, ohne flach zu werden. In der Oberfläche der Regler **Helligkeit des Raums**. |
+| `--hdr-knee` | `0.60` | **Fenster zurückholen.** Ab diesem Helligkeitsniveau setzt die Lichterschulter an, alles darunter bleibt unangetastet. So bleiben Fenster dicht, ohne dass der Raum mitgezogen wird. In der Oberfläche der Regler **Fenster zurückholen**. |
 | `--hdr-detail` | `1.0` | Erhalt der Feinzeichnung. `1.0` = unangetastet. |
 | `--hdr-radius` | `0.02` | Radius der Trennung von Beleuchtung und Zeichnung, als Anteil der Bildbreite. |
+| `--hdr-highlight` | `0.82` | **Fensterhelligkeit** — wohin die Lichterschulter strebt, ohne den Wert je zu erreichen. Der Regler, der den Fenstereindruck tatsächlich bestimmt: Bei `0.98` landet der Himmel dicht unter Weiß und wird zu blassem Cyan (Sättigung 0,141), bei `0.82` behält er Farbe und Verlauf (0,174). In der Oberfläche der Regler **Fensterhelligkeit**. |
 
 #### Warum Tiefen und Lichter getrennt gestaucht werden
 
@@ -544,9 +545,9 @@ Ergebnis mit diesen Werten bei 0,78 bis 1,20 des Vorbilds.
 
 | Parameter | Standard | Wirkung |
 |---|---|---|
-| `--clarity` | `1.0` | Lokaler Kontrast über den Guided Filter. Kantenbewusst, damit an harten Kontrastkanten (Fensterrahmen gegen helle Aussicht) keine hellen Säume entstehen. `0` = aus. |
+| `--clarity` | `0.6` | Lokaler Kontrast über den Guided Filter. Kantenbewusst, damit an harten Kontrastkanten (Fensterrahmen gegen helle Aussicht) keine hellen Säume entstehen. `0` = aus. |
 | `--clarity-radius` | `0.005` | Radius als Anteil der Bildbreite. |
-| `--sharpen` | `1.2` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
+| `--sharpen` | `0.7` | Capture Sharpening. Gleicht die Weichheit aus, die jede RAW-Entwicklung durch Demosaicing mitbringt — kein Kreativ-Effekt. `0` = aus. |
 | `--sharpen-radius` | `1.0` | Radius **in Pixeln**, nicht als Anteil der Bildbreite. Die auszugleichende Unschärfe stammt aus Demosaicing und Sensor-Tiefpass und ist eine feste Pixel-Eigenschaft – sie wird nicht größer, nur weil der Sensor mehr Megapixel hat. Siehe die Messung unten. |
 
 #### Warum der Schärfe-Radius absolut ist

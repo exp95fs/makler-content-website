@@ -209,19 +209,30 @@ REGLER = [
            "Wie hell der Raum insgesamt wird.", 0.42, 0.80, 0.587),
     Regler("kontrast", "--tone-contrast", "Kontrast",
            "Die am Vorbild gemessene Kennlinie. 0 = flach.", 0.0, 1.5, 1.0),
+    # Beide bewusst niedriger als frueher. Am lokalen Kontrast gemessen lag
+    # das Ergebnis mit den alten Werten 21 Prozent UEBER dem kommerziellen
+    # Vorbild (0.0357 gegenueber 0.0295) - also nicht zu weich, sondern zu
+    # hart. Die "uebersteuerten Kanten" kamen von hier.
     Regler("zeichnung", "--clarity", "Zeichnung",
-           "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 1.0),
+           "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 0.6),
     Regler("schaerfe", "--sharpen", "Schaerfe",
-           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.5, 1.2),
+           "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.5, 0.7),
     # Der Regler, der beim Weg ueber die Strahlungskarte an die Stelle der
     # gesamten Fensterbehandlung tritt. Kleiner = hellerer Raum, ohne dass
     # die Fenster ausbrennen - das leistet keine globale Kurve.
     Regler("raum", "--hdr-compression", "Helligkeit des Raums",
            "Reine Belichtung - der Raum bleibt so, wie die Kamera ihn "
-           "gesehen hat.", 0.25, 0.70, 0.45),
+           "gesehen hat.", 0.25, 0.85, 0.62),
     Regler("fenster", "--hdr-knee", "Fenster zurueckholen",
            "Ab hier werden die Lichter gestaucht. Darunter passiert "
-           "nichts. Tiefer = dichtere Fenster.", 0.25, 0.75, 0.45),
+           "nichts. Tiefer = dichtere Fenster.", 0.25, 0.85, 0.60),
+    # Der Regler, der den Fenstereindruck tatsaechlich bestimmt. Zu hoch
+    # eingestellt landet der Himmel dicht unter Weiss und wird zu blassem
+    # Cyan - genau der "matschige" Fenstereindruck. Bei 0.82 behaelt er
+    # Farbe und Verlauf (Saettigung 0.174 statt 0.141 bei 0.98).
+    Regler("fensterhelligkeit", "--hdr-highlight", "Fensterhelligkeit",
+           "Wo die Fenster landen. Hoeher = heller, aber blasser.",
+           0.65, 0.95, 0.82),
     # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
     # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
     # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,

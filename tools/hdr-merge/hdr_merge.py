@@ -235,9 +235,25 @@ TONEMAP_KANTENSCHAERFE = 0.04
 # wird. Bewusst ueber dem Median: Fenster und Lampen belegen den oberen
 # Rand und wuerden den Median nach oben verziehen.
 RAUMNIVEAU_PERZENTIL = 60.0
-# Wie stark oberhalb des Knies gestaucht wird, im Logarithmus. Klein genug,
-# dass auch ein Fenster acht Blendenstufen ueber dem Raum im Bild landet.
-LICHTER_STAUCHUNG = 0.18
+# Die Lichterschulter arbeitet nicht mehr mit einem festen Stauchfaktor.
+#
+# Vorher wurde alles oberhalb des Knies linear auf 18 Prozent gestaucht -
+# auch der Kontrast INNERHALB des Fensters. Wolken vor blauem Himmel liegen
+# beide oberhalb des Knies; ihr Unterschied wurde damit ebenfalls
+# gefuenftelt, und das Fenster wurde zu einer blassen, gleichmaessigen
+# Flaeche. Genau das war der "matschige" Fenstereindruck: kein
+# Schaerfeproblem, sondern zerstoerter Kontrast.
+#
+# Die Schulter ist stattdessen asymptotisch:
+#
+#     neu = knie + kopf * (1 - exp(-(alt - knie) / kopf))
+#
+# Am Knie ist ihre Steigung exakt 1.0 - dort bleibt der Kontrast also
+# vollstaendig erhalten. Erst weit darueber flacht sie ab (eine Blende
+# ueber dem Knie noch 42 Prozent, zwei Blenden 18 Prozent) und naehert
+# sich der Decke, ohne sie je zu erreichen. Ausbrennen ist damit
+# mathematisch ausgeschlossen, und die Zeichnung dicht oberhalb des
+# Knies - Wolken, Dachziegel, Laub - bleibt erhalten.
 
 # Ab hier wird das Grundbild beim Einsetzen des Fensterinhalts weich in die
 # Anzeigegrenze gerollt. Bewusst dicht unter 1.0: Angetastet wird nur, was
@@ -870,7 +886,20 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
         # geclipptes Pixel keine Information mehr traegt - sein Wert ist
         # nur die untere Schranke der wahren Helligkeit.
         gewicht = np.exp(-((lum - 0.5) ** 2) / (2.0 * BELICHTUNGSGUETE_BREITE ** 2))
-        gewicht = np.where((lum < 0.005) | (lum > 0.995), 0.0, gewicht)
+        # Geprueft wird KANALWEISE, nicht ueber die Luminanz.
+        #
+        # Ein Pixel, dessen Gruenkanal bei 1.0 ansteht, waehrend Rot und
+        # Blau bei 0.6 liegen, hat eine Luminanz von rund 0.8 - es galt
+        # damit als bestens belichtet und ging mit hohem Gewicht in die
+        # Rechnung ein, obwohl sein Gruenwert nur noch eine untere
+        # Schranke ist. An einer echten Kuechenszene betraf das 0.6 bis
+        # 0.7 Prozent der Pixel, praktisch alle in den Fenstern: genau
+        # dort, wo es am meisten schadet. Das Ergebnis waren blasse,
+        # farbverschobene Fensterinhalte.
+        hoechster = bild.max(axis=2)
+        niedrigster = bild.min(axis=2)
+        gewicht = np.where((niedrigster < 0.005) | (hoechster > 0.99),
+                           0.0, gewicht)
         # Geprueft und verworfen: Eine zusaetzliche Gewichtung nach
         # Signalqualitaet (Debevec/Robertson, laengere Belichtung hoeher
         # gewichtet) brachte hier nichts - das Rauschen stieg sogar leicht
@@ -894,7 +923,8 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     detail: float, radius_anteil: float,
                     protokoll: list[tuple[int, str]],
-                    knie: float = 0.45) -> np.ndarray:
+                    knie: float = 0.45,
+                    decke: float = 0.98) -> np.ndarray:
     """Belichten wie ein Fotograf, dann nur die Lichter zurueckholen.
 
     Das ist bewusst KEIN Tonemapping ueber den ganzen Umfang. Der Weg
@@ -953,10 +983,13 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
     feinzeichnung = (log - basis) * float(detail)
 
     knie_log = float(np.log2(max(knie, 1e-3)))
+    decke_log = float(np.log2(max(decke, knie + 1e-3)))
+    kopf = max(decke_log - knie_log, 1e-3)
     ueber = basis > knie_log
-    basis_neu = np.where(ueber,
-                         knie_log + (basis - knie_log) * LICHTER_STAUCHUNG,
-                         basis)
+    basis_neu = np.where(
+        ueber,
+        knie_log + kopf * (1.0 - np.exp(-(basis - knie_log) / kopf)),
+        basis)
 
     lum_neu = np.exp2(basis_neu + feinzeichnung)
     # Wie ueberall im Programm: gemeinsamer Faktor auf alle drei Kanaele,
@@ -966,8 +999,9 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
 
     protokoll.append((logging.DEBUG,
                       f"Belichtung auf Raumniveau {niveau:.4f} -> "
-                      f"{kompression:.2f}, Lichter ab {knie:.2f} gestaucht "
-                      f"({float(ueber.mean()) * 100:.1f} % der Flaeche)"))
+                      f"{kompression:.2f}, Lichterschulter ab {knie:.2f} "
+                      f"bis {decke:.2f} ({float(ueber.mean()) * 100:.1f} % "
+                      f"der Flaeche)"))
     return ergebnis
 
 
@@ -2792,7 +2826,7 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         bilder.clear()
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
-                                   args.hdr_knee)
+                                   args.hdr_knee, args.hdr_highlight)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3178,11 +3212,11 @@ def baue_parser() -> argparse.ArgumentParser:
                          "rekonstruieren und lokal tonemappen. `off` faellt "
                          "auf die alte Belichtungsfusion mit Fenstermaske "
                          "zurueck.")
-    hd.add_argument("--hdr-compression", type=float, default=0.45,
+    hd.add_argument("--hdr-compression", type=float, default=0.62,
                     help="Helligkeit des Raums. Ein reiner Belichtungsfaktor "
                          "- er veraendert keine Tonwertverhaeltnisse, der "
                          "Raum bleibt so, wie die Kamera ihn gesehen hat.")
-    hd.add_argument("--hdr-knee", type=float, default=0.45,
+    hd.add_argument("--hdr-knee", type=float, default=0.60,
                     help="Ab welcher Helligkeit die Lichter zurueckgeholt "
                          "werden. Darunter passiert NICHTS - der Raum bleibt "
                          "unangetastet. Tiefer = dichtere Fenster.")
@@ -3191,6 +3225,10 @@ def baue_parser() -> argparse.ArgumentParser:
     hd.add_argument("--hdr-radius", type=float, default=0.02,
                     help="Radius der Trennung von Beleuchtung und Zeichnung, "
                          "als Anteil der Bildbreite.")
+    hd.add_argument("--hdr-highlight", type=float, default=0.82,
+                    help="Wo die Fenster landen sollen. Die Lichterschulter "
+                         "naehert sich diesem Wert an, ohne ihn zu erreichen. "
+                         "Hoeher = hellere, blassere Fenster.")
 
     w = p.add_argument_group("Window Pull (nur bei --hdr off)")
     w.add_argument("--window-strength", type=float, default=1.0,
@@ -3274,13 +3312,13 @@ def baue_parser() -> argparse.ArgumentParser:
                    help="Staerke des globalen Weissabgleichs (0 = aus)")
 
     z = p.add_argument_group("Zeichnung und Schaerfe")
-    z.add_argument("--clarity", type=float, default=1.0,
+    z.add_argument("--clarity", type=float, default=0.6,
                    help="Lokaler Kontrast. Holt die Zeichnung zurueck, die "
                         "das Aufhellen kostet (0 = aus).")
     z.add_argument("--clarity-radius", type=float, default=0.005,
                    help="Radius des lokalen Kontrasts als Anteil der "
                         "Bildbreite.")
-    z.add_argument("--sharpen", type=float, default=1.2,
+    z.add_argument("--sharpen", type=float, default=0.7,
                    help="Capture Sharpening. Gleicht die Weichheit der "
                         "RAW-Entwicklung aus (0 = aus).")
     z.add_argument("--sharpen-radius", type=float, default=1.0,
