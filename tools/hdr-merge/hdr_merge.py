@@ -957,7 +957,8 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     knie: float = 1.0,
                     fensterziel: float = 0.45,
                     fensterkontrast: float = 0.55,
-                    saettigung: float = 0.65) -> np.ndarray:
+                    saettigung: float = 0.65,
+                    lokal: bool = False) -> np.ndarray:
     """Belichten wie ein Fotograf - und die Fenster wie von Hand freistellen.
 
     Der entscheidende Punkt: Ein Fenster ist physikalisch drei bis vier
@@ -1058,8 +1059,27 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                        0.0, 1.0)
     struktur = (struktur * struktur * (3.0 - 2.0 * struktur)).astype(np.float32)
     t = t * struktur
-    gezogen = ziel_log + (beleuchtung - knie_log) * FENSTER_RESTSTEIGUNG
-    beleuchtung_neu = beleuchtung * (1.0 - t) + gezogen * t
+    # Der ortsabhaengige Zug ist standardmaessig AUS.
+    #
+    # Er war der Versuch, die Fensterflaeche auf Raumhelligkeit zu bringen -
+    # etwas, das eine globale Kennlinie nicht kann. Er leistet das auch,
+    # aber er tut es ueber eine weiche Maske, und Masken haben hier immer
+    # denselben Fehler: Sie folgen keiner Objektkante. Uebrig bleibt ein
+    # Saum - ein dunkler Hof rund um kleine Fenster, ein grauer Streifen auf
+    # der Decke daneben. Genau daran ist der maskenbasierte Vorgaenger schon
+    # einmal gescheitert; ueber das Tonemapping ist dasselbe Problem durch
+    # die Hintertuer zurueckgekommen.
+    #
+    # Ein Saum macht ein Bild unbrauchbar. Ein Fenster, das etwas heller
+    # bleibt als der Raum, macht es nur weniger gut. Deshalb ist die
+    # Voreinstellung der saubere Weg, und der Zug bleibt als Schalter fuer
+    # den Fall erhalten, dass jemand ihn bewusst will.
+    if lokal:
+        gezogen = ziel_log + (beleuchtung - knie_log) * FENSTER_RESTSTEIGUNG
+        beleuchtung_neu = beleuchtung * (1.0 - t) + gezogen * t
+    else:
+        t = np.zeros_like(t)
+        beleuchtung_neu = beleuchtung
 
     # 4. Der Inhalt wird nur draussen gestaucht, die Textur nie.
     anteil = (1.0 - t * (1.0 - float(fensterkontrast))).astype(np.float32)
@@ -2947,7 +2967,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
                                    args.hdr_detail, args.hdr_radius, protokoll,
                                    args.hdr_knee, args.hdr_highlight,
                                    args.hdr_window_contrast,
-                                   args.hdr_saturation)
+                                   args.hdr_saturation,
+                                   args.hdr_local == "on")
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3354,6 +3375,11 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
                          "dichtere Fenster.")
+    hd.add_argument("--hdr-local", choices=["on", "off"], default="off",
+                    help="Ortsabhaengiger Zug der Fensterflaeche auf "
+                         "Raumhelligkeit. Bringt die Fenster deutlich "
+                         "dichter, arbeitet dafuer ueber eine weiche Maske "
+                         "und hinterlaesst an kleinen Fenstern einen Saum.")
     hd.add_argument("--hdr-saturation", type=float, default=0.65,
                     help="Wie stark die Farbe draussen zurueckgenommen "
                          "wird. 1.0 = Kanalverhaeltnis exakt erhalten, dann "

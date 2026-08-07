@@ -163,7 +163,19 @@ class TestSynthetischeSzene(unittest.TestCase):
     # -- Kernnachweis: Window Pull ----------------------------------------
 
     def test_window_pull_bringt_zeichnung_zurueck(self):
-        """Streuung im ausgebrannten Fensterbereich muss deutlich steigen."""
+        """Streuung im ausgebrannten Fensterbereich muss deutlich steigen.
+
+        Das ist der Kernnachweis des Werkzeugs: Was in der mittleren
+        Belichtung weiss ist, muss im Ergebnis Zeichnung haben.
+
+        Geprueft wird die VOREINSTELLUNG - also ohne den ortsabhaengigen
+        Zug. Der Zug bringt mehr (siehe den folgenden Test), arbeitet aber
+        ueber eine weiche Maske und hinterlaesst an kleinen Fenstern einen
+        Saum. Ein Saum macht ein Bild unbrauchbar, ein etwas helleres
+        Fenster nur weniger gut - deshalb ist der saubere Weg die
+        Voreinstellung, und dieser Test haelt fest, was sie mindestens
+        leistet.
+        """
         for name, box in (("Himmel", HIMMEL), ("Haeuserzeile", HAEUSER)):
             with self.subTest(bereich=name):
                 std_ref = float(_bereich(self.lum_referenz, box).std())
@@ -171,12 +183,29 @@ class TestSynthetischeSzene(unittest.TestCase):
                 self.assertLess(std_ref, 0.002,
                                 "Testszene: Bereich ist im Referenzbild nicht "
                                 "ausgebrannt, der Test waere aussagelos")
-                self.assertGreater(std_erg, 0.005,
+                self.assertGreater(std_erg, 0.003,
                                    f"{name}: keine messbare Zeichnung im "
                                    f"Ergebnis")
                 self.assertGreater(std_erg, std_ref * 8.0,
                                    f"{name}: Zeichnung nicht deutlich ueber "
                                    f"dem Referenzbild")
+
+    def test_ortsabhaengiger_zug_bringt_mehr_zeichnung(self):
+        """--hdr-local on holt messbar mehr aus dem Fenster heraus.
+
+        Damit ist der Kompromiss dokumentiert statt verschwiegen: Der
+        Schalter leistet mehr, der Preis ist der Saum an kleinen Fenstern.
+        """
+        lauf = SzenenLauf(["--hdr-local", "on"])
+        try:
+            lum = hdr_merge.berechne_luminanz(lauf.ergebnis)
+            mit = float(_bereich(lum, HAEUSER).std())
+            ohne = float(_bereich(self.lum_ergebnis, HAEUSER).std())
+            self.assertGreater(mit, ohne * 1.2,
+                               "Der ortsabhaengige Zug bringt keine "
+                               "messbar bessere Fensterzeichnung")
+        finally:
+            lauf.aufraeumen()
 
     def test_fenster_brennt_nicht_erneut_aus(self):
         fenster = _bereich(self.lum_ergebnis, FENSTER)
