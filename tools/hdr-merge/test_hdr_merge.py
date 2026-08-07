@@ -183,7 +183,22 @@ class TestSynthetischeSzene(unittest.TestCase):
                 self.assertLess(std_ref, 0.002,
                                 "Testszene: Bereich ist im Referenzbild nicht "
                                 "ausgebrannt, der Test waere aussagelos")
-                self.assertGreater(std_erg, 0.003,
+                # Der absolute Wert ist nur eine Untergrenze gegen "gar
+                # nichts" - die eigentliche Aussage steckt im Verhaeltnis
+                # zum Referenzbild darunter.
+                #
+                # Er wurde zweimal gesenkt, und beide Male aus einem Grund,
+                # der hier stehen soll statt in der Versionsgeschichte zu
+                # verschwinden:
+                #   0.005 -> 0.003  als der ortsabhaengige Zug abgeschaltet
+                #                   wurde (er war eine Maske, siehe dort)
+                #   0.003 -> 0.002  als die Farbbearbeitung abgeschaltet
+                #                   wurde. Ein Teil der bis dahin
+                #                   gemessenen "Zeichnung" war gar keine:
+                #                   Der ortsabhaengige Weissabgleich hat
+                #                   Farbschwankungen erzeugt, die als
+                #                   Luminanzstreuung mitgezaehlt wurden.
+                self.assertGreater(std_erg, 0.002,
                                    f"{name}: keine messbare Zeichnung im "
                                    f"Ergebnis")
                 self.assertGreater(std_erg, std_ref * 8.0,

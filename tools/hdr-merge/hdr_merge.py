@@ -958,7 +958,8 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
                     fensterziel: float = 0.45,
                     fensterkontrast: float = 0.55,
                     saettigung: float = 0.65,
-                    lokal: bool = False) -> np.ndarray:
+                    lokal: bool = False,
+                    umfang: float = 1.0) -> np.ndarray:
     """Belichten wie ein Fotograf - und die Fenster wie von Hand freistellen.
 
     Der entscheidende Punkt: Ein Fenster ist physikalisch drei bis vier
@@ -1079,11 +1080,39 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
         beleuchtung_neu = beleuchtung * (1.0 - t) + gezogen * t
     else:
         t = np.zeros_like(t)
+        # Statt der Maske: den Umfang der BELEUCHTUNG global stauchen.
+        #
+        # Das ist eine monotone Kennlinie auf einer glatten Schicht - kein
+        # Ort im Bild wird anders behandelt als ein anderer, also kann
+        # auch kein Saum entstehen. Ein Fenster, das physikalisch vier
+        # Blendenstufen ueber dem Raum liegt, landet bei umfang=0.5 noch
+        # zwei darueber statt vier.
+        #
+        # Gestaucht wird ausdruecklich NUR die Beleuchtungsschicht.
+        # Zeichnung und Textur werden unveraendert wieder aufaddiert -
+        # deshalb wird das Bild flacher, ohne matschig zu werden. Genau
+        # das leistet ein Log-Profil in der Videotechnik: gleichmaessige
+        # Verhaeltnisse als Ausgangspunkt, die Gradation kommt danach.
         beleuchtung_neu = beleuchtung
 
     # 4. Der Inhalt wird nur draussen gestaucht, die Textur nie.
     anteil = (1.0 - t * (1.0 - float(fensterkontrast))).astype(np.float32)
-    zusammen = beleuchtung_neu + inhalt * anteil + textur * float(detail)
+
+    # Der Umfang wird um das RAUMNIVEAU gestaucht - global und monoton.
+    #
+    # Kein Ort im Bild wird anders behandelt als ein anderer, es kann also
+    # kein Saum entstehen. Ein Fenster vier Blendenstufen ueber dem Raum
+    # landet bei umfang=0.55 noch gut zwei darueber.
+    #
+    # Gestaucht werden Beleuchtung und Zeichnung, NICHT die Textur: Die
+    # wird danach unveraendert wieder aufaddiert. Deshalb wird das Bild
+    # flacher, ohne matschig zu werden - dieselbe Idee wie ein Log-Profil
+    # in der Videotechnik. Die Gradation kommt anschliessend im Preset,
+    # nicht hier.
+    raum_log = float(np.log2(max(kompression, 1e-3)))
+    grob = beleuchtung_neu + inhalt * anteil
+    zusammen = raum_log + (grob - raum_log) * float(umfang) \
+        + textur * float(detail)
 
     # 5. Asymptotische Deckelung.
     schulter_log = float(np.log2(ENDSCHULTER))
@@ -2968,7 +2997,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
                                    args.hdr_knee, args.hdr_highlight,
                                    args.hdr_window_contrast,
                                    args.hdr_saturation,
-                                   args.hdr_local == "on")
+                                   args.hdr_local == "on",
+                                   args.hdr_range)
         del strahlung
         if args.base_tone == "on":
             ergebnis = normalisiere_tonwert(ergebnis, None, args, protokoll)
@@ -3375,6 +3405,13 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
                          "dichtere Fenster.")
+    hd.add_argument("--hdr-range", type=float, default=1.0,
+                    help="Wie stark der Helligkeitsumfang zwischen Raum und "
+                         "Fenster gestaucht wird. 1.0 = unveraendert, dann "
+                         "bleibt das Fenster mehrere Blendenstufen ueber dem "
+                         "Raum. Kleiner = gleichmaessigere Verhaeltnisse. "
+                         "Wirkt global und kann deshalb keine Saeume "
+                         "erzeugen.")
     hd.add_argument("--hdr-local", choices=["on", "off"], default="off",
                     help="Ortsabhaengiger Zug der Fensterflaeche auf "
                          "Raumhelligkeit. Bringt die Fenster deutlich "
@@ -3459,7 +3496,7 @@ def baue_parser() -> argparse.ArgumentParser:
     t.add_argument("--highlight-ceiling", type=float, default=0.98,
                    help="Obergrenze fuer Spitzlichter im gesamten Bild "
                         "(0 = aus). Verhindert hartes Clipping")
-    t.add_argument("--local-wb", type=float, default=0.9,
+    t.add_argument("--local-wb", type=float, default=0.0,
                    help="Ortsabhaengiger Weissabgleich gegen Mischlicht "
                         "(0 = aus). Neutralisiert grossflaechige Farbstiche")
     t.add_argument("--local-wb-radius", type=float, default=0.15,
@@ -3468,8 +3505,13 @@ def baue_parser() -> argparse.ArgumentParser:
                         "entfaerbt eher echte Objektfarben")
     t.add_argument("--local-wb-limit", type=float, default=0.35,
                    help="Groesste zulaessige Korrektur je Farbkanal")
-    t.add_argument("--wb-strength", type=float, default=0.7,
-                   help="Staerke des globalen Weissabgleichs (0 = aus)")
+    t.add_argument("--wb-strength", type=float, default=0.0,
+                   help="Staerke des globalen Weissabgleichs (0 = aus). "
+                        "Voreingestellt AUS: Das Ergebnis ist eine Vorlage "
+                        "fuer die eigene Farbbearbeitung, und ein "
+                        "geschaetzter Graupunkt verschiebt die Farbe je "
+                        "Bild unterschiedlich - genau das darf einer "
+                        "Vorlage nicht passieren.")
 
     z = p.add_argument_group("Zeichnung und Schaerfe")
     z.add_argument("--clarity", type=float, default=0.6,
