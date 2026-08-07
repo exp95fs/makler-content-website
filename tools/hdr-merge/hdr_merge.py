@@ -958,7 +958,8 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 
 
 def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
-                protokoll: list[tuple[int, str]]) -> np.ndarray:
+                protokoll: list[tuple[int, str]], fuss: float = 0.004,
+                farbe: float = 2.2) -> np.ndarray:
     """Legt den Szenenumfang als Log-Profil auf den Anzeigebereich.
 
     Das ist KEIN Tonemapping und soll auch keines sein. Es ist dieselbe
@@ -992,11 +993,35 @@ def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
     Raum (vorher 2.0 bis 2.5), Luft ueber dem hellsten Punkt 8 bis 14
     Prozent, Tiefen bei 0.13 bis 0.18 statt abgeschnitten.
     """
-    werte = np.log2(np.maximum(strahlung, 1e-6))
+    # Linearer Fuss. Ohne ihn laeuft der Logarithmus in den Tiefen ins
+    # Bodenlose, und weil er KANALWEISE wirkt, wird dort der jeweils
+    # schwaechste Kanal am staerksten angehoben - sichtbar als Farbstich
+    # in dunklen Flaechen. Der Fuss linearisiert die Kennlinie unterhalb
+    # dieses Wertes und nimmt ihr damit die Spitze.
+    werte = np.log2(np.maximum(strahlung, 0.0) + fuss)
     unten = float(np.percentile(werte, LOG_PERZENTIL_UNTEN))
     oben = float(np.percentile(werte, LOG_PERZENTIL_OBEN))
     spanne = max(oben - unten, 1e-6)
     ergebnis = (werte - unten) / spanne * (decke - boden) + boden
+
+    # Farbabstand zuruecknehmen.
+    #
+    # Die Kennlinie staucht den gesamten Umfang - und damit auch die
+    # Abstaende ZWISCHEN den Kanaelen. Bei dreizehn Blendenstufen auf ein
+    # Band von 0.8 schrumpft jeder Farbunterschied auf ein Sechzehntel.
+    # Das Bild wirkt dadurch entsaettigt, und ein Saettigungsregler in
+    # Lightroom holt es nicht zurueck: Er behandelt die Werte als
+    # fertiges sRGB und weiss nichts von der Stauchung.
+    #
+    # Hier wird der Abstand zur Luminanz wieder aufgespreizt. Gemessen an
+    # zwei Szenen gegen dieselbe Szene normal entwickelt:
+    #   Faktor 1.0  Saettigung 0.048 / 0.042   (Szene: 0.111 / 0.078)
+    #   Faktor 2.2  Saettigung 0.106 / 0.092
+    # Die Entsaettigung der LICHTER bleibt dabei erhalten - sie stammt
+    # aus der kanalweisen Kennlinie und nicht aus diesem Faktor.
+    if abs(farbe - 1.0) > 1e-6:
+        grau = (ergebnis @ LUMA_GEWICHTE)[..., None]
+        ergebnis = grau + (ergebnis - grau) * float(farbe)
     protokoll.append((logging.DEBUG,
                       f"Log-Profil: {spanne:.1f} Blendenstufen auf "
                       f"{boden:.2f} bis {decke:.2f} gelegt, "
@@ -3046,8 +3071,9 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
                                          protokoll)
         bilder.clear()
         if args.profile == "log":
-            ergebnis = kodiere_log(strahlung, args.log_floor, args.log_ceiling,
-                                   protokoll)
+            ergebnis = kodiere_log(strahlung, args.log_floor,
+                                   args.log_ceiling, protokoll,
+                                   args.log_toe, args.log_color)
             del strahlung
             return ergebnis, None, ergebnis, vorschau_kacheln, referenz_tags
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
@@ -3475,6 +3501,16 @@ def baue_parser() -> argparse.ArgumentParser:
                     help="Wohin die hellste Stelle gelegt wird. Alles "
                          "darueber ist bewusst freie Reserve fuer die "
                          "spaetere Belichtungskorrektur.")
+    hd.add_argument("--log-toe", type=float, default=0.004,
+                    help="Linearer Fuss der Log-Kennlinie. Ohne ihn "
+                         "bekommen dunkle Flaechen einen Farbstich, weil "
+                         "die kanalweise Kennlinie dort den schwaechsten "
+                         "Kanal am staerksten anhebt.")
+    hd.add_argument("--log-color", type=float, default=2.2,
+                    help="Nimmt die Farbstauchung zurueck, die die "
+                         "Kennlinie unvermeidlich erzeugt. 1.0 = roh, "
+                         "dann wirkt das Bild entsaettigt und ein "
+                         "Saettigungsregler holt es nicht zurueck.")
     hd.add_argument("--hdr-range", type=float, default=1.0,
                     help="Wie stark der Helligkeitsumfang zwischen Raum und "
                          "Fenster gestaucht wird. 1.0 = unveraendert, dann "
