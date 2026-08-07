@@ -211,16 +211,19 @@ class TestSynthetischeSzene(unittest.TestCase):
         Damit ist der Kompromiss dokumentiert statt verschwiegen: Der
         Schalter leistet mehr, der Preis ist der Saum an kleinen Fenstern.
         """
-        lauf = SzenenLauf(["--hdr-local", "on"])
+        lauf = SzenenLauf(["--profile", "bild", "--hdr-local", "on"])
+        ohne_lauf = SzenenLauf(["--profile", "bild"])
         try:
             lum = hdr_merge.berechne_luminanz(lauf.ergebnis)
             mit = float(_bereich(lum, HAEUSER).std())
-            ohne = float(_bereich(self.lum_ergebnis, HAEUSER).std())
+            ohne = float(_bereich(
+                hdr_merge.berechne_luminanz(ohne_lauf.ergebnis), HAEUSER).std())
             self.assertGreater(mit, ohne * 1.2,
                                "Der ortsabhaengige Zug bringt keine "
                                "messbar bessere Fensterzeichnung")
         finally:
             lauf.aufraeumen()
+            ohne_lauf.aufraeumen()
 
     def test_fenster_brennt_nicht_erneut_aus(self):
         fenster = _bereich(self.lum_ergebnis, FENSTER)
@@ -280,7 +283,10 @@ class TestSynthetischeSzene(unittest.TestCase):
         darstellbaren Bereich. Geprueft wird deshalb, was der neue Weg
         zusagt - nicht die alten Zielwerte.
         """
-        lauf = SzenenLauf(["--clarity", "0", "--sharpen", "0"])
+        # Auf den Bild-Weg festgenagelt: Voreingestellt ist das Log-Profil,
+        # und das setzt die Lage bewusst anders (siehe TestLogProfil).
+        lauf = SzenenLauf(["--profile", "bild", "--clarity", "0",
+                           "--sharpen", "0"])
         try:
             lum = hdr_merge.berechne_luminanz(lauf.ergebnis)
             roh = hdr_merge.berechne_luminanz(lauf.belichtung(2))
@@ -1387,3 +1393,54 @@ class TestReadmeStimmtMitDenSchaltern(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class TestLogProfil(unittest.TestCase):
+    """Die Zusage der Voreinstellung: gleichmaessige Verteilung mit Reserve.
+
+    Das Log-Profil ist ausdruecklich kein fertiges Bild. Es ist die
+    Vorlage fuer die eigene Gradation, und was es dafuer leisten muss,
+    steht hier - nicht "sieht gut aus", sondern nachpruefbare Eigenschaften.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.lauf = SzenenLauf()          # Voreinstellung = Log-Profil
+        cls.lum = hdr_merge.berechne_luminanz(cls.lauf.ergebnis)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.lauf.aufraeumen()
+
+    def test_luft_nach_oben(self):
+        """Der eigentliche Zweck: Aufhellen darf die Fenster nicht ausbrennen.
+
+        Genau daran ist der frueher voreingestellte Weg gescheitert - er
+        belichtete den Raum auf ein Zielniveau und stauchte den Rest,
+        wodurch das Fenster oben am Anschlag lag. Wer dann die Belichtung
+        anhob, brannte es aus.
+        """
+        vorgabe = hdr_merge.baue_parser().parse_args(["a", "b"])
+        self.assertLessEqual(float(self.lum.max()), vorgabe.log_ceiling + 0.08,
+                             "Kein Spielraum ueber dem hellsten Punkt")
+
+    def test_eine_halbe_blende_mehr_brennt_nicht_aus(self):
+        """Die Zusage direkt nachgestellt, statt sie nur zu behaupten."""
+        heller = np.clip(self.lauf.ergebnis * np.float32(1.41), 0.0, 1.0)
+        anteil = float((hdr_merge.berechne_luminanz(heller) > 0.995).mean())
+        self.assertLess(anteil, 0.01,
+                        f"Eine halbe Blende heller brennt bereits "
+                        f"{anteil * 100:.1f} % der Flaeche aus")
+
+    def test_tiefen_bleiben_erhalten(self):
+        self.assertGreater(float(np.percentile(self.lum, 0.5)), 0.02,
+                           "Die Tiefen sind abgeschnitten")
+
+    def test_kanalweise_und_damit_monoton(self):
+        """Punktweise Kennlinie - deshalb koennen keine Saeume entstehen."""
+        werte = np.linspace(1e-4, 4.0, 512, dtype=np.float32)
+        feld = np.repeat(werte.reshape(1, -1, 1), 4, axis=0)
+        feld = np.repeat(feld, 3, axis=2)
+        aus = hdr_merge.kodiere_log(feld, 0.06, 0.85, [])
+        self.assertTrue(bool(np.all(np.diff(aus[0, :, 0]) >= -1e-7)),
+                        "Die Log-Kennlinie ist nicht monoton")

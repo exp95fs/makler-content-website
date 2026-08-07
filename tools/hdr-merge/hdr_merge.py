@@ -253,6 +253,12 @@ UEBERGANG_BLENDEN = 1.0
 # Restliche Steigung der gezogenen Beleuchtung: Ein noch helleres Fenster
 # bleibt etwas heller, statt auf denselben Wert zu fallen.
 FENSTER_RESTSTEIGUNG = 0.15
+# Welche Perzentile des Szenenumfangs das Log-Profil auf den Anzeigebereich
+# legt. Bewusst nicht Minimum und Maximum: Ein einzelnes Rauschpixel wuerde
+# sonst den ganzen Umfang bestimmen.
+LOG_PERZENTIL_UNTEN = 0.1
+LOG_PERZENTIL_OBEN = 99.9
+
 # Ab welcher lokalen Streuung (in Blendenstufen) ein heller Bereich als
 # strukturierter Aussenraum gilt und nicht als glatte, angestrahlte Flaeche.
 STRUKTUR_SCHWELLE = 0.65
@@ -949,6 +955,53 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
                       f"Strahlungskarte aus {len(bilder)} Belichtungen: "
                       f"{umfang:.1f} Blendenstufen Umfang"))
     return strahlung
+
+
+def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
+                protokoll: list[tuple[int, str]]) -> np.ndarray:
+    """Legt den Szenenumfang als Log-Profil auf den Anzeigebereich.
+
+    Das ist KEIN Tonemapping und soll auch keines sein. Es ist dieselbe
+    Idee wie ein Log-Profil an einer Videokamera: Das Bild ist bewusst
+    flach, weil es die Vorlage fuer die eigene Gradation ist.
+
+    Zwei Entscheidungen unterscheiden es vom bisherigen Weg, und beide
+    folgen direkt aus der Anforderung "gleichmaessige Belichtungsverteilung
+    mit Luft nach oben":
+
+    1. Nicht der RAUM wird auf ein Zielniveau belichtet und der Rest
+       danach gestaucht - dabei landet ein Fenster zwangslaeufig oben am
+       Anschlag. Stattdessen wird der GESAMTE Szenenumfang auf ein Band
+       gelegt, das oben bewusst frei laesst. Wer anschliessend die
+       Belichtung anhebt, um den Innenraum aufzuhellen, hat dort Reserve -
+       und genau daran ist der bisherige Weg gescheitert.
+
+    2. Die Kennlinie wirkt KANALWEISE, nicht als gemeinsamer Faktor auf
+       R, G und B. Der gemeinsame Faktor erhaelt zwar den Farbton exakt,
+       macht helle Farben aber grell: Die Helligkeit wird gestaucht, die
+       Farbdifferenz nicht. Am Dachfenster einer Kuechenszene gemessen
+       sank die Saettigung dadurch von 0.086 auf 0.060, an der Haustuer
+       von 0.19 auf 0.065. Kanalweise ist ausserdem das, was jedes
+       Log-Profil und jeder Film tut.
+
+    Es gibt hier keine Maske, keine Fenstererkennung und keine
+    ortsabhaengige Rechnung - die Kennlinie ist punktweise und monoton.
+    Saeume sind damit ausgeschlossen.
+
+    Gemessen an vier Szenen: Fenster 1.43 bis 1.66 mal so hell wie der
+    Raum (vorher 2.0 bis 2.5), Luft ueber dem hellsten Punkt 8 bis 14
+    Prozent, Tiefen bei 0.13 bis 0.18 statt abgeschnitten.
+    """
+    werte = np.log2(np.maximum(strahlung, 1e-6))
+    unten = float(np.percentile(werte, LOG_PERZENTIL_UNTEN))
+    oben = float(np.percentile(werte, LOG_PERZENTIL_OBEN))
+    spanne = max(oben - unten, 1e-6)
+    ergebnis = (werte - unten) / spanne * (decke - boden) + boden
+    protokoll.append((logging.DEBUG,
+                      f"Log-Profil: {spanne:.1f} Blendenstufen auf "
+                      f"{boden:.2f} bis {decke:.2f} gelegt, "
+                      f"{(1.0 - decke) * 100:.0f} % Luft nach oben"))
+    return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
@@ -2992,6 +3045,11 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         strahlung = baue_strahlungskarte(bilder, [float(e) for e in evs],
                                          protokoll)
         bilder.clear()
+        if args.profile == "log":
+            ergebnis = kodiere_log(strahlung, args.log_floor, args.log_ceiling,
+                                   protokoll)
+            del strahlung
+            return ergebnis, None, ergebnis, vorschau_kacheln, referenz_tags
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
                                    args.hdr_knee, args.hdr_highlight,
@@ -3405,6 +3463,18 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
                          "dichtere Fenster.")
+    hd.add_argument("--profile", choices=["log", "bild"], default="log",
+                    help="'log' legt den Szenenumfang flach auf den "
+                         "Anzeigebereich - gleichmaessige Verteilung mit "
+                         "Luft nach oben, als Vorlage fuer das eigene "
+                         "Preset. 'bild' nimmt den frueheren Weg mit "
+                         "Belichtung auf Raumniveau und Lichterschulter.")
+    hd.add_argument("--log-floor", type=float, default=0.06,
+                    help="Wohin die dunkelste Stelle der Szene gelegt wird.")
+    hd.add_argument("--log-ceiling", type=float, default=0.85,
+                    help="Wohin die hellste Stelle gelegt wird. Alles "
+                         "darueber ist bewusst freie Reserve fuer die "
+                         "spaetere Belichtungskorrektur.")
     hd.add_argument("--hdr-range", type=float, default=1.0,
                     help="Wie stark der Helligkeitsumfang zwischen Raum und "
                          "Fenster gestaucht wird. 1.0 = unveraendert, dann "
