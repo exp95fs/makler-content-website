@@ -230,12 +230,12 @@ REGLER = [
     # Arbeitsplatten und helle Waende.
     Regler("fenster", "--hdr-knee", "Was gilt als draussen",
            "Tiefer = mehr Flaechen werden als Fenster behandelt.",
-           0.60, 2.50, 1.0),
+           0.60, 2.50, 0.9),
     # Der Regler, der den Fenstereindruck bestimmt: die Helligkeit der
     # FLAECHE. Der Inhalt liegt darueber und darunter.
     Regler("fensterhelligkeit", "--hdr-highlight", "Fensterhelligkeit",
            "Wohin die Fensterflaeche gezogen wird. Tiefer = dichter.",
-           0.25, 0.80, 0.45),
+           0.25, 0.80, 0.40),
     Regler("fensterzeichnung", "--hdr-window-contrast", "Fensterzeichnung",
            "Wieviel Tonwertumfang das Fenster behaelt. Zu hoch = es "
            "brennt wieder aus.", 0.0, 1.0, 0.55),

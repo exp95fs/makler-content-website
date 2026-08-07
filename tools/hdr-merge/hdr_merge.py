@@ -243,16 +243,22 @@ BELICHTUNGSGUETE_BREITE = 0.22
 # 0.7 ist am Bild gewaehlt: Bei 2.0 legt sich ein sichtbarer Lichtschleier
 # ueber helle Innenflaechen (die Marmorplatte verliert ihre Maserung), bei
 # 0.7 bleibt sie erhalten und die Fenster werden trotzdem gezogen.
-BELEUCHTUNG_KANTEN = 0.7
+BELEUCHTUNG_KANTEN = 0.05
 INHALT_KANTEN = 0.15
 # Radius der Beleuchtungsschicht als Anteil der Bildbreite. Gross genug,
 # dass eine ganze Fensterflaeche als EIN Bereich gilt.
-BELEUCHTUNG_RADIUS_ANTEIL = 0.12
+BELEUCHTUNG_RADIUS_ANTEIL = 0.025
 # Ueber wie viele Blendenstufen der Uebergang "innen" -> "draussen" laeuft.
 UEBERGANG_BLENDEN = 1.0
 # Restliche Steigung der gezogenen Beleuchtung: Ein noch helleres Fenster
 # bleibt etwas heller, statt auf denselben Wert zu fallen.
 FENSTER_RESTSTEIGUNG = 0.15
+# Ab welcher lokalen Streuung (in Blendenstufen) ein heller Bereich als
+# strukturierter Aussenraum gilt und nicht als glatte, angestrahlte Flaeche.
+STRUKTUR_SCHWELLE = 0.65
+STRUKTUR_BREITE = 0.35
+STRUKTUR_RADIUS_ANTEIL = 0.012
+
 # Die abschliessende Deckelung. Asymptotisch - die Decke wird nie erreicht.
 ENDSCHULTER = 0.85
 ENDDECKE = 0.995
@@ -1020,6 +1026,38 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
     ziel_log = float(np.log2(max(fensterziel, 1e-3)))
     t = np.clip((beleuchtung - knie_log) / UEBERGANG_BLENDEN, 0.0, 1.0)
     t = (t * t * (3.0 - 2.0 * t)).astype(np.float32)
+
+    # Helligkeit allein reicht NICHT, um ein Fenster zu erkennen.
+    #
+    # An einer Kuechenszene gemessen, jeweils bezogen auf das Raumniveau:
+    #
+    #                        Median      Spitze
+    #   Decke um den Spot    +2.2        +2.8
+    #   Fenster              +1.8        +5.2
+    #
+    # Die angestrahlte Decke ist im MITTEL heller als das Fenster. Jede
+    # Helligkeitsschwelle, die das Fenster erfasst, erfasst die Decke mit -
+    # und zieht sie herunter. Das Ergebnis war ein weicher grauer Hof auf
+    # der weissen Decke, den kein Radius und kein Schwellwert beseitigt hat.
+    #
+    # Was die beiden trennt, ist der Tonwertumfang INNERHALB des Bereichs:
+    # Ein Fenster zeigt strukturierten Aussenraum, eine angestrahlte Decke
+    # einen glatten Verlauf. Gemessen als lokale Streuung im Logarithmus:
+    #
+    #   Decke um den Spot    0.08 Blenden
+    #   Fenster              0.85 Blenden
+    #
+    # Ein Faktor zehn - und beides sind physikalische Eigenschaften der
+    # Szene, keine auf ein Bild eingestellten Schwellen.
+    r_struktur = max(3, int(round(breite * STRUKTUR_RADIUS_ANTEIL)))
+    kern = (2 * r_struktur + 1, 2 * r_struktur + 1)
+    mittel = cv2.blur(log, kern)
+    streuung = np.sqrt(np.maximum(cv2.blur(log * log, kern) - mittel * mittel,
+                                  0.0))
+    struktur = np.clip((streuung - STRUKTUR_SCHWELLE) / STRUKTUR_BREITE,
+                       0.0, 1.0)
+    struktur = (struktur * struktur * (3.0 - 2.0 * struktur)).astype(np.float32)
+    t = t * struktur
     gezogen = ziel_log + (beleuchtung - knie_log) * FENSTER_RESTSTEIGUNG
     beleuchtung_neu = beleuchtung * (1.0 - t) + gezogen * t
 
@@ -1054,8 +1092,28 @@ def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
     # korrigieren.
     exponent = (1.0 - t * (1.0 - float(saettigung)))[..., None]
     verhaeltnis = np.maximum(strahlung, 1e-9) / lum[..., None]
-    ergebnis = _nach_srgb(np.clip(lum_neu[..., None]
-                                  * np.power(verhaeltnis, exponent), 0.0, 1.0))
+    farbig = lum_neu[..., None] * np.power(verhaeltnis, exponent)
+
+    # 7. Kanalweise Deckelung.
+    #
+    # Schritt 5 deckelt die LUMINANZ. Das genuegt nicht: Ein farbiger Punkt
+    # kann in einem Kanal deutlich ueber seiner Luminanz liegen, und genau
+    # dieser Kanal steht dann hart an. Gemessen an einer Kuechenszene lag
+    # die Luminanz sauber unter der Decke, waehrend der staerkste Kanal
+    # exakt 1.0 erreichte.
+    #
+    # Gedeckelt wird ueber einen gemeinsamen Faktor aus dem staerksten
+    # Kanal - damit bleibt der Farbton unangetastet, waehrend die Spitze
+    # weich in die Grenze laeuft.
+    spitze = np.maximum(farbig.max(axis=2), 1e-9)
+    schwelle = ENDSCHULTER
+    kopf_k = max(ENDDECKE - schwelle, 1e-3)
+    ueber_k = np.maximum(spitze - schwelle, 0.0)
+    spitze_neu = np.where(spitze > schwelle,
+                          schwelle + kopf_k * (1.0 - np.exp(-ueber_k / kopf_k)),
+                          spitze)
+    farbig = farbig * (spitze_neu / spitze)[..., None]
+    ergebnis = _nach_srgb(np.clip(farbig, 0.0, 1.0))
     protokoll.append((logging.DEBUG,
                       f"Belichtung auf Raumniveau {niveau:.4f} -> "
                       f"{kompression:.2f}; Fensterflaeche ({float((t > 0.5).mean()) * 100:.1f} % "
@@ -3279,7 +3337,7 @@ def baue_parser() -> argparse.ArgumentParser:
                     help="Helligkeit des Raums. Ein reiner Belichtungsfaktor "
                          "- er veraendert keine Tonwertverhaeltnisse, der "
                          "Raum bleibt so, wie die Kamera ihn gesehen hat.")
-    hd.add_argument("--hdr-knee", type=float, default=1.0,
+    hd.add_argument("--hdr-knee", type=float, default=0.9,
                     help="Ab welcher Helligkeit ein Bereich als "
                          "\'draussen\' gilt. Bewusst ueber 1.0 moeglich: "
                          "Fenster liegen drei bis vier Blendenstufen ueber "
@@ -3291,7 +3349,7 @@ def baue_parser() -> argparse.ArgumentParser:
     hd.add_argument("--hdr-radius", type=float, default=0.02,
                     help="Radius der Trennung von Beleuchtung und Zeichnung, "
                          "als Anteil der Bildbreite.")
-    hd.add_argument("--hdr-highlight", type=float, default=0.45,
+    hd.add_argument("--hdr-highlight", type=float, default=0.40,
                     help="Wohin die Fensterflaeche gezogen wird. Das ist die "
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
