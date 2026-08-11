@@ -1,0 +1,68 @@
+HDR MERGE - Wohin mit diesem Ordner?
+=====================================
+
+KURZ: Irgendwohin. Desktop, Dokumente, externe Platte - egal.
+
+Dieser Ordner ist EIGENSTAENDIG. Er braucht nichts aus dem
+GitHub-Repository und gehoert NICHT in dessen "tools"-Verzeichnis.
+
+Der Grund, warum das funktioniert: Beide Startdateien wechseln zuerst in
+ihren eigenen Ordner (cd /d "%~dp0"), egal wo der liegt. Sie suchen
+nichts ausserhalb.
+
+
+SO GEHT ES LOS
+--------------
+
+1. Diesen Ordner entpacken, wohin du willst.
+
+2. Doppelklick auf   Verknuepfung auf Desktop.bat
+   Das legt ein Symbol "HDR Merge" auf den Desktop.
+
+3. Doppelklick auf das Symbol.
+
+Beim ersten Start richtet das Programm die fehlenden Bausteine selbst
+ein - mit "Ja" bestaetigen, ein bis zwei Minuten warten. Vorausgesetzt
+wird nur Python (python.org/downloads, beim Installieren den Haken
+"Add python.exe to PATH" setzen).
+
+Ein Bilderordner kann auch direkt auf das Desktop-Symbol gezogen werden.
+
+
+DAS GITHUB-REPOSITORY BRAUCHST DU NICHT
+---------------------------------------
+
+Dort liegt derselbe Stand - aber nur, damit die Entwicklung
+nachvollziehbar bleibt. Zum Arbeiten reicht dieser Ordner. Wer die
+heruntergeladene Repository-Fassung benutzt, findet HDR Merge unter
+tools/hdr-merge; das ist derselbe Inhalt, nur tiefer vergraben.
+
+
+DIE GEGENKURVE FUER LIGHTROOM
+-----------------------------
+
+Die Datei   HDR Merge - Log nach Bild.xmp   gehoert dazu.
+
+Das Werkzeug liefert bewusst ein FLACHES Bild (ein Log-Profil, wie
+S-Log3 an der Kamera). Flach heisst: nichts brennt aus, auch nicht wenn
+anschliessend aufgehellt wird. Sichtbar wird so ein Bild erst durch die
+passende Gegenkurve - und die steckt in dieser Datei.
+
+Einbauen: Lightroom Classic -> Entwickeln -> Vorgaben ->
+Vorgaben importieren. Sie erscheint dann in der Gruppe "HDR Merge".
+
+Ohne sie sieht das Ergebnis milchig und flau aus. Das ist kein Fehler,
+sondern der halbe Weg.
+
+
+WAS IN DIESEM ORDNER LIEGT
+--------------------------
+
+  HDR-Merge starten.bat          Programm starten
+  Verknuepfung auf Desktop.bat   Symbol auf dem Desktop anlegen
+  hdr_merge_gui.pyw              die Oberflaeche
+  hdr_merge.py                   der Rechenkern
+  HDR Merge - Log nach Bild.xmp  die Gegenkurve fuer Lightroom
+  README.md                      die ausfuehrliche Beschreibung
+  test_*.py, make_*.py           Tests und Testbilder
+  experimente/                   verworfene Ansaetze, dokumentiert
