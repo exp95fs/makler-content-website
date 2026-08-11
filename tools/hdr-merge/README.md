@@ -166,6 +166,46 @@ spürbar.
 
 ---
 
+## Die Gegenkurve: „HDR Merge – Log nach Bild.xmp"
+
+Das Log-Profil ist nur die **halbe** Kette. Ein Log-Bild sieht milchig und
+flau aus – bei S-Log3 genauso –, und es soll das auch: Die Flachheit ist
+der Preis dafür, dass nichts ausbrennt. Sichtbar wird das Bild erst durch
+die passende Gegenkurve. Lightrooms „Auto" ist diese Gegenkurve **nicht**
+und kann sie auch nicht erraten.
+
+Die Datei `HDR Merge - Log nach Bild.xmp` ist genau diese Gegenkurve,
+exakt aus der eigenen Kennlinie zurückgerechnet:
+
+1. Sie kehrt die Log-Kodierung um (Schulter, Fußpunkt, Anker, Steigung).
+2. Sie legt eine fotografische Wiedergabe darüber – Raumniveau auf mittleres
+   Grau, weiche Schultern an beiden Enden.
+
+Deshalb bringt sie ein Fenster vier Blendenstufen über dem Raum auf **0,775
+statt auf Weiß**. Eine reine Umkehr täte das nicht: Sie würde es
+zwangsläufig ausbrennen lassen, weil vier Blenden über mittlerem Grau
+außerhalb des Anzeigebereichs liegen. Genau daran ist der erste Versuch
+gescheitert (Stützstelle 179 → 255).
+
+**Einbauen:** In Lightroom Classic unter *Entwickeln → Vorgaben → Vorgaben
+importieren* auswählen. Sie erscheint dann in der Gruppe „HDR Merge".
+
+Gemessen an vier Szenen nach Anwendung der Vorgabe:
+
+| | Raum | Fenster | Tiefen (p1) | ausgebrannt |
+|---|---|---|---|---|
+| Wohnzimmer | 0,467 | 0,792 | 0,196 | 0,000 % |
+| Treppenhaus | 0,461 | 0,762 | 0,149 | 0,000 % |
+| Haustür | 0,481 | 0,825 | 0,116 | 0,000 % |
+| Dachküche | 0,448 | 0,771 | 0,071 | 0,000 % |
+
+**Nicht geprüft:** Die Vorgabe ist rechnerisch exakt, aber in Lightroom
+selbst nicht getestet – hier steht kein Lightroom zur Verfügung. Die
+Kurvenpunkte sind streng steigend und im gültigen Bereich; ob Lightroom
+die Datei so annimmt, muss sich am echten Rechner zeigen.
+
+---
+
 ## Qualitäts-Benchmark gegen den kommerziellen Dienst
 
 Die Verarbeitung wird nicht nach Augenmaß beurteilt, sondern gemessen — gegen
