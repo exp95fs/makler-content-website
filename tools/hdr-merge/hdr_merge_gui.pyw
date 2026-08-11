@@ -207,9 +207,13 @@ class Regler:
 REGLER = [
     # Die beiden Regler des Log-Profils - der Voreinstellung. Alles
     # darunter wirkt nur mit --profile bild.
-    Regler("logdecke", "--log-ceiling", "Fensterhelligkeit",
-           "Wohin die hellste Stelle gelegt wird. Tiefer = dichtere "
-           "Fenster und mehr Reserve nach oben.", 0.65, 0.95, 0.85),
+    Regler("logsteigung", "--log-slope", "Kontrastumfang",
+           "Anteil je Blendenstufe. Groesser = kontrastreicher, aber "
+           "weniger Luft ueber den Fenstern.", 0.035, 0.090, 0.058,
+           schritt=0.001, nachkomma=3),
+    Regler("logdecke", "--log-ceiling", "Obergrenze",
+           "Wohin die Kennlinie oben asymptotisch laeuft.",
+           0.80, 0.98, 0.92),
     Regler("logboden", "--log-floor", "Tiefen",
            "Wohin die dunkelste Stelle gelegt wird.", 0.0, 0.25, 0.06),
     Regler("helligkeit", "--mid-target", "Helligkeit",

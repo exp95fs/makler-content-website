@@ -256,8 +256,13 @@ FENSTER_RESTSTEIGUNG = 0.15
 # Welche Perzentile des Szenenumfangs das Log-Profil auf den Anzeigebereich
 # legt. Bewusst nicht Minimum und Maximum: Ein einzelnes Rauschpixel wuerde
 # sonst den ganzen Umfang bestimmen.
-LOG_PERZENTIL_UNTEN = 0.1
-LOG_PERZENTIL_OBEN = 99.9
+# Wohin das Raumniveau gelegt wird - fest, unabhaengig vom Bildinhalt.
+# Das Gegenstueck zu den 0.42 von S-Log3.
+LOG_ANKER = 0.45
+# Ab hier laeuft die Kennlinie weich in die Decke, darunter weich in den
+# Boden. Beide Enden sind asymptotisch, koennen also nicht anstehen.
+LOG_SCHULTER = 0.72
+LOG_FUSSPUNKT = 0.18
 
 # Ab welcher lokalen Streuung (in Blendenstufen) ein heller Bereich als
 # strukturierter Aussenraum gilt und nicht als glatte, angestrahlte Flaeche.
@@ -959,7 +964,7 @@ def baue_strahlungskarte(bilder: Sequence[np.ndarray],
 
 def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
                 protokoll: list[tuple[int, str]], fuss: float = 0.004,
-                farbe: float = 2.2) -> np.ndarray:
+                farbe: float = 2.2, steigung: float = 0.058) -> np.ndarray:
     """Legt den Szenenumfang als Log-Profil auf den Anzeigebereich.
 
     Das ist KEIN Tonemapping und soll auch keines sein. Es ist dieselbe
@@ -993,16 +998,45 @@ def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
     Raum (vorher 2.0 bis 2.5), Luft ueber dem hellsten Punkt 8 bis 14
     Prozent, Tiefen bei 0.13 bis 0.18 statt abgeschnitten.
     """
-    # Linearer Fuss. Ohne ihn laeuft der Logarithmus in den Tiefen ins
-    # Bodenlose, und weil er KANALWEISE wirkt, wird dort der jeweils
-    # schwaechste Kanal am staerksten angehoben - sichtbar als Farbstich
-    # in dunklen Flaechen. Der Fuss linearisiert die Kennlinie unterhalb
-    # dieses Wertes und nimmt ihr damit die Spitze.
-    werte = np.log2(np.maximum(strahlung, 0.0) + fuss)
-    unten = float(np.percentile(werte, LOG_PERZENTIL_UNTEN))
-    oben = float(np.percentile(werte, LOG_PERZENTIL_OBEN))
-    spanne = max(oben - unten, 1e-6)
-    ergebnis = (werte - unten) / spanne * (decke - boden) + boden
+    # Fester Ankerpunkt und feste Steigung - kein Strecken pro Bild.
+    #
+    # Bis hierher wurde der Umfang DIESER Szene auf das Band gedehnt.
+    # Damit bekam jedes Bild eine andere Kennlinie: gemessen an vier
+    # Szenen 0.0557 bis 0.0622 pro Blendenstufe, und das Raumniveau
+    # landete zwischen 0.474 und 0.568. Ein Preset bedeutet dann bei
+    # jedem Bild etwas anderes - genau das war als "die Gradationskurve
+    # greift nicht" zu spueren.
+    #
+    # S-Log3 macht es anders und richtig: feste Steigung, fester Anker
+    # (18 Prozent Grau immer bei 0.42). Erst dadurch kann eine LUT oder
+    # ein Preset ueber eine ganze Serie funktionieren.
+    #
+    # Der zweite Gewinn betrifft die Fenster. Vorher lag das Hellste der
+    # Szene IMMER bei der Decke - egal ob Panoramafenster oder kleines
+    # Kuechenfenster. Jetzt haengt seine Lage davon ab, wie hell es
+    # tatsaechlich ist: Ein Fenster vier Blendenstufen ueber dem Raum
+    # landet bei 0.45 + 4 * 0.058 = 0.68 statt bei 0.85. Der Unterschied
+    # ist entscheidend, weil erst darueber Platz bleibt, den eine
+    # Gradation ausnutzen kann, ohne auszubrennen.
+    lum = berechne_luminanz(np.maximum(strahlung, 0.0))
+    raum = max(float(np.percentile(lum, RAUMNIVEAU_PERZENTIL)), 1e-6)
+    blenden = np.log2((np.maximum(strahlung, 0.0) + fuss) / raum)
+    ergebnis = LOG_ANKER + blenden * float(steigung)
+
+    # Weiche Schulter nach oben - asymptotisch, erreicht die Decke nie.
+    kopf = max(decke - LOG_SCHULTER, 1e-3)
+    ueber = np.maximum(ergebnis - LOG_SCHULTER, 0.0)
+    ergebnis = np.where(ergebnis > LOG_SCHULTER,
+                        LOG_SCHULTER + kopf * (1.0 - np.exp(-ueber / kopf)),
+                        ergebnis)
+    # Und nach unten in den Boden laufen lassen.
+    tief = max(LOG_ANKER - boden, 1e-3)
+    unter = np.maximum(LOG_FUSSPUNKT - ergebnis, 0.0)
+    ergebnis = np.where(ergebnis < LOG_FUSSPUNKT,
+                        LOG_FUSSPUNKT - (LOG_FUSSPUNKT - boden)
+                        * (1.0 - np.exp(-unter / max(LOG_FUSSPUNKT - boden,
+                                                     1e-3))),
+                        ergebnis)
 
     # Farbabstand zuruecknehmen.
     #
@@ -1021,11 +1055,20 @@ def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
     # aus der kanalweisen Kennlinie und nicht aus diesem Faktor.
     if abs(farbe - 1.0) > 1e-6:
         grau = (ergebnis @ LUMA_GEWICHTE)[..., None]
-        ergebnis = grau + (ergebnis - grau) * float(farbe)
+        # Oben zuruecknehmen. Wo die Helligkeit schon in der Schulter
+        # steht, kann sie dem Farbabstand nicht mehr folgen - eine
+        # Aufspreizung erzeugt dort nur noch bunte Saeume. Genau das war
+        # an ausgebrannten Blaettern als neongruener Rand zu sehen.
+        nah = np.clip((grau - LOG_SCHULTER) / max(decke - LOG_SCHULTER, 1e-3),
+                      0.0, 1.0)
+        wirksam = 1.0 + (float(farbe) - 1.0) * (1.0 - nah)
+        ergebnis = grau + (ergebnis - grau) * wirksam
+    umfang = float(np.percentile(blenden, 99.9)
+                   - np.percentile(blenden, 0.1))
     protokoll.append((logging.DEBUG,
-                      f"Log-Profil: {spanne:.1f} Blendenstufen auf "
-                      f"{boden:.2f} bis {decke:.2f} gelegt, "
-                      f"{(1.0 - decke) * 100:.0f} % Luft nach oben"))
+                      f"Log-Profil: Raumniveau auf {LOG_ANKER:.2f}, "
+                      f"{steigung:.3f} je Blendenstufe, Szene umfasst "
+                      f"{umfang:.1f} Blendenstufen"))
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
 
 
@@ -3073,7 +3116,8 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         if args.profile == "log":
             ergebnis = kodiere_log(strahlung, args.log_floor,
                                    args.log_ceiling, protokoll,
-                                   args.log_toe, args.log_color)
+                                   args.log_toe, args.log_color,
+                                   args.log_slope)
             del strahlung
             return ergebnis, None, ergebnis, vorschau_kacheln, referenz_tags
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
@@ -3497,10 +3541,16 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Belichtung auf Raumniveau und Lichterschulter.")
     hd.add_argument("--log-floor", type=float, default=0.06,
                     help="Wohin die dunkelste Stelle der Szene gelegt wird.")
-    hd.add_argument("--log-ceiling", type=float, default=0.85,
+    hd.add_argument("--log-ceiling", type=float, default=0.92,
                     help="Wohin die hellste Stelle gelegt wird. Alles "
                          "darueber ist bewusst freie Reserve fuer die "
                          "spaetere Belichtungskorrektur.")
+    hd.add_argument("--log-slope", type=float, default=0.058,
+                    help="Anteil des Wertebereichs je Blendenstufe - die "
+                         "Steilheit der Kennlinie. FEST, unabhaengig vom "
+                         "Bildinhalt: Nur so bedeutet ein Preset bei jedem "
+                         "Bild dasselbe. Groesser = kontrastreicher, aber "
+                         "weniger Luft ueber den Fenstern.")
     hd.add_argument("--log-toe", type=float, default=0.004,
                     help="Linearer Fuss der Log-Kennlinie. Ohne ihn "
                          "bekommen dunkle Flaechen einen Farbstich, weil "
