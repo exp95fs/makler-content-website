@@ -148,7 +148,7 @@ def baue_tkinter_ersatz() -> tuple[types.ModuleType, types.ModuleType]:
     ttk = types.ModuleType("tkinter.ttk")
     for name in ("Frame", "Label", "Button", "Scale", "Checkbutton",
                  "Combobox", "Progressbar", "Treeview", "Style",
-                 "Separator", "Notebook"):
+                 "Separator", "Notebook", "Scrollbar"):
         setattr(ttk, name, Attrappe)
 
     dialoge = types.ModuleType("tkinter.filedialog")
@@ -241,12 +241,20 @@ class TestOberflaecheLaedt(unittest.TestCase):
         self.assertIn("/aus", argumente)
 
     def test_geaenderter_regler_landet_im_aufruf(self):
+        """Der erste Regler der Liste, was immer er gerade ist.
+
+        Frueher stand hier ein fester Schluessel. Als die Reglerliste
+        aufgeraeumt wurde - sechs Regler wirkten in der Voreinstellung
+        gar nicht mehr - schlug der Test fehl, ohne dass an der Sache
+        etwas kaputt war. Geprueft gehoert die Mechanik, nicht der Name.
+        """
         anwendung = self.gui.Anwendung()
-        anwendung.werte["helligkeit"].set(0.50)
+        regler = self.gui.REGLER[0]
+        anwendung.werte[regler.schluessel].set(regler.minimum)
         argumente = anwendung._baue_argumente(Path("/ein"), Path("/aus"))
-        self.assertIn("--mid-target", argumente)
-        self.assertEqual(argumente[argumente.index("--mid-target") + 1],
-                         "0.5000")
+        self.assertIn(regler.schalter, argumente)
+        self.assertEqual(argumente[argumente.index(regler.schalter) + 1],
+                         f"{regler.minimum:.4f}")
 
     def test_schalter_fuer_ausrichten_und_aufrichten(self):
         anwendung = self.gui.Anwendung()

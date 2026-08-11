@@ -205,8 +205,15 @@ class Regler:
 # beurteilen kann. Alles Weitere bleibt der Kommandozeile vorbehalten -
 # eine Oberflaeche mit vierzig Reglern hilft niemandem.
 REGLER = [
-    # Die beiden Regler des Log-Profils - der Voreinstellung. Alles
-    # darunter wirkt nur mit --profile bild.
+    # NUR die Regler, die in der Voreinstellung (dem Log-Profil) auch
+    # wirklich etwas tun.
+    #
+    # Vorher standen hier dreizehn, davon sechs wirkungslos - sie
+    # gehoerten zum alten Weg --profile bild. Die Liste wurde dadurch so
+    # lang, dass der Knopf "Alle Reihen verarbeiten" aus dem Fenster
+    # fiel und nicht mehr erreichbar war. Ein Regler, der nichts tut,
+    # ist nicht bloss ueberfluessig: Er kostet Platz und laesst den
+    # Anwender an der falschen Stelle suchen.
     Regler("logsteigung", "--log-slope", "Kontrastumfang",
            "Anteil je Blendenstufe. Groesser = kontrastreicher, aber "
            "weniger Luft ueber den Fenstern.", 0.035, 0.090, 0.058,
@@ -216,53 +223,13 @@ REGLER = [
            0.80, 0.98, 0.92),
     Regler("logboden", "--log-floor", "Tiefen",
            "Wohin die dunkelste Stelle gelegt wird.", 0.0, 0.25, 0.06),
-    Regler("helligkeit", "--mid-target", "Helligkeit",
-           "Wie hell der Raum insgesamt wird.", 0.42, 0.80, 0.587),
-    Regler("kontrast", "--tone-contrast", "Kontrast",
-           "Die am Vorbild gemessene Kennlinie. 0 = flach.", 0.0, 1.5, 1.0),
-    # Beide bewusst niedriger als frueher. Am lokalen Kontrast gemessen lag
-    # das Ergebnis mit den alten Werten 21 Prozent UEBER dem kommerziellen
-    # Vorbild (0.0357 gegenueber 0.0295) - also nicht zu weich, sondern zu
-    # hart. Die "uebersteuerten Kanten" kamen von hier.
+    Regler("logfarbe", "--log-color", "Farbe",
+           "Nimmt die Farbstauchung der Kennlinie zurueck. 1.0 = roh, "
+           "dann wirkt das Bild entsaettigt.", 1.0, 3.5, 2.2),
     Regler("zeichnung", "--clarity", "Zeichnung",
            "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 0.6),
     Regler("schaerfe", "--sharpen", "Schaerfe",
            "Gleicht die Weichheit der RAW-Entwicklung aus.", 0.0, 2.5, 0.7),
-    # Der Regler, der beim Weg ueber die Strahlungskarte an die Stelle der
-    # gesamten Fensterbehandlung tritt. Kleiner = hellerer Raum, ohne dass
-    # die Fenster ausbrennen - das leistet keine globale Kurve.
-    Regler("raum", "--hdr-compression", "Helligkeit des Raums",
-           "Reine Belichtung - der Raum bleibt so, wie die Kamera ihn "
-           "gesehen hat.", 0.25, 0.85, 0.62),
-    # Ab welcher Helligkeit ein Bereich als "draussen" gilt. Bewusst ueber
-    # 1.0: Fenster liegen drei bis vier Blendenstufen ueber dem Raum,
-    # sonnenbeschienene Innenflaechen nur eine halbe. Zu tief eingestellt
-    # werden auch sie gezogen - dann legt sich ein Schleier ueber
-    # Arbeitsplatten und helle Waende.
-    Regler("fenster", "--hdr-knee", "Was gilt als draussen",
-           "Tiefer = mehr Flaechen werden als Fenster behandelt.",
-           0.60, 2.50, 0.9),
-    # Der Regler, der den Fenstereindruck bestimmt: die Helligkeit der
-    # FLAECHE. Der Inhalt liegt darueber und darunter.
-    Regler("fensterhelligkeit", "--hdr-highlight", "Fensterhelligkeit",
-           "Wohin die Fensterflaeche gezogen wird. Tiefer = dichter.",
-           0.25, 0.80, 0.40),
-    Regler("fensterzeichnung", "--hdr-window-contrast", "Fensterzeichnung",
-           "Wieviel Tonwertumfang das Fenster behaelt. Zu hoch = es "
-           "brennt wieder aus.", 0.0, 1.0, 0.55),
-    # Ohne diese Ruecknahme wird ein blasser Himmel beim Herunterziehen zu
-    # kraeftigem Cyan - der klassische HDR-Himmel.
-    Regler("fensterfarbe", "--hdr-saturation", "Fensterfarbe",
-           "Farbruecknahme draussen. 1.0 = unveraendert, dann wird der "
-           "Himmel tuerkis.", 0.3, 1.0, 0.65),
-    # Gemessen am kommerziellen Dienst: Der entsaettigt deutlich, und zwar
-    # ueber den ganzen Bereich. Bei 1.0 trifft dieser Regler dessen Profil
-    # ueber drei Szenen hinweg fast genau (Esszimmer p90: Dienst 0.354,
-    # hier 0.343). Voreingestellt bleibt 0 - wer ein eigenes Preset fahrt,
-    # will die Farben unangetastet.
-    Regler("zurueckhaltung", "--color-match", "Farbzurueckhaltung",
-           "0 = Farben wie aufgenommen. 1 = so zurueckhaltend wie der "
-           "kommerzielle Dienst.", 0.0, 1.0, 0.0),
 ]
 
 
@@ -434,9 +401,51 @@ class Anwendung(tk.Tk):
         self.protokoll_zeilen: list[tuple[str, str]] = []
 
     def _baue_seitenleiste(self, eltern) -> None:
-        leiste = ttk.Frame(eltern, style="Flaeche.TFrame", padding=(16, 14))
-        leiste.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        """Reglerspalte: rollbar, mit fest verankerten Knoepfen unten.
+
+        Beides ist noetig, und der Grund ist ein Fehler, der schon
+        aufgetreten ist: Mit jedem neuen Regler wuchs die Spalte, bis der
+        Knopf "Alle Reihen verarbeiten" unten aus dem Fenster fiel und
+        nicht mehr erreichbar war - das Programm liess sich damit nicht
+        mehr bedienen. Ein Rollbalken allein reicht dafuer nicht, weil man
+        den wichtigsten Knopf nicht erst suchen soll. Deshalb liegen die
+        Knoepfe ausserhalb des Rollbereichs und sind immer sichtbar.
+        """
+        aussen = ttk.Frame(eltern, style="Flaeche.TFrame")
+        aussen.grid(row=0, column=0, sticky="nsew", padx=(0, 14))
+        aussen.columnconfigure(0, weight=1)
+        aussen.rowconfigure(0, weight=1)
+
+        leinwand = tk.Canvas(aussen, bg=Farben.flaeche, highlightthickness=0,
+                             width=300)
+        leinwand.grid(row=0, column=0, sticky="nsew")
+        balken = ttk.Scrollbar(aussen, orient="vertical",
+                               command=leinwand.yview)
+        balken.grid(row=0, column=1, sticky="ns")
+        leinwand.configure(yscrollcommand=balken.set)
+
+        leiste = ttk.Frame(leinwand, style="Flaeche.TFrame", padding=(16, 14))
+        inhalt = leinwand.create_window((0, 0), window=leiste, anchor="nw")
         leiste.columnconfigure(0, weight=1)
+
+        def _passe_rollbereich_an(_ereignis=None):
+            try:
+                leinwand.configure(scrollregion=leinwand.bbox("all"))
+                leinwand.itemconfigure(inhalt, width=leinwand.winfo_width())
+            except Exception:
+                pass
+
+        leiste.bind("<Configure>", _passe_rollbereich_an)
+        leinwand.bind("<Configure>", _passe_rollbereich_an)
+
+        def _mausrad(ereignis):
+            try:
+                leinwand.yview_scroll(int(-getattr(ereignis, "delta", 0) / 120),
+                                      "units")
+            except Exception:
+                pass
+
+        leinwand.bind_all("<MouseWheel>", _mausrad)
 
         # Erkannte Reihen
         ttk.Label(leiste, text="ERKANNTE REIHEN",
@@ -483,11 +492,10 @@ class Anwendung(tk.Tk):
                         variable=self.auto_wb,
                         command=self._lade_neu).pack(anchor="w", pady=(4, 0))
 
-        leiste.rowconfigure(6, weight=1)
-
-        # Aktionen
-        aktionen = ttk.Frame(leiste, style="Flaeche.TFrame")
-        aktionen.grid(row=7, column=0, sticky="ew", pady=(14, 0))
+        # Aktionen - bewusst AUSSERHALB des Rollbereichs, damit sie nicht
+        # aus dem Fenster fallen koennen.
+        aktionen = ttk.Frame(aussen, style="Flaeche.TFrame", padding=(16, 12))
+        aktionen.grid(row=1, column=0, columnspan=2, sticky="ew")
         aktionen.columnconfigure(0, weight=1)
         ttk.Button(aktionen, text="Auf Standard zuruecksetzen",
                    command=self._setze_zurueck).grid(row=0, column=0, sticky="ew")

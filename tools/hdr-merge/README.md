@@ -39,9 +39,15 @@ Ein Bilderordner kann auch direkt auf das Desktop-Symbol gezogen werden.
 
 ### Die Vorschau
 
-Links stehen die Regler in Klartext (Helligkeit, Kontrast, Zeichnung,
-Schärfe, Helligkeit des Raums, Was gilt als draußen, Fensterhelligkeit,
-Fensterzeichnung), rechts das Bild. Nach jeder
+Links stehen **sechs** Regler in Klartext – Kontrastumfang, Obergrenze,
+Tiefen, Farbe, Zeichnung, Schärfe –, rechts das Bild. Bewusst nur diese:
+Es standen zeitweise dreizehn dort, von denen sechs zum alten Weg
+`--profile bild` gehörten und in der Voreinstellung gar nichts taten. Die
+Spalte wurde dadurch so lang, dass der Knopf „Alle Reihen verarbeiten"
+unten aus dem Fenster fiel. Ein Regler, der nichts tut, ist nicht bloß
+überflüssig – er kostet Platz und lässt einen an der falschen Stelle
+suchen. Die Spalte ist außerdem rollbar, und die Knöpfe liegen außerhalb
+des Rollbereichs, damit das nicht wieder passieren kann. Nach jeder
 Reglerbewegung wird neu gerechnet – auf einem verkleinerten Bild, deshalb in
 rund zwei Sekunden statt einer Minute.
 
