@@ -223,9 +223,13 @@ REGLER = [
            0.80, 0.98, 0.92),
     Regler("logboden", "--log-floor", "Tiefen",
            "Wohin die dunkelste Stelle gelegt wird.", 0.0, 0.25, 0.06),
+    Regler("mitte", "--mid-point", "Helligkeit",
+           "Wohin das Raumniveau gelegt wird.", 0.60, 0.95, 0.80),
+    Regler("schwarz", "--black-point", "Schwarzpunkt",
+           "Wohin die dunkelste Stelle gelegt wird. Ohne diesen Schritt "
+           "bleibt ein Schleier ueber dem Bild.", 0.0, 0.12, 0.03),
     Regler("logfarbe", "--log-color", "Farbe",
-           "Nimmt die Farbstauchung der Kennlinie zurueck. 1.0 = roh, "
-           "dann wirkt das Bild entsaettigt.", 1.0, 3.5, 2.2),
+           "Farbigkeit des Ergebnisses.", 0.8, 2.5, 1.1),
     Regler("zeichnung", "--clarity", "Zeichnung",
            "Holt Struktur zurueck, die das Aufhellen kostet.", 0.0, 2.0, 0.6),
     Regler("schaerfe", "--sharpen", "Schaerfe",

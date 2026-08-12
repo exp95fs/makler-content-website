@@ -259,6 +259,19 @@ FENSTER_RESTSTEIGUNG = 0.15
 # Wohin das Raumniveau gelegt wird - fest, unabhaengig vom Bildinhalt.
 # Das Gegenstueck zu den 0.42 von S-Log3.
 LOG_ANKER = 0.45
+# Grenzen der Log-Kennlinie, die die Wiedergabe zum Umkehren braucht.
+LOG_BODEN = 0.06
+ENDDECKE_LOG = 0.92
+# Die fotografische Wiedergabe: Anteil je Blendenstufe um das Raumniveau
+# herum, und wohin die Lichter asymptotisch laufen.
+WIEDERGABE_STEIGUNG = 0.105
+WIEDERGABE_DECKE = 0.96
+# Welches Perzentil als "dunkelste Stelle" gilt, und wie weit der
+# Schwarzpunkt hoechstens nachgezogen wird. Die Grenze schuetzt Szenen,
+# die tatsaechlich kein Schwarz enthalten (Nebelbild, weisser Raum),
+# davor, dass ihnen eines aufgezwungen wird.
+SCHWARZ_PERZENTIL = 0.5
+SCHWARZ_GRENZE = 0.30
 # Ab hier laeuft die Kennlinie weich in die Decke, darunter weich in den
 # Boden. Beide Enden sind asymptotisch, koennen also nicht anstehen.
 LOG_SCHULTER = 0.72
@@ -1070,6 +1083,84 @@ def kodiere_log(strahlung: np.ndarray, boden: float, decke: float,
                       f"{steigung:.3f} je Blendenstufe, Szene umfasst "
                       f"{umfang:.1f} Blendenstufen"))
     return np.clip(ergebnis, 0.0, 1.0).astype(np.float32)
+
+
+def gib_bild_wieder(kodiert: np.ndarray, schwarz: float, mitte: float,
+                   steigung: float, protokoll: list[tuple[int, str]]
+                   ) -> np.ndarray:
+    """Aus dem flachen Log-Bild ein fertiges Bild machen.
+
+    Das Log-Profil ist nur die halbe Kette. Ein Log-Bild sieht milchig
+    aus - so soll es aussehen, die Flachheit ist der Preis dafuer, dass
+    nichts ausbrennt. Sichtbar wird es erst durch die Gegenkurve.
+
+    Bis hierher lag die als Lightroom-Vorgabe daneben. Das kostete jedes
+    Mal eine Runde, weil das Zwischenprodukt beurteilt wurde statt des
+    Ergebnisses - und weil die Vorgabe drei Dinge nicht leistete, die ein
+    fertiges Bild braucht. Gemessen gegen den kommerziellen Dienst:
+
+                     Schwarzpunkt   Mittelton   Saettigung
+      Dienst          0.020-0.101   0.647-0.738  0.055-0.076
+      vorher (LUT)    0.098-0.161   0.459-0.479  0.101-0.130
+
+    Der zu hohe Schwarzpunkt IST der Schleier, der zu dunkle Mittelton
+    das "blass". Beides sind normale fotografische Groessen, und beide
+    gehoeren hierher statt in eine Vorgabe, die man vergessen kann.
+
+    Drei Schritte, alle punktweise und monoton - keine Maske, keine
+    ortsabhaengige Rechnung:
+
+      1. Log-Kodierung umkehren (Schulter, Fusspunkt, Anker, Steigung).
+      2. Fotografische Wiedergabe mit weichen Schultern an beiden Enden.
+         Ein Fenster vier Blendenstufen ueber dem Raum landet damit im
+         Bild und nicht auf Weiss - eine REINE Umkehr wuerde es
+         ausbrennen lassen, weil vier Blenden ueber mittlerem Grau
+         ausserhalb des Anzeigebereichs liegen.
+      3. Schwarzpunkt setzen. Ohne ihn bleibt der Schleier, weil eine
+         Innenaufnahme von sich aus selten etwas wirklich Schwarzes
+         enthaelt.
+    """
+    kopf = ENDDECKE_LOG - LOG_SCHULTER
+    tief = LOG_FUSSPUNKT - LOG_BODEN
+    v = kodiert.astype(np.float32)
+    v = np.where(v > LOG_SCHULTER,
+                 LOG_SCHULTER - kopf * np.log(np.clip(
+                     1.0 - (v - LOG_SCHULTER) / kopf, 1e-9, None)), v)
+    v = np.where(v < LOG_FUSSPUNKT,
+                 LOG_FUSSPUNKT + tief * np.log(np.clip(
+                     1.0 - (LOG_FUSSPUNKT - v) / tief, 1e-9, None)), v)
+    blenden = (v - LOG_ANKER) / max(steigung, 1e-6)
+
+    oben = max(WIEDERGABE_DECKE - mitte, 1e-3)
+    unten = max(mitte, 1e-3)
+    d = np.where(blenden > 0.0,
+                 mitte + oben * (1.0 - np.exp(-blenden * WIEDERGABE_STEIGUNG
+                                              / oben)),
+                 mitte - unten * (1.0 - np.exp(blenden * WIEDERGABE_STEIGUNG
+                                               / unten)))
+
+    # Schwarzpunkt AM BILD setzen, nicht als fester Abzug.
+    #
+    # Ein fester Wert reicht nicht: Eine Innenaufnahme enthaelt von sich
+    # aus selten etwas wirklich Schwarzes, und wie dunkel ihre dunkelste
+    # Stelle ist, haengt vom Raum ab. Mit festem Abzug blieb der
+    # Schwarzpunkt bei 0.19 bis 0.26 stehen, waehrend der kommerzielle
+    # Dienst bei 0.02 bis 0.10 liegt - genau diese Differenz ist der
+    # Schleier.
+    #
+    # Anders als die Log-Kennlinie DARF dieser Schritt vom Bildinhalt
+    # abhaengen: Er gehoert zur Wiedergabe, nicht zur Kodierung. Genau so
+    # zieht auch ein Fotograf den Schwarzregler - er schaut ins Bild.
+    tiefste = float(np.percentile(berechne_luminanz(d), SCHWARZ_PERZENTIL))
+    abzug = max(0.0, (tiefste - schwarz) / max(1.0 - schwarz, 1e-3))
+    abzug = min(abzug, SCHWARZ_GRENZE)
+    d = (d - abzug) / max(1.0 - abzug, 1e-3)
+    ergebnis = np.clip(d, 0.0, 1.0).astype(np.float32)
+    protokoll.append((logging.DEBUG,
+                      f"Wiedergabe: Raumniveau auf {mitte:.2f}, "
+                      f"dunkelste Stelle {tiefste:.3f} -> {schwarz:.3f} "
+                      f"(Abzug {abzug:.3f})"))
+    return ergebnis
 
 
 def tonemappe_lokal(strahlung: np.ndarray, kompression: float,
@@ -3113,12 +3204,16 @@ def verarbeite_bilder(bilder: list[np.ndarray], args: argparse.Namespace,
         strahlung = baue_strahlungskarte(bilder, [float(e) for e in evs],
                                          protokoll)
         bilder.clear()
-        if args.profile == "log":
+        if args.profile in ("log", "fertig"):
             ergebnis = kodiere_log(strahlung, args.log_floor,
                                    args.log_ceiling, protokoll,
                                    args.log_toe, args.log_color,
                                    args.log_slope)
             del strahlung
+            if args.profile == "fertig":
+                ergebnis = gib_bild_wieder(ergebnis, args.black_point,
+                                           args.mid_point, args.log_slope,
+                                           protokoll)
             return ergebnis, None, ergebnis, vorschau_kacheln, referenz_tags
         ergebnis = tonemappe_lokal(strahlung, args.hdr_compression,
                                    args.hdr_detail, args.hdr_radius, protokoll,
@@ -3533,12 +3628,23 @@ def baue_parser() -> argparse.ArgumentParser:
                          "Helligkeit der FLAECHE - der Inhalt (Himmel, Laub, "
                          "Ziegel) liegt darueber und darunter. Tiefer = "
                          "dichtere Fenster.")
-    hd.add_argument("--profile", choices=["log", "bild"], default="log",
-                    help="'log' legt den Szenenumfang flach auf den "
-                         "Anzeigebereich - gleichmaessige Verteilung mit "
-                         "Luft nach oben, als Vorlage fuer das eigene "
-                         "Preset. 'bild' nimmt den frueheren Weg mit "
-                         "Belichtung auf Raumniveau und Lichterschulter.")
+    hd.add_argument("--profile", choices=["fertig", "log", "bild"],
+                    default="fertig",
+                    help="'fertig' liefert ein entwickeltes Bild: Log-"
+                         "Kodierung und die dazu passende Wiedergabe in "
+                         "einem Schritt. 'log' liefert nur die flache "
+                         "Kodierung - als Vorlage fuer eine eigene LUT, "
+                         "sieht ohne Gegenkurve milchig aus. 'bild' ist "
+                         "der alte Weg mit Belichtung auf Raumniveau.")
+    hd.add_argument("--black-point", type=float, default=0.03,
+                    help="Wohin die dunkelste Stelle gelegt wird. Ohne "
+                         "diesen Schritt bleibt ein Schleier ueber dem "
+                         "Bild, weil eine Innenaufnahme von sich aus "
+                         "selten etwas wirklich Schwarzes enthaelt.")
+    hd.add_argument("--mid-point", type=float, default=0.80,
+                    help="Wohin das Raumniveau in der Wiedergabe gelegt "
+                         "wird. Am kommerziellen Dienst gemessen liegt "
+                         "dessen Mittelton bei 0.65 bis 0.74.")
     hd.add_argument("--log-floor", type=float, default=0.06,
                     help="Wohin die dunkelste Stelle der Szene gelegt wird.")
     hd.add_argument("--log-ceiling", type=float, default=0.92,
@@ -3556,7 +3662,7 @@ def baue_parser() -> argparse.ArgumentParser:
                          "bekommen dunkle Flaechen einen Farbstich, weil "
                          "die kanalweise Kennlinie dort den schwaechsten "
                          "Kanal am staerksten anhebt.")
-    hd.add_argument("--log-color", type=float, default=2.2,
+    hd.add_argument("--log-color", type=float, default=1.1,
                     help="Nimmt die Farbstauchung zurueck, die die "
                          "Kennlinie unvermeidlich erzeugt. 1.0 = roh, "
                          "dann wirkt das Bild entsaettigt und ein "
