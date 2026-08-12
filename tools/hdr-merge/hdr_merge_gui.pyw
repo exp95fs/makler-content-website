@@ -224,7 +224,7 @@ REGLER = [
     Regler("logboden", "--log-floor", "Tiefen",
            "Wohin die dunkelste Stelle gelegt wird.", 0.0, 0.25, 0.06),
     Regler("mitte", "--mid-point", "Helligkeit",
-           "Wohin das Raumniveau gelegt wird.", 0.60, 0.95, 0.80),
+           "Wohin das Raumniveau gelegt wird.", 0.50, 0.90, 0.68),
     Regler("schwarz", "--black-point", "Schwarzpunkt",
            "Wohin die dunkelste Stelle gelegt wird. Ohne diesen Schritt "
            "bleibt ein Schleier ueber dem Bild.", 0.0, 0.12, 0.03),

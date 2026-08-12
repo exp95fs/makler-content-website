@@ -272,6 +272,11 @@ WIEDERGABE_DECKE = 0.96
 # davor, dass ihnen eines aufgezwungen wird.
 SCHWARZ_PERZENTIL = 0.5
 SCHWARZ_GRENZE = 0.30
+# Der Weisspunkt wird an den hellen INNENflaechen verankert. Fenster
+# nehmen ueblich weniger als 15 Prozent der Flaeche ein und liegen
+# deshalb oberhalb dieses Perzentils - das trennt sie ohne Erkennung.
+WEISS_PERZENTIL = 85.0
+WEISS_ZIEL = 0.78
 # Ab hier laeuft die Kennlinie weich in die Decke, darunter weich in den
 # Boden. Beide Enden sind asymptotisch, koennen also nicht anstehen.
 LOG_SCHULTER = 0.72
@@ -1155,11 +1160,40 @@ def gib_bild_wieder(kodiert: np.ndarray, schwarz: float, mitte: float,
     abzug = max(0.0, (tiefste - schwarz) / max(1.0 - schwarz, 1e-3))
     abzug = min(abzug, SCHWARZ_GRENZE)
     d = (d - abzug) / max(1.0 - abzug, 1e-3)
+
+    # Weisspunkt an den hellen INNENflaechen, nicht am Bildmaximum.
+    #
+    # Der Mittelton ueber das Raumniveau anzuheben war der falsche Hebel:
+    # Damit steigt alles mit, auch die Fenster, und die landen dann im
+    # obersten Bereich. Am Vorbild gemessen sieht die Verteilung so aus:
+    #
+    #                     p50     p85     p99.5
+    #   Haustuer         0.675   0.792   0.916
+    #   Wohnzimmer       0.738   0.808   0.915
+    #   Treppenhaus      0.647   0.755   0.918
+    #
+    # Der Abstand von hellen Waenden (p85) zu Fenstern (p99.5) betraegt
+    # nur rund 0.12. Die Fenster liegen also KNAPP ueber den weissen
+    # Waenden - nicht weit darueber. Verankert wird deshalb bei p85: In
+    # einem Raum sind das die hellen Innenflaechen, waehrend Fenster
+    # ueblich weniger als 15 Prozent der Flaeche einnehmen und damit
+    # oberhalb liegen. Das braucht keine Fenstererkennung, nur ein
+    # Perzentil.
+    hell = float(np.percentile(berechne_luminanz(d), WEISS_PERZENTIL))
+    if hell > 1e-3:
+        d = d * (WEISS_ZIEL / hell)
+
+    # Und darueber eine Schulter, damit die Fenster weich anschliessen.
+    kopf_w = max(WIEDERGABE_DECKE - WEISS_ZIEL, 1e-3)
+    ueber_w = np.maximum(d - WEISS_ZIEL, 0.0)
+    d = np.where(d > WEISS_ZIEL,
+                 WEISS_ZIEL + kopf_w * (1.0 - np.exp(-ueber_w / kopf_w)), d)
+
     ergebnis = np.clip(d, 0.0, 1.0).astype(np.float32)
     protokoll.append((logging.DEBUG,
-                      f"Wiedergabe: Raumniveau auf {mitte:.2f}, "
-                      f"dunkelste Stelle {tiefste:.3f} -> {schwarz:.3f} "
-                      f"(Abzug {abzug:.3f})"))
+                      f"Wiedergabe: dunkelste Stelle {tiefste:.3f} -> "
+                      f"{schwarz:.3f}, helle Innenflaechen {hell:.3f} -> "
+                      f"{WEISS_ZIEL:.2f}"))
     return ergebnis
 
 
@@ -3641,7 +3675,7 @@ def baue_parser() -> argparse.ArgumentParser:
                          "diesen Schritt bleibt ein Schleier ueber dem "
                          "Bild, weil eine Innenaufnahme von sich aus "
                          "selten etwas wirklich Schwarzes enthaelt.")
-    hd.add_argument("--mid-point", type=float, default=0.80,
+    hd.add_argument("--mid-point", type=float, default=0.68,
                     help="Wohin das Raumniveau in der Wiedergabe gelegt "
                          "wird. Am kommerziellen Dienst gemessen liegt "
                          "dessen Mittelton bei 0.65 bis 0.74.")
