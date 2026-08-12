@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Pipeline output (previews, exports, JSON dumps) - never inside the input folder
+out/
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini

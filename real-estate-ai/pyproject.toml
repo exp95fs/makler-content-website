@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "real-estate-ai"
+version = "0.1.0"
+description = "Local-only processing pipeline for professional real-estate photography (step 01: ingest)"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+
+# Runtime dependencies are deliberately kept to an absolute minimum.
+# exifread is the pure-Python fallback metadata backend; it is the only
+# runtime dependency and it is optional in practice (the ExifTool backend
+# is preferred whenever the external binary is on PATH).
+dependencies = [
+    "exifread>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+real-estate-ai = "real_estate_ai.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/real_estate_ai"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+
+# Optional convenience only - ruff is NOT a hard requirement of this project.
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
