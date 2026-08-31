@@ -4,11 +4,13 @@ import { Arrow } from './ui.jsx';
 import logoWhite from '../assets/logo/quadratblick-logo-weiss.png';
 import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
 
+/** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
 export const PAGES = [
-  { path: '/objektcontent/', key: 'objektcontent', label: 'Objektcontent' },
-  { path: '/marke-und-social/', key: 'marke', label: 'Marke & Social' },
-  { path: '/referenzen/', key: 'referenzen', label: 'Referenzen' },
-  { path: '/ueber-uns/', key: 'ueber', label: 'Über uns' },
+  { id: 'leistungen', label: 'Leistungen' },
+  { id: 'objektcontent', label: 'Objektcontent' },
+  { id: 'marke', label: 'Marke & Social' },
+  { id: 'referenzen', label: 'Referenzen' },
+  { id: 'faq', label: 'FAQ' },
 ];
 
 /* ---------- Navigation (seitenübergreifend) ---------- */
@@ -40,12 +42,18 @@ function Nav({ active, dark }) {
     <>
       <header className={`v2-nav ${solid ? 'is-solid' : ''} ${hidden ? 'is-hidden' : ''} ${!dark ? 'on-light' : ''} ${open ? 'menu-open' : ''}`}>
         <div className="v2-nav-inner">
-          <a href="/" className="v2-nav-logo" aria-label="Quadratblick — zur Startseite">
+          <a href="#top" className="v2-nav-logo" aria-label="Quadratblick, zum Seitenanfang" onClick={(e) => { e.preventDefault(); scrollToId('top'); }}>
             <img src={onLight && !open ? logoBlack : logoWhite} alt="Quadratblick" />
           </a>
           <nav className="v2-nav-links" aria-label="Hauptnavigation">
             {PAGES.map((p) => (
-              <a key={p.key} href={p.path} className={`v2-nav-link ${active === p.key ? 'is-active' : ''}`} aria-current={active === p.key ? 'page' : undefined}>
+              <a
+                key={p.id}
+                href={`#${p.id}`}
+                className={`v2-nav-link ${active === p.id ? 'is-active' : ''}`}
+                aria-current={active === p.id ? 'true' : undefined}
+                onClick={(e) => { e.preventDefault(); scrollToId(p.id); }}
+              >
                 {p.label}
               </a>
             ))}
@@ -53,7 +61,7 @@ function Nav({ active, dark }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Magnetic strength={0.25}>
               <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('anfrage'); }}>
-                Kontakt <Arrow size={15} />
+                Objekt anfragen <Arrow size={15} />
               </button>
             </Magnetic>
             <button
@@ -71,9 +79,15 @@ function Nav({ active, dark }) {
 
       <div className={`v2-menu ${open ? 'is-open' : ''}`} aria-hidden={!open}>
         <nav className="v2-menu-links" aria-label="Mobiles Menü">
-          <a href="/" className={active === 'start' ? 'is-active' : ''}>Startseite</a>
           {PAGES.map((p) => (
-            <a key={p.key} href={p.path} className={active === p.key ? 'is-active' : ''}>{p.label}</a>
+            <a
+              key={p.id}
+              href={`#${p.id}`}
+              className={active === p.id ? 'is-active' : ''}
+              onClick={(e) => { e.preventDefault(); setOpen(false); setTimeout(() => scrollToId(p.id), 60); }}
+            >
+              {p.label}
+            </a>
           ))}
         </nav>
         <div className="v2-menu-foot">
@@ -92,7 +106,6 @@ function Footer() {
   return (
     <footer className="v2-footer">
       <div className="v2-wrap">
-        <div className="v2-footer-word" aria-hidden="true" data-reveal>QUADRATBLICK</div>
         <div className="v2-footer-grid">
           <div className="v2-footer-brand">
             <img src={logoWhite} alt="Quadratblick" />
@@ -102,9 +115,8 @@ function Footer() {
             </p>
           </div>
           <div className="v2-footer-links">
-            <a href="/">Startseite</a>
             {PAGES.map((p) => (
-              <a key={p.key} href={p.path}>{p.label}</a>
+              <a key={p.id} href={`#${p.id}`} onClick={(e) => { e.preventDefault(); scrollToId(p.id); }}>{p.label}</a>
             ))}
           </div>
           <div className="v2-footer-links">

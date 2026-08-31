@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Immobilienfotograf & Immobilienvideo Bühl · Mittelbaden | Quadratblick</title>
-  <meta name="description" content="Immobilienfotograf und Videoproduzent im Raum Bühl, Baden-Baden und Ortenau. Professionelle Immobilienfotos, Objektvideos und Drohnenaufnahmen für Verkauf und Vermietung — Konzept, Dreh und Schnitt aus einer Hand.">
+  <title>Immobiliencontent für Maklerbüros in Bühl · Mittelbaden | Quadratblick</title>
+  <meta name="description" content="Foto- und Videocontent, der Ihre Objekte verkauft und Ihr Maklerbüro sichtbar macht. Objektcontent, Marke und Social Media im Raum Bühl, Mittelbaden und Ortenau.">
   <link rel="canonical" href="https://www.quadratblick.de/">
   <meta name="robots" content="index, follow">
-  <meta name="author" content="Quadratblick — Fabian Schneebiegl">
+  <meta name="author" content="Quadratblick · Fabian Schneebiegl">
   <!-- Local SEO geo tags -->
   <meta name="geo.region" content="DE-BW">
   <meta name="geo.placename" content="Bühl">
@@ -15,16 +15,16 @@
   <meta name="ICBM" content="48.6959, 8.1351">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
-  <meta property="og:title" content="Immobilienfotograf & Immobilienvideo Bühl · Mittelbaden | Quadratblick">
-  <meta property="og:description" content="Professionelle Immobilienfotos, Objektvideos und Drohnenaufnahmen im Raum Bühl, Baden-Baden und Ortenau. Für Verkauf und Vermietung.">
+  <meta property="og:title" content="Immobiliencontent für Maklerbüros in Bühl · Mittelbaden | Quadratblick">
+  <meta property="og:description" content="Content, der Objekte verkauft und Maklerbüros sichtbar macht. Foto, Video und Social im Raum Bühl, Mittelbaden und Ortenau.">
   <meta property="og:url" content="https://www.quadratblick.de/">
   <meta property="og:site_name" content="Quadratblick">
   <meta property="og:image" content="https://www.quadratblick.de/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Immobilienfotograf & Immobilienvideo Bühl · Mittelbaden | Quadratblick">
-  <meta name="twitter:description" content="Professionelle Immobilienfotos, Objektvideos und Drohnenaufnahmen im Raum Bühl, Baden-Baden und Ortenau.">
+  <meta name="twitter:title" content="Immobiliencontent für Maklerbüros in Bühl · Mittelbaden | Quadratblick">
+  <meta name="twitter:description" content="Content, der Objekte verkauft und Maklerbüros sichtbar macht. Foto, Video und Social im Raum Bühl, Mittelbaden und Ortenau.">
   <meta name="twitter:image" content="https://www.quadratblick.de/og-image.jpg">
   <meta name="theme-color" content="#243B2E">
   <!-- Structured data: ProfessionalService (LocalBusiness) for local SEO -->
@@ -34,8 +34,8 @@
     "@type": "ProfessionalService",
     "@id": "https://www.quadratblick.de/#business",
     "name": "Quadratblick",
-    "alternateName": "Quadratblick — Immobilienfotografie & Immobilienvideo",
-    "description": "Immobilienfotograf und Videoproduzent im Raum Bühl, Baden-Baden und Ortenau. Professionelle Immobilienfotos, Objektvideos und Drohnenaufnahmen für Verkauf und Vermietung.",
+    "alternateName": "Quadratblick · Content für Immobilien und Maklerbüros",
+    "description": "Foto- und Videocontent für Immobilien und Maklerbüros im Raum Bühl, Baden-Baden und Ortenau. Objektcontent für die Vermarktung einzelner Immobilien sowie Material für die Sichtbarkeit des Büros.",
     "url": "https://www.quadratblick.de/",
     "email": "info@quadratblick.de",
     "telephone": "+49 159 0469 2843",
@@ -71,37 +71,35 @@
         { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Immobilienfotografie", "description": "Professionell bearbeitete Objektfotos für Exposé und Portale." } },
         { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Immobilienvideo / Objektfilm", "description": "Konzipierte Immobilienfilme für Verkauf und Vermietung." } },
         { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Drohnenaufnahmen", "description": "Luftaufnahmen von Immobilie, Grundstück und Lage." } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Virtuelles Home Staging", "description": "Leere Räume digital möbliert und wohnlich inszeniert." } }
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Virtuelles Home Staging", "description": "Leere Räume digital möbliert und wohnlich inszeniert." } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Marke und Social Media für Maklerbüros", "description": "Content, der aus der laufenden Objektarbeit entsteht und das Maklerbüro als Marke sichtbar macht." } }
       ]
     }
   }
   </script>
 </head>
 <body>
-  <!-- Static fallback form so Netlify's deploy-time scanner detects this form;
-       the real, JS-rendered form (src/sections/FaqContact.jsx ContactForm) submits to it. -->
-  <form name="kontakt" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
-    <input type="hidden" name="form-name" value="kontakt" />
+  <!-- Statisches Gegenstück zum JS-Formular (src/v2/sections/Anfrage.jsx),
+       damit der Netlify-Scanner das Formular beim Deploy erkennt. -->
+  <form name="objektanfrage" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="objektanfrage" />
     <input type="text" name="bot-field" />
+    <input type="text" name="objektart" />
+    <input type="text" name="anzahl" />
+    <input type="text" name="umfang" />
+    <input type="text" name="erweiterung-drohnenfotos" />
+    <input type="text" name="erweiterung-launchreel" />
+    <input type="text" name="erweiterung-objektfilm" />
+    <input type="text" name="erweiterung-maklerkamera" />
+    <input type="text" name="wunschtermin" />
+    <input type="text" name="zeitraum" />
     <input type="text" name="name" />
-    <input type="email" name="email" />
-    <textarea name="nachricht"></textarea>
-  </form>
-
-  <!-- Static fallback for the booking workflow (src/sections/Booking.jsx) so Netlify detects it. -->
-  <form name="terminanfrage" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
-    <input type="hidden" name="form-name" value="terminanfrage" />
-    <input type="text" name="bot-field" />
-    <input type="text" name="vorname" />
-    <input type="text" name="nachname" />
+    <input type="text" name="firma" />
     <input type="email" name="email" />
     <input type="tel" name="telefon" />
-    <input type="text" name="firma" />
     <input type="text" name="adresse" />
-    <input type="text" name="objektanzahl" />
-    <input type="text" name="wunschtermin" />
-    <textarea name="zusammenfassung"></textarea>
     <textarea name="nachricht"></textarea>
+    <textarea name="zusammenfassung"></textarea>
   </form>
 
   <div id="root"></div>
