@@ -7,48 +7,40 @@ import { Split } from '../fx.jsx';
  */
 const items = [
   {
-    q: 'Was ist im Preis einer Objektklasse enthalten?',
-    a: 'Die Produktion vor Ort und die vollständige Bearbeitung einer auf das Objekt abgestimmten Bildauswahl. Enthalten sind Innenaufnahmen, Außenansichten sowie Neben- und Technikräume, soweit sie ins Exposé gehören. Sie erhalten die Dateien einsatzfertig für Exposé, Portale und Ihre eigenen Kanäle. Erweiterungen wie Drohne oder Video kommen separat dazu.',
+    q: 'Was ist im Preis enthalten?',
+    a: 'Die Aufnahmen vor Ort und die fertige Bearbeitung. Enthalten sind Innenräume, Außenansichten sowie Neben- und Technikräume, soweit sie ins Exposé gehören. Sie bekommen die Dateien einsatzfertig für Exposé, Portale und Ihre Website. Drohne und Video kommen separat dazu.',
   },
   {
     q: 'Wie muss die Immobilie vorbereitet sein?',
-    a: 'Die Räume sollten aufgeräumt und zugänglich sein, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand und der Zugang zum Termin geklärt. Sie erhalten dafür vorab eine kurze Checkliste. Ist ein Objekt nicht aufnahmebereit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
+    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Sie bekommen vorab eine kurze Checkliste. Ist ein Objekt nicht so weit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
   },
   {
     q: 'Wie schnell wird geliefert?',
     // TODO: Angabe durch Fabian bestätigen (Regellieferzeit je Objektklasse und je Video-Umfang).
-    a: 'Den Liefertermin nennen wir verbindlich mit der Auftragsbestätigung, abhängig von Umfang und Auslastung. Wenn es schneller gehen muss, gibt es die Express-Bearbeitung mit einem Aufschlag von 30 Prozent, mindestens 120 Euro.',
+    a: 'Den Liefertermin nennen wir verbindlich mit der Bestätigung. Wenn es schneller gehen muss, gibt es die Express-Bearbeitung mit 30 Prozent Aufschlag, mindestens 120 Euro.',
   },
   {
     q: 'Was passiert bei schlechtem Wetter oder wenn die Drohne nicht fliegen darf?',
-    a: 'Innenaufnahmen finden statt. Außen- und Drohnenaufnahmen verschieben wir auf einen passenden Termin, ohne dass dafür ein zweiter Produktionstag berechnet wird. Drohnenflüge hängen zusätzlich von der rechtlichen Zulässigkeit am Standort ab. Das prüfen wir vor dem Termin, nicht erst vor Ort.',
+    a: 'Die Innenaufnahmen finden statt. Außen- und Drohnenaufnahmen holen wir an einem passenden Tag nach, ohne dass ein zweiter Produktionstag berechnet wird. Ob am Standort geflogen werden darf, prüfen wir vor dem Termin.',
   },
   {
     q: 'Wie viele Korrekturschleifen sind enthalten?',
     // TODO: Angabe durch Fabian bestätigen (Anzahl der enthaltenen Korrekturrunden je Leistung).
-    a: 'Eine gebündelte Korrekturrunde ist Bestandteil jeder Produktion. Sie sammeln Ihre Anmerkungen und geben sie in einem Durchgang, das hält den Ablauf für beide Seiten schlank. Weitergehende Änderungswünsche stimmen wir separat ab.',
+    a: 'Eine Korrekturrunde gehört dazu. Sie sammeln Ihre Anmerkungen und geben sie in einem Durchgang. Weitergehende Änderungen stimmen wir separat ab.',
   },
   {
     q: 'Wie sind die Nutzungsrechte geregelt?',
     // TODO: Angabe durch Fabian bestätigen (genauer Umfang der Nutzungsrechte je Leistung).
-    a: 'Sie erhalten die Rechte, die Aufnahmen für die Vermarktung des Objekts und für Ihre eigenen Kanäle zu nutzen. Ob wir das Ergebnis als Arbeitsprobe zeigen dürfen, vereinbaren wir separat, und Sie können das jederzeit widerrufen.',
-  },
-  {
-    q: 'Was kostet es, wenn mehrere Objekte am selben Tag produziert werden?',
-    a: 'Für jedes weitere Objekt am selben Produktionstag reduziert sich der fotografische Grundpreis um 50 Euro. Voraussetzung sind derselbe Kunde, eine gemeinsame Rechnung, eine sinnvolle Route ohne zusätzliche Anfahrt und vorbereitete Objekte.',
+    a: 'Sie dürfen die Aufnahmen für die Vermarktung des Objekts und auf Ihren eigenen Kanälen nutzen. Ob wir das Ergebnis als Arbeitsprobe zeigen dürfen, vereinbaren wir separat, und Sie können das jederzeit widerrufen.',
   },
   {
     q: 'Wo sind Sie im Einsatz und kommt Anfahrt dazu?',
     // TODO: Angabe durch Fabian bestätigen (Einsatzradius ohne Aufschlag und Konditionen darüber hinaus).
-    a: 'Der Schwerpunkt liegt in Bühl, Mittelbaden und der Ortenau. Objekte darüber hinaus sind möglich, wir nennen die Anfahrt dann vor der Zusage im Festpreis. Sie erfahren die Kondition also, bevor Sie sich entscheiden.',
+    a: 'Der Schwerpunkt liegt in Bühl, Mittelbaden und der Ortenau. Objekte darüber hinaus sind möglich, die Anfahrt steht dann vor Ihrer Zusage im Festpreis.',
   },
   {
     q: 'Wie funktioniert eine regelmäßige Zusammenarbeit?',
-    a: 'Wenn laufend Objekte anstehen, planen wir Produktionstage im Voraus und arbeiten mit festen Abläufen und einem Ansprechpartner. Die Konditionen hängen davon ab, wie viele Objekte anfallen und wie gut sie sich bündeln lassen. Das besprechen wir im Gespräch, statt eine Pauschale zu nennen, die nicht zu Ihrem Volumen passt.',
-  },
-  {
-    q: 'Worin unterscheiden sich Objektcontent und Marke & Social?',
-    a: 'Objektcontent verkauft eine konkrete Immobilie. Marke & Social macht Ihr Büro sichtbar, unabhängig vom einzelnen Objekt. Beides entsteht oft aus derselben Produktion: Der Objektfilm verkauft die Immobilie und zeigt gleichzeitig, wie Sie arbeiten. Objektcontent hat feste Preise, Marke & Social wird nach einem Gespräch angeboten.',
+    a: 'Wir planen Produktionstage im Voraus und arbeiten mit festen Abläufen. Was das kostet, hängt davon ab, wie viele Objekte anfallen und wie gut sie sich bündeln lassen. Deshalb besprechen wir es, statt eine Pauschale zu nennen, die nicht zu Ihrem Volumen passt.',
   },
 ];
 

@@ -6,11 +6,10 @@ import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
 
 /** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
 export const PAGES = [
-  { id: 'leistungen', label: 'Leistungen' },
-  { id: 'objektcontent', label: 'Objektcontent' },
-  { id: 'marke', label: 'Marke & Social' },
+  { id: 'leistungen', label: 'Leistungen & Preise' },
   { id: 'referenzen', label: 'Referenzen' },
-  { id: 'faq', label: 'FAQ' },
+  { id: 'marke', label: 'Ihr Büro' },
+  { id: 'faq', label: 'Fragen' },
 ];
 
 /* ---------- Navigation (seitenübergreifend) ---------- */
@@ -110,7 +109,7 @@ function Footer() {
           <div className="v2-footer-brand">
             <img src={logoWhite} alt="Quadratblick" />
             <p>
-              Foto- &amp; Videoproduktion für Immobilien · Objektcontent &amp; Markenaufbau ·
+              Immobilienfotografie und Objektvideo für Maklerbüros ·
               Raum Bühl · Mittelbaden · Ortenau
             </p>
           </div>

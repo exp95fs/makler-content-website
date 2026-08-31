@@ -1580,3 +1580,45 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   .qb-form-foot { flex-direction: column; align-items: stretch; }
   .qb-form-foot .v2-btn { justify-content: center; }
 }
+
+/* ---------- Erweiterungen als kompakte Zeile (Preise stehen im Formular) ---------- */
+.qb-erw {
+  margin-top: clamp(40px, 4.6vw, 64px); padding-top: clamp(24px, 2.8vw, 34px);
+  border-top: 1px solid var(--line);
+}
+.qb-erw .k { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-deep); }
+.qb-erw-liste {
+  margin: 14px 0 0; font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.65; letter-spacing: -0.01em;
+  color: var(--text); max-width: 68ch;
+}
+.qb-erw-note { margin: 14px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
+
+/* ---------- Teaser-Stichpunkte (Auftritt des Büros) ---------- */
+.qb-teaser-punkte {
+  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  border-top: 1px solid var(--line-dark);
+}
+.qb-teaser-punkte li {
+  padding: clamp(20px, 2.4vw, 30px) clamp(18px, 2vw, 30px) clamp(20px, 2.4vw, 30px) 0;
+  border-bottom: 1px solid var(--line-dark);
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(0.98rem, 1.4vw, 1.12rem); line-height: 1.5; letter-spacing: -0.01em;
+  color: var(--linen);
+}
+@media (max-width: 760px) {
+  .qb-teaser-punkte { grid-template-columns: 1fr; }
+}
+
+/* ---------- Anfrage: Erweiterungen über die volle Formularbreite ---------- */
+.qb-extras {
+  margin-top: clamp(26px, 3vw, 40px); padding-top: clamp(22px, 2.6vw, 30px);
+  border-top: 1px solid var(--line-dark);
+}
+.qb-extras .qb-checks { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.qb-extras .qb-staging { margin-top: 16px; max-width: 340px; }
+@media (max-width: 720px) {
+  .qb-extras .qb-checks { grid-template-columns: 1fr; }
+  .qb-extras .qb-staging { max-width: none; }
+}

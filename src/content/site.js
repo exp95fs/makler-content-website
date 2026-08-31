@@ -79,67 +79,94 @@ export const buendelVorteil = {
 };
 
 /* ------------------------------------------------------------------ *
- * Vermarktungslevel
- * TODO: Finale Namen durch Fabian bestätigen (Arbeitstitel aus Strategie 0.6).
+ * Umfang der Produktion
+ * Die Namen sagen ohne Erklärung, was enthalten ist. Bewusst keine
+ * Kunstbegriffe, keine Stufenlogik über Qualität.
  * ------------------------------------------------------------------ */
 export const level = [
   {
-    key: 'foto',
-    name: 'Foto-Launch',
-    zweck: 'Für den Start der Vermarktung',
+    key: 'fotos',
+    name: 'Nur Fotos',
+    zweck: 'Für Exposé und Portale',
     punkte: [
-      'Vollständig bearbeitete Bildauswahl, abgestimmt auf das Objekt',
-      'Innen, außen sowie Neben- und Technikräume, soweit sie ins Exposé gehören',
+      'Bearbeitete Bildauswahl, abgestimmt auf das Objekt',
+      'Innen, außen sowie Neben- und Technikräume',
       'Einsatzfertig für Exposé, Portale und Ihre Website',
     ],
   },
   {
-    key: 'sichtbar',
-    name: 'Sichtbarer Launch',
-    zweck: 'Für Objekte, die auch außerhalb der Portale laufen sollen',
+    key: 'kurzvideo',
+    name: 'Fotos und Kurzvideo',
+    zweck: 'Wenn das Objekt auch auf Social Media laufen soll',
     empfohlen: true,
     punkte: [
-      'Alles aus dem Foto-Launch',
-      'Vertikales Launch-Reel für die Ankündigung des Objekts',
-      'Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch',
+      'Alle Fotos wie oben',
+      'Video im Hochformat, etwa 30 bis 45 Sekunden',
     ],
   },
   {
-    key: 'profiliert',
-    name: 'Profilierter Launch',
-    zweck: 'Wenn das Objekt und Ihr Büro gemeinsam auftreten',
+    key: 'objektfilm',
+    name: 'Fotos und Objektfilm',
+    zweck: 'Wenn Sie das Objekt vollständig zeigen wollen',
     punkte: [
-      'Alles aus dem Foto-Launch',
-      'Objektfilm mit vertikalem Schnitt für Social Media',
-      'Auf Wunsch mit Ihnen vor der Kamera oder als Voice-over',
+      'Alle Fotos wie oben',
+      'Geführter Film durch das Objekt, mit Hochformat-Schnitt',
+      'Auf Wunsch mit Ihnen vor der Kamera',
     ],
   },
 ];
 
 /* ------------------------------------------------------------------ *
  * Erweiterungen
+ * Die Preise stehen nicht auf der Seite, sondern im Anfrageformular,
+ * wo sie direkt mitgerechnet werden.
+ * `preis`      – fester Betrag, geht in die Summe ein
+ * `jeEinheit`  – Mengenpreis, Formular zeigt ein Mengenfeld
+ * `zuschlag`   – prozentualer Aufschlag auf die Summe
  * ------------------------------------------------------------------ */
 export const erweiterungen = [
-  { key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '170 €',
-    beschreibung: 'Gebäude, Grundstück und Lage aus der Luft. Sinnvoll bei Häusern, größeren Grundstücken und erklärungsbedürftiger Lage.' },
-  { key: 'drohnenmedia', name: 'Drohnen-Media', preis: 260, preisLabel: '260 €',
-    beschreibung: 'Drohnenfotos und zusätzlich bewegtes Material als Grundlage für Reel oder Objektfilm.' },
-  { key: 'launchreel', name: 'Launch-Reel', preis: 390, preisLabel: '390 €',
-    beschreibung: 'Vertikaler Clip von etwa 30 bis 45 Sekunden für die Ankündigung des Objekts.' },
-  { key: 'objektfilm', name: 'Objektfilm', preis: 890, preisLabel: '890 €',
-    beschreibung: 'Geführter Film durch das Objekt, inklusive eines vertikalen Schnitts für Social Media.' },
-  { key: 'maklerkamera', name: 'Makler vor der Kamera', preis: 350, preisLabel: '350 €',
-    beschreibung: 'Sie führen durch das Objekt. Verkauft die Immobilie und zeigt Eigentümern zugleich, wie Sie arbeiten.' },
-  { key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '190 €',
-    beschreibung: 'Ihre Stimme führt durch den Film, ohne Auftritt vor der Kamera.' },
-  { key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', preis: 180, preisLabel: '180 €',
-    beschreibung: 'Ein weiterer Schnitt aus vorhandenem Material für einen zweiten Anlass in der Vermarktung.' },
-  { key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '450 €',
-    beschreibung: 'Drei Ausleitungen für benannte Anlässe im Vermarktungsverlauf, etwa Ankündigung, Highlight und Abschluss.' },
-  { key: 'homestaging', name: 'Virtuelles Home Staging', preis: 89, preisLabel: '89 € je Bild, ab drei Bildern 69 €',
-    beschreibung: 'Leere Räume werden digital möbliert.' },
-  { key: 'express', name: 'Express', preis: null, preisLabel: 'Aufschlag 30 %, mindestens 120 €',
-    beschreibung: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss.' },
+  {
+    key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '170 €',
+    beschreibung: 'Gebäude, Grundstück und Lage aus der Luft. Sinnvoll bei Häusern, größeren Grundstücken und schwer erklärbarer Lage.',
+  },
+  {
+    key: 'drohnenvideo', name: 'Drohnenfotos und Drohnenvideo', preis: 260, preisLabel: '260 €',
+    beschreibung: 'Zusätzlich zu den Drohnenfotos bewegte Aufnahmen, die im Kurzvideo oder im Objektfilm verwendet werden.',
+  },
+  {
+    key: 'kurzvideo', name: 'Kurzvideo für Social Media', preis: 390, preisLabel: '390 €',
+    beschreibung: 'Video im Hochformat, etwa 30 bis 45 Sekunden, für Instagram und Facebook.',
+  },
+  {
+    key: 'objektfilm', name: 'Objektfilm', preis: 890, preisLabel: '890 €',
+    beschreibung: 'Geführter Film durch das Objekt, inklusive eines Hochformat-Schnitts für Social Media.',
+  },
+  {
+    key: 'maklerkamera', name: 'Sie vor der Kamera', preis: 350, preisLabel: '350 €',
+    beschreibung: 'Sie führen selbst durch das Objekt und sind im Film zu sehen.',
+  },
+  {
+    key: 'stimme', name: 'Ihre Stimme im Film', preis: 190, preisLabel: '190 €',
+    beschreibung: 'Sie sprechen den Film ein, ohne selbst vor der Kamera zu stehen.',
+  },
+  {
+    key: 'zweitfassung', name: 'Zweite Videofassung', preis: 180, preisLabel: '180 €',
+    beschreibung: 'Ein zweiter Schnitt aus dem vorhandenen Material, zum Beispiel kürzer oder für einen anderen Kanal.',
+  },
+  {
+    key: 'zusatzvideos', name: 'Drei kurze Zusatzvideos', preis: 450, preisLabel: '450 €',
+    beschreibung: 'Drei weitere kurze Clips aus dem Material des Termins, für spätere Beiträge zum selben Objekt.',
+  },
+  {
+    key: 'homestaging', name: 'Virtuelles Home Staging', jeEinheit: 89, jeEinheitAb3: 69,
+    preisLabel: '89 € je Bild, ab drei Bildern 69 €',
+    beschreibung: 'Leere Räume werden am Rechner möbliert, damit Interessenten die Nutzung erkennen.',
+  },
+  {
+    key: 'express', name: 'Express-Bearbeitung', zuschlag: 0.30, zuschlagMin: 120,
+    preisLabel: 'Aufschlag 30 %, mindestens 120 €', preisLabelKurz: '+30 %, mind. 120 €',
+    beschreibung: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss.',
+  },
 ];
 
 /* ------------------------------------------------------------------ *

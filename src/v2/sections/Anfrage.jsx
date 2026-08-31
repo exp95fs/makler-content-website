@@ -4,16 +4,19 @@ import { Arrow } from '../ui.jsx';
 import { objektklassen, sonderobjekt, level, erweiterungen, buendelVorteil, kontakt, preis } from '../../content/site.js';
 
 /**
- * Anfrage mit direktem Terminpfad. Der Kunde stellt sein Objekt zusammen,
- * nennt einen Wunschtermin und schickt die Anfrage ab, ohne dass vorher ein
- * Gespräch nötig ist. Die Preisanzeige ist eine Orientierung, verbindlich
- * wird der Preis mit der Auftragsbestätigung.
+ * Anfrage mit direktem Terminpfad. Hier wird konfiguriert, nicht auf der
+ * Seite: alle Erweiterungen mit Preis, laufende Summe. Der Kunde kann
+ * anfragen, ohne vorher zu telefonieren.
  *
- * Für die Erweiterungen im Formular bewusst nur die gängigen Positionen,
- * damit die Anfrage kurz bleibt. Alles Weitere klären wir in der Abstimmung.
+ * Rechenlogik der Summe:
+ *   Objektklasse × Anzahl (jedes weitere Objekt minus Bündelvorteil)
+ *   + Festbeträge der gewählten Erweiterungen
+ *   + Home Staging nach Menge (ab drei Bildern günstiger)
+ *   + Express als Prozentaufschlag mit Mindestbetrag, zuletzt
  */
-const formErweiterungen = erweiterungen.filter((e) =>
-  ['drohnenfotos', 'launchreel', 'objektfilm', 'maklerkamera'].includes(e.key));
+const festeErweiterungen = erweiterungen.filter((e) => typeof e.preis === 'number');
+const homestaging = erweiterungen.find((e) => e.key === 'homestaging');
+const express = erweiterungen.find((e) => e.key === 'express');
 
 function encodeFormData(data) {
   return Object.keys(data)
@@ -26,30 +29,44 @@ export function Anfrage() {
   const [anzahl, setAnzahl] = useState(1);
   const [lv, setLv] = useState('');
   const [addons, setAddons] = useState({});
+  const [staging, setStaging] = useState(0);
+  const [eilig, setEilig] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const gewaehlteKlasse = objektklassen.find((k) => k.key === klasse);
 
-  const summe = useMemo(() => {
+  const kalkulation = useMemo(() => {
     if (!gewaehlteKlasse) return null;
-    let s = gewaehlteKlasse.preis;
-    for (let i = 1; i < anzahl; i += 1) s += gewaehlteKlasse.preis - buendelVorteil.betrag;
-    formErweiterungen.forEach((e) => { if (addons[e.key] && e.preis) s += e.preis; });
-    return s;
-  }, [gewaehlteKlasse, anzahl, addons]);
+    let summe = gewaehlteKlasse.preis;
+    for (let i = 1; i < anzahl; i += 1) summe += gewaehlteKlasse.preis - buendelVorteil.betrag;
+    festeErweiterungen.forEach((e) => { if (addons[e.key]) summe += e.preis; });
+    if (staging > 0) {
+      summe += staging * (staging >= 3 ? homestaging.jeEinheitAb3 : homestaging.jeEinheit);
+    }
+    const aufschlag = eilig
+      ? Math.max(Math.round(summe * express.zuschlag), express.zuschlagMin)
+      : 0;
+    return { summe: summe + aufschlag, aufschlag };
+  }, [gewaehlteKlasse, anzahl, addons, staging, eilig]);
+
+  const gewaehlteNamen = [
+    ...festeErweiterungen.filter((e) => addons[e.key]).map((e) => e.name),
+    ...(staging > 0 ? [`${homestaging.name} (${staging} Bilder)`] : []),
+    ...(eilig ? [express.name] : []),
+  ];
 
   const submit = (e) => {
     e.preventDefault();
     setBusy(true); setError(false);
     const fd = Object.fromEntries(new FormData(e.target).entries());
     const zusammenfassung = [
-      `Objektart: ${gewaehlteKlasse ? gewaehlteKlasse.name : 'individuelles Objekt'}`,
+      `Objektart: ${gewaehlteKlasse ? gewaehlteKlasse.name : 'größeres oder komplexes Objekt'}`,
       `Anzahl Objekte: ${anzahl}`,
       `Umfang: ${level.find((l) => l.key === lv)?.name || 'noch offen'}`,
-      `Erweiterungen: ${formErweiterungen.filter((x) => addons[x.key]).map((x) => x.name).join(', ') || 'keine'}`,
-      `Preisorientierung: ${summe ? preis(summe) + ' netto' : 'individuelle Prüfung'}`,
+      `Erweiterungen: ${gewaehlteNamen.join(', ') || 'keine'}`,
+      `Preisorientierung: ${kalkulation ? preis(kalkulation.summe) + ' netto' : 'individuelle Prüfung'}`,
     ].join('\n');
     fetch('/', {
       method: 'POST',
@@ -70,8 +87,8 @@ export function Anfrage() {
             Objekt beschreiben, Wunschtermin nennen, fertig.
           </Split>
           <p className="v2-lead on-dark" data-reveal>
-            Kein Gespräch nötig, um anzufragen. Sie erhalten die Bestätigung mit Festpreis und
-            Liefertermin. Die Anfrage ist unverbindlich, ein Auftrag entsteht erst mit Ihrer Zusage.
+            Sie sehen beim Ausfüllen, was Ihr Objekt kostet. Die Anfrage ist unverbindlich,
+            verbindlich wird der Preis mit unserer Bestätigung.
           </p>
         </div>
 
@@ -93,7 +110,6 @@ export function Anfrage() {
                      style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />
 
               <div className="qb-form-grid">
-                {/* Spalte 1: Objekt */}
                 <fieldset className="qb-fs">
                   <legend>Ihr Objekt</legend>
 
@@ -102,7 +118,7 @@ export function Anfrage() {
                     <select name="objektart" value={klasse} onChange={(e) => setKlasse(e.target.value)} required>
                       <option value="" disabled>Bitte wählen</option>
                       {objektklassen.map((k) => (
-                        <option key={k.key} value={k.key}>{k.name} · ab {preis(k.preis)}</option>
+                        <option key={k.key} value={k.key}>{k.name} · {preis(k.preis)}</option>
                       ))}
                       <option value="sonder">{sonderobjekt.name} · {sonderobjekt.preisLabel}</option>
                     </select>
@@ -125,27 +141,8 @@ export function Anfrage() {
                     </select>
                   </label>
 
-                  <div className="qb-field">
-                    <span>Erweiterungen</span>
-                    <div className="qb-checks">
-                      {formErweiterungen.map((e) => (
-                        <label key={e.key} className={`qb-check ${addons[e.key] ? 'is-on' : ''}`}>
-                          <input
-                            type="checkbox"
-                            name={`erweiterung-${e.key}`}
-                            checked={!!addons[e.key]}
-                            onChange={() => setAddons((a) => ({ ...a, [e.key]: !a[e.key] }))}
-                          />
-                          <span className="bx" aria-hidden="true">{addons[e.key] ? '✓' : ''}</span>
-                          <span className="tx">{e.name}</span>
-                          <span className="pr">{e.preisLabel}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
                 </fieldset>
 
-                {/* Spalte 2: Termin und Kontakt */}
                 <fieldset className="qb-fs">
                   <legend>Termin und Kontakt</legend>
 
@@ -193,12 +190,56 @@ export function Anfrage() {
                 </fieldset>
               </div>
 
+              <fieldset className="qb-fs qb-extras">
+                <legend>Zusätzlich buchen</legend>
+                <div className="qb-checks">
+                  {festeErweiterungen.map((e) => (
+                    <label key={e.key} className={`qb-check ${addons[e.key] ? 'is-on' : ''}`}>
+                      <input
+                        type="checkbox"
+                        name={`erweiterung-${e.key}`}
+                        checked={!!addons[e.key]}
+                        onChange={() => setAddons((a) => ({ ...a, [e.key]: !a[e.key] }))}
+                      />
+                      <span className="bx" aria-hidden="true">{addons[e.key] ? '✓' : ''}</span>
+                      <span className="tx">{e.name}</span>
+                      <span className="pr">{e.preisLabel}</span>
+                    </label>
+                  ))}
+
+                  <label className={`qb-check ${eilig ? 'is-on' : ''}`}>
+                    <input type="checkbox" name="erweiterung-express" checked={eilig}
+                           onChange={() => setEilig((v) => !v)} />
+                    <span className="bx" aria-hidden="true">{eilig ? '✓' : ''}</span>
+                    <span className="tx">{express.name}</span>
+                    <span className="pr">{express.preisLabelKurz}</span>
+                  </label>
+                </div>
+
+                <label className="qb-field qb-staging">
+                  <span>{homestaging.name}, Anzahl Bilder</span>
+                  <select name="homestaging" value={staging} onChange={(e) => setStaging(Number(e.target.value))}>
+                    <option value={0}>Keine</option>
+                    {[1, 2, 3, 4, 5, 6, 8, 10].map((n) => (
+                      <option key={n} value={n}>
+                        {n} {n === 1 ? 'Bild' : 'Bilder'} · {preis(n * (n >= 3 ? homestaging.jeEinheitAb3 : homestaging.jeEinheit))}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </fieldset>
+
               <div className="qb-form-foot">
                 <div className="qb-summe">
-                  <span className="k">Preisorientierung</span>
-                  <b>{klasse === 'sonder' ? 'Individuelles Angebot' : (summe ? `${preis(summe)} netto` : 'Objektart wählen')}</b>
+                  <span className="k">Ihr Preis</span>
+                  <b>
+                    {klasse === 'sonder'
+                      ? 'Angebot nach Objektprüfung'
+                      : (kalkulation ? `${preis(kalkulation.summe)} netto` : 'Objektart wählen')}
+                  </b>
                   <small>
                     {anzahl > 1 && gewaehlteKlasse ? `Enthält ${preis(buendelVorteil.betrag)} Vorteil je weiterem Objekt. ` : ''}
+                    {kalkulation && kalkulation.aufschlag > 0 ? `Enthält ${preis(kalkulation.aufschlag)} Express-Aufschlag. ` : ''}
                     Zzgl. gesetzlicher USt. Verbindlich wird der Preis mit der Bestätigung.
                   </small>
                 </div>

@@ -1,35 +1,29 @@
 import { Split } from '../fx.jsx';
 
 /**
- * Warum Quadratblick. Ersetzt die frühere Sektion, die begründet hat,
- * warum guter Content sinnvoll ist. Diese Punkte beantworten, warum
- * dieser Anbieter. Bewusst nicht über Bildqualität argumentiert:
- * die ist Voraussetzung und lädt sonst zum Preisvergleich ein.
+ * Warum Quadratblick. Vier Punkte, jeder mit eigener Aussage.
+ * Bewusst nicht über Bildqualität argumentiert: die ist Voraussetzung
+ * und lädt sonst zum Preisvergleich ein.
+ *
+ * Diese Sektion ist die einzige Stelle der Seite, an der der Gedanke der
+ * Mehrfachverwertung und der Vermarktungszeitraum vorkommen dürfen.
  */
 const gruende = [
   {
-    title: 'Konzipiert als Vermarktungspaket',
-    text: 'Wir liefern keine Bilder für ein Inserat, sondern Material für die Vermarktung eines Objekts. Was produziert wird, richtet sich danach, was in den kommenden Wochen gebraucht wird.',
+    title: 'Alles an einem Termin',
+    text: 'Fotos, Drohne und Video entstehen in einem Durchgang. Sie beauftragen einen Dienstleister statt drei und zahlen eine Anfahrt statt drei.',
   },
   {
-    title: 'Sichtbar über den ganzen Zeitraum',
-    text: 'Ankündigung, Start, laufende Vermarktung, besondere Merkmale, Abschluss. Für jeden dieser Anlässe ist etwas da, statt einmal zum Launch alles auf einmal zu verbrauchen.',
+    title: 'Über den ersten Tag hinaus gedacht',
+    text: 'Ein Objekt braucht nicht nur zur Ankündigung Aufnahmen, sondern auch später noch. Wir produzieren so, dass für die Wochen danach etwas übrig ist.',
   },
   {
     title: 'Jede Aufnahme arbeitet doppelt',
-    text: 'Ein Objektfilm verkauft die Immobilie. Gleichzeitig sieht ein Eigentümer, mit welchem Aufwand Ihr Büro vermarktet. Das ist der Grund, warum wir Objekt und Büro zusammen denken.',
-  },
-  {
-    title: 'Ein Prozess statt einzelner Gewerke',
-    text: 'Foto, Drohne, Video und die Ausleitungen daraus entstehen aus einer Produktionsbasis an einem Termin. Sie koordinieren keine drei Dienstleister und zahlen keine drei Anfahrten.',
+    text: 'Ein Objektfilm verkauft die Immobilie. Gleichzeitig sieht ein Eigentümer, mit welchem Aufwand Ihr Büro arbeitet.',
   },
   {
     title: 'Auf den Büroalltag abgestimmt',
-    text: 'Ein Ansprechpartner, eine Checkliste zur Vorbereitung, klare Abstimmung, planbare Lieferung. Der Aufwand auf Ihrer Seite bleibt bei Zugang und kurzer Absprache.',
-  },
-  {
-    title: 'Regional und auf Immobilien spezialisiert',
-    text: 'Wir arbeiten im Raum Bühl, Mittelbaden und der Ortenau und ausschließlich an Immobilien. Kurze Wege, Kenntnis der Lagen, keine Einarbeitung in Ihre Branche.',
+    text: 'Ein Ansprechpartner, feste Preise, planbare Lieferung. Kurze Wege in der Region und ausschließlich Immobilien, also keine Einarbeitung in Ihre Branche.',
   },
 ];
 
@@ -43,8 +37,7 @@ export function Warum() {
             Was uns von einer reinen Fotoproduktion unterscheidet.
           </Split>
           <p className="v2-lead" data-reveal>
-            Gute Aufnahmen setzen wir voraus. Der Unterschied liegt darin, wofür sie gemacht sind
-            und was danach mit ihnen passiert.
+            Gute Aufnahmen setzen wir voraus. Vier Dinge kommen dazu.
           </p>
         </div>
         <div className="v2-benefits">

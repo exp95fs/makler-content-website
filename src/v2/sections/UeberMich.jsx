@@ -18,15 +18,9 @@ export function UeberMich() {
               Fabian, Gründer und Produzent bei Quadratblick.
             </Split>
             <p data-reveal>
-              Ich komme aus der professionellen Foto- und Videoproduktion und habe über Jahre
-              visuelle Projekte für Unternehmen und Marken umgesetzt. Dabei ging es nie nur um
-              gute Aufnahmen, sondern immer um die Frage, welche Botschaft ankommen soll und wie
-              sie aussehen muss, damit sie bei der richtigen Zielgruppe wirkt.
-            </p>
-            <p data-reveal>
-              Diesen Anspruch übertrage ich auf Immobilien. Vor der Kamera steht das Objekt,
-              im Kopf immer auch das Büro, das es vermarktet. Sie haben einen Ansprechpartner
-              für Konzept, Produktion und Bearbeitung, von der Anfrage bis zur Lieferung.
+              Ich komme aus der professionellen Foto- und Videoproduktion und habe über Jahre für
+              Unternehmen und Marken gearbeitet. Diesen Anspruch bringe ich zu Immobilien. Konzept,
+              Produktion und Bearbeitung liegen bei mir, von der Anfrage bis zur Lieferung.
             </p>
             <p className="loc" data-reveal>Ansässig in Bühl, im Einsatz in Mittelbaden und der Ortenau</p>
           </div>

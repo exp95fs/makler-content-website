@@ -25,14 +25,13 @@ export function Hero() {
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark" data-reveal>Immobilienfotografie &amp; Immobilienvideo · Raum Bühl · Mittelbaden · Ortenau</p>
+        <p className="v2-eyebrow on-dark" data-reveal>Für Maklerbüros und Immobilienabteilungen</p>
         <Split as="h1" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
-          Content, der Ihre Objekte verkauft und Ihr Maklerbüro sichtbar macht.
+          Immobilienfotografie und Objektvideo für Maklerbüros in Mittelbaden.
         </Split>
         <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
-          Wir produzieren Fotos, Drohnenaufnahmen und Videos für die Vermarktung Ihrer Objekte.
-          Jede Produktion ist so angelegt, dass sie zwei Aufgaben erfüllt: Sie verkauft die Immobilie
-          und sie zeigt Eigentümern, wie Ihr Büro arbeitet.
+          Fotos für Exposé und Portale, auf Wunsch mit Drohnenaufnahmen und Video. Ein Termin
+          vor Ort, ein fester Preis je Objekt, ein zugesagter Liefertermin.
         </p>
         <div className="v2-hero-ctas" data-reveal data-delay="0.5">
           <Magnetic>
@@ -47,7 +46,7 @@ export function Hero() {
           </Magnetic>
         </div>
         <p className="v2-hero-note" data-reveal data-delay="0.65">
-          Für Verkauf und Vermietung · Anfrage unverbindlich · Termin direkt anfragbar
+          Festpreis ab 350 € netto je Objekt · Anfrage unverbindlich · Raum Bühl, Mittelbaden, Ortenau
         </p>
       </div>
       <div className="v2-hero-scroll" aria-hidden="true">

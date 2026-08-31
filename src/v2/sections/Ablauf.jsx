@@ -2,15 +2,14 @@ import { useEffect, useRef } from 'react';
 import { Split, gsap, ScrollTrigger, prefersReducedMotion } from '../fx.jsx';
 
 /**
- * Ablauf aus Kundensicht. Fünf Schritte, kurze Texte.
+ * Ablauf aus Kundensicht. Vier Schritte, kurze Texte.
  * Die Scroll-Fortschrittslinie der bisherigen Prozess-Sektion bleibt erhalten.
  */
 const schritte = [
-  { t: 'Anfrage', x: 'Sie geben Objekt, gewünschten Umfang und Wunschtermin an. Das geht in wenigen Minuten und ist unverbindlich.' },
-  { t: 'Abstimmung', x: 'Sie erhalten die Bestätigung mit Festpreis und Liefertermin. Offene Punkte klären wir kurz telefonisch oder per Mail.' },
-  { t: 'Termin', x: 'Der Produktionstag steht fest. Vorab bekommen Sie eine Checkliste, damit das Objekt aufnahmebereit ist.' },
-  { t: 'Produktion', x: 'Foto, Drohne und Video entstehen in einem Durchgang vor Ort. Zugang genügt, außer Sie stehen selbst vor der Kamera.' },
-  { t: 'Lieferung', x: 'Sie erhalten die bearbeiteten Dateien einsatzfertig zum zugesagten Termin, sortiert nach Verwendungszweck.' },
+  { t: 'Anfrage', x: 'Sie geben Objekt, Umfang und Wunschtermin an. Unverbindlich.' },
+  { t: 'Bestätigung', x: 'Sie erhalten Festpreis, Liefertermin und den festen Produktionstag.' },
+  { t: 'Produktion', x: 'Wir sind vor Ort. Zugang genügt, außer Sie stehen selbst vor der Kamera.' },
+  { t: 'Lieferung', x: 'Sie bekommen die fertigen Dateien zum zugesagten Termin, sortiert nach Verwendung.' },
 ];
 
 export function Ablauf() {
@@ -44,9 +43,8 @@ export function Ablauf() {
               Von der Anfrage bis zur Lieferung.
             </Split>
             <p className="v2-lead" data-reveal>
-              Sie müssen für eine Anfrage kein Gespräch führen. Wenn Sie wissen, was Ihr Objekt
-              braucht, buchen Sie den Termin direkt an. Wenn Sie erst etwas klären möchten, melden
-              Sie sich, und wir gehen es gemeinsam durch.
+              Sie müssen für eine Anfrage kein Gespräch führen. Wer erst etwas klären möchte,
+              ruft an.
             </p>
           </div>
           <div className="v2-proc-steps">
