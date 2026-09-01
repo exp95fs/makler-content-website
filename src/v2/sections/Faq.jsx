@@ -2,45 +2,38 @@ import { useEffect, useRef, useState } from 'react';
 import { Split } from '../fx.jsx';
 
 /**
- * FAQ. Wo eine belastbare Angabe noch fehlt, steht eine Platzhalterantwort
- * mit TODO. Diese Stellen vor Veröffentlichung bestätigen lassen.
+ * FAQ von der Live-Seite. Fragen und Reihenfolge unverändert.
+ * Vier Antworten sind angepasst, siehe Kommentare an der jeweiligen Stelle.
  */
 const items = [
   {
-    q: 'Was ist im Preis enthalten?',
-    a: 'Die Aufnahmen vor Ort und die fertige Bearbeitung. Enthalten sind Innenräume, Außenansichten sowie Neben- und Technikräume, soweit sie ins Exposé gehören. Sie bekommen die Dateien einsatzfertig für Exposé, Portale und Ihre Website. Drohne und Video kommen separat dazu.',
+    q: 'Lohnt sich das wirtschaftlich?',
+    // Antwort komplett neu: die frühere baute auf Statistiken auf, für die
+    // keine belastbare Primärquelle für den deutschen Markt vorliegt.
+    a: 'Im Portal steht Ihr Objekt neben vielen anderen, und dort entscheidet die Darstellung darüber, ob jemand weiterklickt. Wer das Objekt vorher gesehen und verstanden hat, meldet sich gezielter, was Ihnen Besichtigungen erspart, die zu nichts führen. Dazu kommt die Wirkung im Eigentümergespräch: Sie zeigen, wie Sie vermarkten, statt es zu beschreiben. Gemessen an der Provision eines einzelnen Objekts bewegt sich die Produktion ab 350 € netto in einer Größenordnung, die sich schon über einen Auftrag rechnet.',
   },
   {
-    q: 'Wie muss die Immobilie vorbereitet sein?',
-    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Sie bekommen vorab eine kurze Checkliste. Ist ein Objekt nicht so weit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
+    q: 'Erstellen Sie auch Content für Objekte zur Vermietung?',
+    // Angepasst: Ferien- und Kurzzeitobjekte werden nicht mehr genannt.
+    a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Mietobjekte. Dort zählt vor allem, dass das Objekt schnell verstanden wird und die Aufnahmen über eine einzelne Vermietung hinaus nutzbar bleiben.',
   },
   {
-    q: 'Wie schnell wird geliefert?',
-    // TODO: Angabe durch Fabian bestätigen (Regellieferzeit je Objektklasse und je Video-Umfang).
-    a: 'Den Liefertermin nennen wir verbindlich mit der Bestätigung. Wenn es schneller gehen muss, gibt es die Express-Bearbeitung mit 30 Prozent Aufschlag, mindestens 120 Euro.',
+    q: 'Wie läuft die Terminanfrage ab?',
+    // Angepasst: der frühere 10-%-Rabatt gilt nicht mehr.
+    a: 'Sie stellen Ihr Paket im Anfragebereich zusammen und wählen einen Wunschtermin. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.',
   },
   {
-    q: 'Was passiert bei schlechtem Wetter oder wenn die Drohne nicht fliegen darf?',
-    a: 'Die Innenaufnahmen finden statt. Außen- und Drohnenaufnahmen holen wir an einem passenden Tag nach, ohne dass ein zweiter Produktionstag berechnet wird. Ob am Standort geflogen werden darf, prüfen wir vor dem Termin.',
+    q: 'Was kostet die Produktion?',
+    // Angepasst an die neue Preisarchitektur.
+    a: 'Der Fotopreis richtet sich nach dem Objektumfang: 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus. Der Objektfilm kostet 890 €, dazu kommen optionale Erweiterungen wie Drohne, Launch-Reel oder Home Staging. Für jedes weitere Objekt am selben Produktionstag sinkt der fotografische Grundpreis um 50 €. Ihr genauer Preis wird in der Terminanfrage berechnet.',
   },
   {
-    q: 'Wie viele Korrekturschleifen sind enthalten?',
-    // TODO: Angabe durch Fabian bestätigen (Anzahl der enthaltenen Korrekturrunden je Leistung).
-    a: 'Eine Korrekturrunde gehört dazu. Sie sammeln Ihre Anmerkungen und geben sie in einem Durchgang. Weitergehende Änderungen stimmen wir separat ab.',
+    q: 'Wie viel Zeit kostet mich das?',
+    a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.',
   },
   {
-    q: 'Wie sind die Nutzungsrechte geregelt?',
-    // TODO: Angabe durch Fabian bestätigen (genauer Umfang der Nutzungsrechte je Leistung).
-    a: 'Sie dürfen die Aufnahmen für die Vermarktung des Objekts und auf Ihren eigenen Kanälen nutzen. Ob wir das Ergebnis als Arbeitsprobe zeigen dürfen, vereinbaren wir separat, und Sie können das jederzeit widerrufen.',
-  },
-  {
-    q: 'Wo sind Sie im Einsatz und kommt Anfahrt dazu?',
-    // TODO: Angabe durch Fabian bestätigen (Einsatzradius ohne Aufschlag und Konditionen darüber hinaus).
-    a: 'Der Schwerpunkt liegt in Bühl, Mittelbaden und der Ortenau. Objekte darüber hinaus sind möglich, die Anfahrt steht dann vor Ihrer Zusage im Festpreis.',
-  },
-  {
-    q: 'Wie funktioniert eine regelmäßige Zusammenarbeit?',
-    a: 'Wir planen Produktionstage im Voraus und arbeiten mit festen Abläufen. Was das kostet, hängt davon ab, wie viele Objekte anfallen und wie gut sie sich bündeln lassen. Deshalb besprechen wir es, statt eine Pauschale zu nennen, die nicht zu Ihrem Volumen passt.',
+    q: 'Wem gehören die Aufnahmen?',
+    a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Wir dürfen das Ergebnis als Arbeitsprobe zeigen.',
   },
 ];
 
@@ -69,7 +62,7 @@ function Item({ q, a, open, onToggle }) {
 export function Faq() {
   const [open, setOpen] = useState(0);
   return (
-    <section className="v2-sec bg-linen" id="faq">
+    <section className="v2-sec bg-linen-2" id="faq">
       <div className="v2-wrap">
         <div className="v2-sec-head center">
           <p className="v2-eyebrow" data-reveal>Häufige Fragen</p>

@@ -1622,3 +1622,21 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   .qb-extras .qb-checks { grid-template-columns: 1fr; }
   .qb-extras .qb-staging { max-width: none; }
 }
+
+/* ---------- Paketzeile: Preis unter dem Namen ---------- */
+.v2-pkg-price {
+  margin-top: 8px; display: flex; align-items: baseline; gap: 6px;
+  font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.25rem, 2vw, 1.6rem); letter-spacing: -0.02em; color: var(--terra-deep);
+}
+.v2-pkg-price small {
+  font-family: var(--font-mono); font-weight: 400; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft);
+}
+.v2-pkg-price.is-text { font-size: clamp(0.95rem, 1.3vw, 1.05rem); color: var(--text-soft); }
+
+/* Zusatz zum Namen einer Erweiterung im Formular */
+.qb-check .tx em {
+  display: block; font-style: normal; margin-top: 3px;
+  font-size: 12px; line-height: 1.4; color: var(--text-inv-soft);
+}

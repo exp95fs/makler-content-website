@@ -6,10 +6,12 @@ import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
 
 /** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
 export const PAGES = [
-  { id: 'leistungen', label: 'Leistungen & Preise' },
-  { id: 'referenzen', label: 'Referenzen' },
-  { id: 'marke', label: 'Ihr Büro' },
-  { id: 'faq', label: 'Fragen' },
+  { id: 'leistungen', label: 'Leistungen' },
+  { id: 'segmente', label: 'Verkauf/Miete' },
+  { id: 'marke', label: 'Markenbildung' },
+  { id: 'prozess', label: 'Prozess' },
+  { id: 'portfolio', label: 'Portfolio' },
+  { id: 'faq', label: 'FAQ' },
 ];
 
 /* ---------- Navigation (seitenübergreifend) ---------- */
@@ -59,8 +61,8 @@ function Nav({ active, dark }) {
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Magnetic strength={0.25}>
-              <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('anfrage'); }}>
-                Objekt anfragen <Arrow size={15} />
+              <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('start'); }}>
+                Termin anfragen <Arrow size={15} />
               </button>
             </Magnetic>
             <button
@@ -90,8 +92,8 @@ function Nav({ active, dark }) {
           ))}
         </nav>
         <div className="v2-menu-foot">
-          <button type="button" className="v2-btn" onClick={() => { setOpen(false); setTimeout(() => scrollToId('anfrage'), 50); }}>
-            Kontakt aufnehmen <Arrow />
+          <button type="button" className="v2-btn" onClick={() => { setOpen(false); setTimeout(() => scrollToId('start'), 50); }}>
+            Termin anfragen <Arrow />
           </button>
           <p>Bühl · Mittelbaden · Ortenau</p>
         </div>
@@ -109,7 +111,7 @@ function Footer() {
           <div className="v2-footer-brand">
             <img src={logoWhite} alt="Quadratblick" />
             <p>
-              Immobilienfotografie und Objektvideo für Maklerbüros ·
+              Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
               Raum Bühl · Mittelbaden · Ortenau
             </p>
           </div>

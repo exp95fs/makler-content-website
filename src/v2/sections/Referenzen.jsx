@@ -41,17 +41,17 @@ export function Referenzen() {
   };
 
   return (
-    <section className="v2-sec bg-ink" id="referenzen">
+    <section className="v2-sec bg-ink" id="portfolio">
       <div className="v2-wrap">
         <div className="qb-ref-head">
           <div className="v2-sec-head" style={{ marginBottom: 0 }}>
-            <p className="v2-eyebrow on-dark" data-reveal>Referenzen</p>
+            <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben</p>
             <Split as="h2" className="v2-h-display v2-h-lg">
-              Die ersten Referenzprojekte
+              Die ersten Referenzobjekte.
             </Split>
             <p className="v2-lead on-dark" data-reveal>
               Aufnahmen aus abgeschlossenen Produktionen für Maklerbüros und Immobilienabteilungen
-              in der Region. Weitere Projekte kommen laufend dazu.
+              in der Region. Unser regionales Portfolio wächst mit jedem neuen Objekt.
             </p>
           </div>
           <div className="qb-ref-nav" data-reveal>
@@ -82,7 +82,7 @@ export function Referenzen() {
 
         <div className="qb-ref-foot" data-reveal>
           <a className="v2-link-inline" href={kontakt.instagram} target="_blank" rel="noopener noreferrer">
-            <InstagramGlyph size={15} />&nbsp;Laufende Arbeiten auf Instagram
+            <InstagramGlyph size={15} />&nbsp;Mehr Arbeitsproben auf Instagram
           </a>
           <span className="v2-idx" style={{ color: 'rgba(243,238,229,0.4)' }}>Raum Bühl · Mittelbaden · Ortenau</span>
         </div>

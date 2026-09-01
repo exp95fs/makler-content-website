@@ -2,17 +2,18 @@ import { useEffect, useRef } from 'react';
 import { Split, gsap, ScrollTrigger, prefersReducedMotion } from '../fx.jsx';
 
 /**
- * Ablauf aus Kundensicht. Vier Schritte, kurze Texte.
- * Die Scroll-Fortschrittslinie der bisherigen Prozess-Sektion bleibt erhalten.
+ * "So läuft's ab" von der Live-Seite. Texte wörtlich, mit einer Korrektur
+ * in Schritt 02: "Sie müssen nicht dabei sein" gilt nicht, wenn der Makler
+ * selbst vor der Kamera steht.
  */
 const schritte = [
-  { t: 'Anfrage', x: 'Sie geben Objekt, Umfang und Wunschtermin an. Unverbindlich.' },
-  { t: 'Bestätigung', x: 'Sie erhalten Festpreis, Liefertermin und den festen Produktionstag.' },
-  { t: 'Produktion', x: 'Wir sind vor Ort. Zugang genügt, außer Sie stehen selbst vor der Kamera.' },
-  { t: 'Lieferung', x: 'Sie bekommen die fertigen Dateien zum zugesagten Termin, sortiert nach Verwendung.' },
+  { t: 'Kurzes Briefing', x: '10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.' },
+  { t: 'Ein Termin vor Ort', x: 'Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein, außer Sie möchten selbst vor der Kamera stehen.' },
+  { t: 'Konzipierter Schnitt', x: 'Geschnitten nach Konzept, nicht nach Schema.' },
+  { t: 'Schnelle Lieferung', x: 'Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.' },
 ];
 
-export function Ablauf() {
+export function Prozess() {
   const rootRef = useRef(null);
 
   useEffect(() => {
@@ -34,18 +35,15 @@ export function Ablauf() {
   }, []);
 
   return (
-    <section className="v2-sec bg-linen" id="ablauf" ref={rootRef}>
+    <section className="v2-sec bg-linen-2" id="prozess" ref={rootRef}>
       <div className="v2-wrap">
         <div className="v2-proc">
           <div className="v2-proc-left">
-            <p className="v2-eyebrow" data-reveal>Ablauf</p>
+            <p className="v2-eyebrow" data-reveal>So läuft&rsquo;s ab</p>
             <Split as="h2" className="v2-h-display v2-h-lg" style={{ marginTop: 22 }}>
-              Von der Anfrage bis zur Lieferung.
+              In vier Schritten zum fertigen Objekt-Content.
             </Split>
-            <p className="v2-lead" data-reveal>
-              Sie müssen für eine Anfrage kein Gespräch führen. Wer erst etwas klären möchte,
-              ruft an.
-            </p>
+
           </div>
           <div className="v2-proc-steps">
             <div className="v2-proc-line"><div className="fill" /></div>

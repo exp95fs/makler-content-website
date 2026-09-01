@@ -3,6 +3,11 @@ import { Split, Magnetic, scrollToId, gsap, prefersReducedMotion } from '../fx.j
 import { Arrow } from '../ui.jsx';
 import { images } from '../../content/site.js';
 
+/**
+ * Text wörtlich von der Live-Seite. Zwei Eingriffe:
+ * der Bindestrich in der H1 ist ein Gedankenstrich geworden, und die
+ * Trust-Zeile trägt zusätzlich den Preisanker.
+ */
 export function Hero() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
@@ -25,28 +30,30 @@ export function Hero() {
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark" data-reveal>Für Maklerbüros und Immobilienabteilungen</p>
+        <p className="v2-eyebrow on-dark" data-reveal>Immobilienfotografie &amp; Immobilienvideo · Raum Bühl · Mittelbaden · Ortenau</p>
         <Split as="h1" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
-          Immobilienfotografie und Objektvideo für Maklerbüros in Mittelbaden.
+          Content, der Ihre Objekte heraushebt – und Ihr Maklerbüro.
         </Split>
         <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
-          Fotos für Exposé und Portale, auf Wunsch mit Drohnenaufnahmen und Video. Ein Termin
-          vor Ort, ein fester Preis je Objekt, ein zugesagter Liefertermin.
+          Professionelle Immobilienfotografie und konzipierte Immobilienvideos für Maklerbüros
+          im Raum Bühl, Baden-Baden und Ortenau. Hochwertiger Content, der Ihre Objekte schneller
+          vermittelt, qualifiziertere Anfragen bringt und Ihr Büro als Marke sichtbar macht.
+          Konzept, Dreh und Schnitt aus einer Hand.
         </p>
         <div className="v2-hero-ctas" data-reveal data-delay="0.5">
           <Magnetic>
-            <button type="button" className="v2-btn" onClick={() => scrollToId('anfrage')}>
-              Objekt anfragen <Arrow />
+            <button type="button" className="v2-btn" onClick={() => scrollToId('start')}>
+              Paket &amp; Termin anfragen <Arrow />
             </button>
           </Magnetic>
           <Magnetic>
-            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('referenzen')}>
+            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('portfolio')}>
               Arbeitsproben ansehen
             </button>
           </Magnetic>
         </div>
         <p className="v2-hero-note" data-reveal data-delay="0.65">
-          Festpreis ab 350 € netto je Objekt · Anfrage unverbindlich · Raum Bühl, Mittelbaden, Ortenau
+          Für Verkauf &amp; Vermietung · Foto, Video und Drohne · Festpreis ab 350 € netto je Objekt
         </p>
       </div>
       <div className="v2-hero-scroll" aria-hidden="true">

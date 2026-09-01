@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react';
 import { Split } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { objektklassen, sonderobjekt, level, erweiterungen, buendelVorteil, kontakt, preis } from '../../content/site.js';
+import { objektklassen, sonderobjekt, filmpakete, erweiterungen, buendelVorteil, kontakt, preis } from '../../content/site.js';
 
 /**
- * Anfrage mit direktem Terminpfad. Hier wird konfiguriert, nicht auf der
- * Seite: alle Erweiterungen mit Preis, laufende Summe. Der Kunde kann
- * anfragen, ohne vorher zu telefonieren.
+ * Terminanfrage. Der achtstufige Konfigurator der Live-Seite ist zu einem
+ * Formular zusammengezogen: Er begann mit der Rabattfrage, und diese
+ * Rabattlogik gilt nicht mehr. Der Einstieg erfolgt über das Objekt.
  *
- * Rechenlogik der Summe:
- *   Objektklasse × Anzahl (jedes weitere Objekt minus Bündelvorteil)
- *   + Festbeträge der gewählten Erweiterungen
+ * Rechenlogik:
+ *   Objektklasse × Anzahl (jedes weitere Objekt minus Mehrfachvorteil,
+ *   der nur auf den fotografischen Grundpreis wirkt)
+ *   + Objektfilm, falls gewählt
+ *   + Festbeträge der Erweiterungen
  *   + Home Staging nach Menge (ab drei Bildern günstiger)
  *   + Express als Prozentaufschlag mit Mindestbetrag, zuletzt
  */
@@ -27,7 +29,7 @@ function encodeFormData(data) {
 export function Anfrage() {
   const [klasse, setKlasse] = useState('');
   const [anzahl, setAnzahl] = useState(1);
-  const [lv, setLv] = useState('');
+  const [film, setFilm] = useState('');
   const [addons, setAddons] = useState({});
   const [staging, setStaging] = useState(0);
   const [eilig, setEilig] = useState(false);
@@ -36,11 +38,13 @@ export function Anfrage() {
   const [busy, setBusy] = useState(false);
 
   const gewaehlteKlasse = objektklassen.find((k) => k.key === klasse);
+  const gewaehlterFilm = filmpakete.find((f) => f.key === film);
 
   const kalkulation = useMemo(() => {
     if (!gewaehlteKlasse) return null;
     let summe = gewaehlteKlasse.preis;
     for (let i = 1; i < anzahl; i += 1) summe += gewaehlteKlasse.preis - buendelVorteil.betrag;
+    if (gewaehlterFilm) summe += gewaehlterFilm.preis;
     festeErweiterungen.forEach((e) => { if (addons[e.key]) summe += e.preis; });
     if (staging > 0) {
       summe += staging * (staging >= 3 ? homestaging.jeEinheitAb3 : homestaging.jeEinheit);
@@ -49,7 +53,7 @@ export function Anfrage() {
       ? Math.max(Math.round(summe * express.zuschlag), express.zuschlagMin)
       : 0;
     return { summe: summe + aufschlag, aufschlag };
-  }, [gewaehlteKlasse, anzahl, addons, staging, eilig]);
+  }, [gewaehlteKlasse, anzahl, gewaehlterFilm, addons, staging, eilig]);
 
   const gewaehlteNamen = [
     ...festeErweiterungen.filter((e) => addons[e.key]).map((e) => e.name),
@@ -64,7 +68,7 @@ export function Anfrage() {
     const zusammenfassung = [
       `Objektart: ${gewaehlteKlasse ? gewaehlteKlasse.name : 'größeres oder komplexes Objekt'}`,
       `Anzahl Objekte: ${anzahl}`,
-      `Umfang: ${level.find((l) => l.key === lv)?.name || 'noch offen'}`,
+      `Film: ${gewaehlterFilm ? gewaehlterFilm.name : 'kein Film'}`,
       `Erweiterungen: ${gewaehlteNamen.join(', ') || 'keine'}`,
       `Preisorientierung: ${kalkulation ? preis(kalkulation.summe) + ' netto' : 'individuelle Prüfung'}`,
     ].join('\n');
@@ -79,16 +83,16 @@ export function Anfrage() {
   };
 
   return (
-    <section className="v2-sec bg-ink" id="anfrage">
+    <section className="v2-sec bg-ink" id="booking">
       <div className="v2-wrap">
         <div className="v2-sec-head">
-          <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
+          <p className="v2-eyebrow on-dark" data-reveal>Terminanfrage</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Objekt beschreiben, Wunschtermin nennen, fertig.
+            Stellen Sie Ihr Paket zusammen und fragen Sie Ihren Wunschtermin an.
           </Split>
           <p className="v2-lead on-dark" data-reveal>
-            Sie sehen beim Ausfüllen, was Ihr Objekt kostet. Die Anfrage ist unverbindlich,
-            verbindlich wird der Preis mit unserer Bestätigung.
+            Die Anfrage ist für Sie unverbindlich. Verbindlich wird sie erst mit unserer
+            Bestätigung, die Sie nach kurzer persönlicher Rückmeldung erhalten.
           </p>
         </div>
 
@@ -98,8 +102,9 @@ export function Anfrage() {
               <span className="ok" aria-hidden="true">✓</span>
               <h3>Anfrage ist angekommen</h3>
               <p>
-                Wir melden uns mit der Bestätigung, Festpreis und Liefertermin. Wenn vorher etwas
-                unklar ist, erreichen Sie uns unter {kontakt.telefon}.
+                Wir melden uns innerhalb von 1 bis 2 Werktagen persönlich mit der Bestätigung,
+                Festpreis und Liefertermin. Wenn vorher etwas unklar ist, erreichen Sie uns unter{' '}
+                {kontakt.telefon}.
               </p>
               <button type="button" className="v2-btn ghost sm" onClick={() => setSent(false)}>Weitere Anfrage</button>
             </div>
@@ -125,22 +130,21 @@ export function Anfrage() {
                   </label>
 
                   <label className="qb-field">
-                    <span>Objekte am selben Termin</span>
+                    <span>Objekte am selben Produktionstag</span>
                     <select name="anzahl" value={anzahl} onChange={(e) => setAnzahl(Number(e.target.value))}>
                       {[1, 2, 3].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </label>
 
                   <label className="qb-field">
-                    <span>Umfang</span>
-                    <select name="umfang" value={lv} onChange={(e) => setLv(e.target.value)}>
-                      <option value="">Noch offen, bitte beraten</option>
-                      {level.map((l) => (
-                        <option key={l.key} value={l.key}>{l.name}{l.empfohlen ? ' (empfohlen)' : ''}</option>
+                    <span>Film</span>
+                    <select name="film" value={film} onChange={(e) => setFilm(e.target.value)}>
+                      <option value="">Kein Film</option>
+                      {filmpakete.map((f) => (
+                        <option key={f.key} value={f.key}>{f.name} · {preis(f.preis)}</option>
                       ))}
                     </select>
                   </label>
-
                 </fieldset>
 
                 <fieldset className="qb-fs">
@@ -158,12 +162,12 @@ export function Anfrage() {
 
                   <div className="qb-two">
                     <label className="qb-field">
-                      <span>Name</span>
-                      <input type="text" name="name" required />
+                      <span>Vorname</span>
+                      <input type="text" name="vorname" required />
                     </label>
                     <label className="qb-field">
-                      <span>Büro</span>
-                      <input type="text" name="firma" />
+                      <span>Nachname</span>
+                      <input type="text" name="nachname" required />
                     </label>
                   </div>
 
@@ -178,10 +182,16 @@ export function Anfrage() {
                     </label>
                   </div>
 
-                  <label className="qb-field">
-                    <span>Objektadresse</span>
-                    <input type="text" name="adresse" placeholder="Straße, PLZ, Ort" required />
-                  </label>
+                  <div className="qb-two">
+                    <label className="qb-field">
+                      <span>Firma</span>
+                      <input type="text" name="firma" />
+                    </label>
+                    <label className="qb-field">
+                      <span>Objektadresse</span>
+                      <input type="text" name="adresse" placeholder="Straße, PLZ, Ort" required />
+                    </label>
+                  </div>
 
                   <label className="qb-field">
                     <span>Anmerkungen</span>
@@ -191,7 +201,7 @@ export function Anfrage() {
               </div>
 
               <fieldset className="qb-fs qb-extras">
-                <legend>Zusätzlich buchen</legend>
+                <legend>Optionen</legend>
                 <div className="qb-checks">
                   {festeErweiterungen.map((e) => (
                     <label key={e.key} className={`qb-check ${addons[e.key] ? 'is-on' : ''}`}>
@@ -202,7 +212,7 @@ export function Anfrage() {
                         onChange={() => setAddons((a) => ({ ...a, [e.key]: !a[e.key] }))}
                       />
                       <span className="bx" aria-hidden="true">{addons[e.key] ? '✓' : ''}</span>
-                      <span className="tx">{e.name}</span>
+                      <span className="tx">{e.name}{e.zusatz ? <em>{e.zusatz}</em> : null}</span>
                       <span className="pr">{e.preisLabel}</span>
                     </label>
                   ))}
@@ -231,16 +241,16 @@ export function Anfrage() {
 
               <div className="qb-form-foot">
                 <div className="qb-summe">
-                  <span className="k">Ihr Preis</span>
+                  <span className="k">Preisorientierung</span>
                   <b>
                     {klasse === 'sonder'
                       ? 'Angebot nach Objektprüfung'
                       : (kalkulation ? `${preis(kalkulation.summe)} netto` : 'Objektart wählen')}
                   </b>
                   <small>
-                    {anzahl > 1 && gewaehlteKlasse ? `Enthält ${preis(buendelVorteil.betrag)} Vorteil je weiterem Objekt. ` : ''}
+                    {anzahl > 1 && gewaehlteKlasse ? `Enthält ${preis(buendelVorteil.betrag)} Vorteil je weiterem Objekt auf den Fotopreis. ` : ''}
                     {kalkulation && kalkulation.aufschlag > 0 ? `Enthält ${preis(kalkulation.aufschlag)} Express-Aufschlag. ` : ''}
-                    Zzgl. gesetzlicher USt. Verbindlich wird der Preis mit der Bestätigung.
+                    Zzgl. gesetzlicher MwSt. Verbindlich wird der Preis mit unserer Bestätigung.
                   </small>
                 </div>
                 <button type="submit" className="v2-btn" disabled={busy}>
