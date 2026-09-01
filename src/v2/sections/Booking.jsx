@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { objektklassen, sonderobjekt, filmpakete, optionen, buendelVorteil, preis } from '../../content/site.js';
+import { objektklassen, sonderobjekt, filmarten, optionen, buendelVorteil, preis } from '../../content/site.js';
 
 /**
  * Achtstufiger Konfigurator, Aufbau und Interaktion wie auf der Live-Seite.
@@ -10,8 +10,9 @@ import { objektklassen, sonderobjekt, filmpakete, optionen, buendelVorteil, prei
  *  - Schritt 1 heißt "Objekte" statt "Rabatt". Statt 10 % auf die
  *    Gesamtsumme sinkt der fotografische Grundpreis je weiterem Objekt
  *    um den Bündelvorteil.
- *  - Foto Basis/Premium sind durch drei Objektklassen ersetzt, der
- *    Makler-Film durch Objektfilm plus Option "Makler vor der Kamera".
+ *  - Die Objektklasse wird einmal gewählt und bestimmt Foto-, Objektfilm-
+ *    und Maklerfilm-Preis. Für außergewöhnliche Objekte fließt nichts in
+ *    die Summe, stattdessen erscheint der Hinweis auf individuelle Prüfung.
  *  - Express läuft auf die beschleunigten Positionen des jeweiligen
  *    Objekts, also Foto, Film und die gewählten Optionen, mit einem
  *    Mindestbetrag. Live lag der Aufschlag ohne Mindestbetrag ebenfalls
@@ -68,8 +69,8 @@ const express = optionNach('express');
 const homestaging = optionNach('homestaging');
 const waehlbareOptionen = optionen.filter((o) => o.key !== 'express' && o.key !== 'homestaging');
 
-const leeresObjekt = () => ({ klasse: 'none', film: 'none', opt: {}, staging: 0 });
-const hatFoto = (o) => o.klasse !== 'none';
+const leeresObjekt = () => ({ klasse: 'none', foto: false, film: 'none', opt: {}, staging: 0 });
+const hatKlasse = (o) => o.klasse !== 'none';
 const hatFilm = (o) => o.film !== 'none';
 const istSonder = (o) => o.klasse === 'sonder';
 
@@ -77,13 +78,21 @@ function klasseVon(o) {
   if (o.klasse === 'sonder') return sonderobjekt;
   return objektklassen.find((k) => k.key === o.klasse) || null;
 }
+const filmartVon = (o) => filmarten.find((f) => f.key === o.film) || null;
+
+/** Preis einer Leistung für die gewählte Klasse. Sonderobjekte: null. */
+function klassenPreis(o, feld) {
+  const k = klasseVon(o);
+  if (!k || istSonder(o)) return null;
+  return k[feld];
+}
 
 function objektStunden(o) {
-  let h = 0;
   const k = klasseVon(o);
-  if (k) h += k.stunden || 0;
-  const f = filmpakete.find((x) => x.key === o.film);
-  if (f) h += f.stunden || 0;
+  if (!k) return 0;
+  const f = filmartVon(o);
+  let h = o.foto ? (k.stunden.foto || 0) : 0;
+  if (f) h = Math.max(h, k.stunden[f.key] || 0);
   waehlbareOptionen.forEach((opt) => { if (o.opt[opt.key] && opt.stunden) h += opt.stunden; });
   return h;
 }
@@ -101,14 +110,22 @@ function stagingPreis(menge) {
 function positionen(o, fotoIndex) {
   const zeilen = [];
   const k = klasseVon(o);
-  if (k && !istSonder(o)) {
-    const nachlass = fotoIndex > 0 ? buendelVorteil.betrag : 0;
-    zeilen.push({ name: `Fotografie · ${k.name}`, betrag: k.preis - nachlass, nachlass });
-  } else if (istSonder(o)) {
-    zeilen.push({ name: `Fotografie · ${sonderobjekt.name}`, betrag: null, hinweis: sonderobjekt.preisLabel });
+  if (!k) return zeilen;
+
+  if (o.foto) {
+    const p = klassenPreis(o, 'foto');
+    if (p === null) zeilen.push({ name: `Fotografie · ${k.name}`, betrag: null, hinweis: sonderobjekt.preisLabel });
+    else {
+      const nachlass = fotoIndex > 0 ? buendelVorteil.betrag : 0;
+      zeilen.push({ name: `Fotografie · ${k.name}`, betrag: p - nachlass });
+    }
   }
-  const f = filmpakete.find((x) => x.key === o.film);
-  if (f) zeilen.push({ name: f.name, betrag: f.preis });
+  const f = filmartVon(o);
+  if (f) {
+    const p = klassenPreis(o, f.feld);
+    if (p === null) zeilen.push({ name: `${f.name} · ${k.name}`, betrag: null, hinweis: sonderobjekt.preisLabel });
+    else zeilen.push({ name: `${f.name} · ${k.name}`, betrag: p });
+  }
   waehlbareOptionen.forEach((opt) => { if (o.opt[opt.key]) zeilen.push({ name: opt.name, betrag: opt.preis }); });
   if (o.staging > 0) {
     zeilen.push({ name: `${homestaging.name} · ${o.staging} ${o.staging === 1 ? 'Bild' : 'Bilder'}`, betrag: stagingPreis(o.staging) });
@@ -128,13 +145,14 @@ function objektSumme(o, fotoIndex) {
 function gesamtRechnung(objekte) {
   let fotoIndex = 0;
   const teile = objekte.map((o) => {
-    const idx = hatFoto(o) && !istSonder(o) ? fotoIndex : -1;
-    if (hatFoto(o) && !istSonder(o)) fotoIndex += 1;
-    return objektSumme(o, Math.max(idx, 0));
+    const zaehlt = o.foto && hatKlasse(o) && !istSonder(o);
+    const idx = zaehlt ? fotoIndex : 0;
+    if (zaehlt) fotoIndex += 1;
+    return objektSumme(o, idx);
   });
   const vorteil = Math.max(0, fotoIndex - 1) * buendelVorteil.betrag;
   const summe = teile.reduce((s, t) => s + t.summe, 0);
-  return { teile, vorteil, summe, sonder: objekte.some(istSonder) };
+  return { teile, vorteil, summe, sonder: objekte.some((o) => istSonder(o) && (o.foto || hatFilm(o))) };
 }
 
 const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -146,7 +164,7 @@ function encodeForm(data) {
 
 const bedarfText = {
   foto: { title: 'Nur Fotos', desc: 'Bildstrecke fürs Inserat.' },
-  video: { title: 'Nur Video', desc: 'Objektfilm für die Vermarktung.' },
+  video: { title: 'Nur Video', desc: 'Objektfilm oder Maklerfilm.' },
   both: { title: 'Foto & Video', desc: 'Kombiniertes Produktionspaket.' },
 };
 
@@ -183,11 +201,12 @@ export function Booking() {
     setBedarf(wert);
     setObjekte((prev) => prev.map((o) => {
       const n = { ...o, opt: { ...o.opt } };
-      if (wert === 'video') { n.klasse = 'none'; n.staging = 0; }
+      if (wert === 'video') { n.foto = false; n.staging = 0; }
       if (wert === 'foto') {
         n.film = 'none';
-        ['maklerkamera', 'voiceover', 'zusatzschnitt'].forEach((k) => { n.opt[k] = false; });
+        ['voiceover', 'zusatzschnitt'].forEach((k) => { n.opt[k] = false; });
       }
+      if (wert !== 'video') n.foto = true;
       return n;
     }));
     terminReset();
@@ -195,9 +214,10 @@ export function Booking() {
 
   /* --- Gültigkeit je Schritt --- */
   const objektKomplett = (o) => {
-    if (bedarf === 'foto') return hatFoto(o);
+    if (!hatKlasse(o)) return false;
+    if (bedarf === 'foto') return o.foto;
     if (bedarf === 'video') return hatFilm(o);
-    if (bedarf === 'both') return hatFoto(o) && hatFilm(o);
+    if (bedarf === 'both') return o.foto && hatFilm(o);
     return false;
   };
   const paketOk = aktive.every(objektKomplett);
@@ -244,11 +264,11 @@ export function Booking() {
     const teile = [`Objektanzahl: ${anzahl}`];
     aktive.forEach((o, i) => {
       const k = klasseVon(o);
-      const f = filmpakete.find((x) => x.key === o.film);
+      const f = filmartVon(o);
       const opts = waehlbareOptionen.filter((x) => o.opt[x.key]).map((x) => x.name);
       if (o.staging > 0) opts.push(`${homestaging.name} (${o.staging})`);
       if (o.opt.express) opts.push(express.name);
-      teile.push(`Objekt ${i + 1} – Fotografie: ${k ? k.name : 'kein Foto'} · Film: ${f ? f.name : 'kein Film'} · Optionen: ${opts.join(', ') || 'keine'}`);
+      teile.push(`Objekt ${i + 1} – Klasse: ${k ? k.name : 'offen'} · Fotografie: ${o.foto ? 'ja' : 'nein'} · Film: ${f ? f.name : 'kein Film'} · Optionen: ${opts.join(', ') || 'keine'}`);
     });
     teile.push(`Wunschtermin: ${terminText}`);
     teile.push(rechnung.sonder
@@ -357,40 +377,51 @@ export function Booking() {
               {step === 3 && (
                 <Panel
                   titel={anzahl === 2 ? 'Stellen Sie Ihre Pakete zusammen' : 'Stellen Sie Ihr Paket zusammen'}
-                  text="Der Fotopreis richtet sich nach dem Umfang des Objekts. Die Qualität der Aufnahmen und der Bearbeitung ist in jeder Klasse dieselbe."
+                  text="Wählen Sie zuerst die Objektklasse. Sie bestimmt den Preis für Foto, Objektfilm und Maklerfilm. Die Qualität ist in jeder Klasse dieselbe."
                 >
-                  <Spalten anzahl={anzahl} render={(i) => (
-                    <>
-                      {bedarf !== 'video' && (
+                  <Spalten anzahl={anzahl} render={(i) => {
+                    const o = objekte[i];
+                    const k = klasseVon(o);
+                    return (
+                      <>
                         <div className="qb-cfg-book-group">
-                          <span className="glabel">Fotografie</span>
-                          {objektklassen.map((k) => (
-                            <Wahl key={k.key} an={objekte[i].klasse === k.key} name={k.name}
-                                  preisText={`${preis(k.preis)} netto`} text={k.beschreibung}
-                                  onClick={() => aendere(i, (o) => { o.klasse = k.key; })} />
+                          <span className="glabel">Objektklasse</span>
+                          {objektklassen.map((kl) => (
+                            <Wahl key={kl.key} an={o.klasse === kl.key} name={kl.name}
+                                  preisText={`Foto ${preis(kl.foto)} · Video ${preis(kl.video)} · Film mit Ihnen ${preis(kl.maklerfilm)}`}
+                                  text={kl.beschreibung}
+                                  onClick={() => aendere(i, (x) => { x.klasse = kl.key; })} />
                           ))}
-                          <Wahl an={objekte[i].klasse === 'sonder'} name={sonderobjekt.name}
+                          <Wahl an={o.klasse === 'sonder'} name={sonderobjekt.name}
                                 preisText={sonderobjekt.preisLabel} text={sonderobjekt.beschreibung}
-                                onClick={() => aendere(i, (o) => { o.klasse = 'sonder'; o.staging = 0; })} />
+                                onClick={() => aendere(i, (x) => { x.klasse = 'sonder'; x.staging = 0; })} />
                         </div>
-                      )}
-                      {bedarf !== 'foto' && (
-                        <div className="qb-cfg-book-group">
-                          <span className="glabel">Film</span>
-                          {filmpakete.map((f) => (
-                            <Wahl key={f.key} an={objekte[i].film === f.key} name={f.name}
-                                  preisText={`${preis(f.preis)} netto`} text={f.beschreibung}
-                                  onClick={() => aendere(i, (o) => { o.film = f.key; })} />
-                          ))}
-                          <p className="qb-cfg-book-note">
-                            Ihren persönlichen Auftritt vor der Kamera buchen Sie im nächsten
-                            Schritt als Option dazu.
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )} />
-                  {!paketOk && <p className="qb-cfg-book-hint">Bitte treffen Sie für jedes Objekt eine Auswahl, um fortzufahren.</p>}
+
+                        {bedarf !== 'video' && (
+                          <div className="qb-cfg-book-group">
+                            <span className="glabel">Fotografie</span>
+                            <Wahl an={o.foto} name="Fotoproduktion"
+                                  preisText={k ? (klassenPreis(o, 'foto') === null ? sonderobjekt.preisLabel : `${preis(klassenPreis(o, 'foto'))} netto`) : 'Klasse wählen'}
+                                  text="Bearbeitete Aufnahmen für Exposé, Portale und Ihre Website."
+                                  onClick={() => aendere(i, (x) => { x.foto = !x.foto; })} />
+                          </div>
+                        )}
+
+                        {bedarf !== 'foto' && (
+                          <div className="qb-cfg-book-group">
+                            <span className="glabel">Film</span>
+                            {filmarten.map((f) => (
+                              <Wahl key={f.key} an={o.film === f.key} name={f.name}
+                                    preisText={k ? (klassenPreis(o, f.feld) === null ? sonderobjekt.preisLabel : `${preis(klassenPreis(o, f.feld))} netto`) : 'Klasse wählen'}
+                                    text={f.beschreibung}
+                                    onClick={() => aendere(i, (x) => { x.film = x.film === f.key ? 'none' : f.key; })} />
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  }} />
+                  {!paketOk && <p className="qb-cfg-book-hint">Bitte wählen Sie für jedes Objekt eine Klasse und die gewünschte Leistung.</p>}
                 </Panel>
               )}
 
@@ -403,7 +434,7 @@ export function Booking() {
                     const o = objekte[i];
                     const sichtbar = waehlbareOptionen.filter((opt) => {
                       if (opt.nurMitFilm && !hatFilm(o)) return false;
-                      if (opt.nurMitFoto && !hatFoto(o)) return false;
+                      if (opt.nurMitFoto && !o.foto) return false;
                       return true;
                     });
                     return (
@@ -413,7 +444,7 @@ export function Booking() {
                                  preisText={opt.preisLabel} note={opt.note}
                                  onClick={() => aendere(i, (x) => { x.opt[opt.key] = !x.opt[opt.key]; })} />
                         ))}
-                        {hatFoto(o) && !istSonder(o) && (
+                        {o.foto && !istSonder(o) && (
                           <label className="qb-cfg-book-field">
                             <span>{homestaging.name}, Anzahl Bilder</span>
                             <select value={o.staging}
@@ -508,14 +539,15 @@ export function Booking() {
                   <div className="qb-cfg-recap">
                     {aktive.map((o, i) => {
                       const k = klasseVon(o);
-                      const f = filmpakete.find((x) => x.key === o.film);
+                      const f = filmartVon(o);
                       const opts = waehlbareOptionen.filter((x) => o.opt[x.key]).map((x) => x.name);
                       if (o.staging > 0) opts.push(`${homestaging.name} (${o.staging})`);
                       if (o.opt.express) opts.push(express.name);
                       return (
                         <div key={i}>
                           {anzahl === 2 && <div className="ghead">Objekt {i + 1}</div>}
-                          <Zeile label="Fotografie" wert={k ? k.name : 'kein Foto'} />
+                          <Zeile label="Objektklasse" wert={k ? k.name : 'offen'} />
+                          <Zeile label="Fotografie" wert={o.foto ? 'ja' : 'nein'} />
                           <Zeile label="Film" wert={f ? f.name : 'kein Film'} />
                           <Zeile label="Zusatzoptionen" wert={opts.length ? opts.join(', ') : '–'} />
                         </div>
@@ -594,7 +626,7 @@ export function Booking() {
             )}
             <div className="gesamt">
               <span>Gesamt (netto)</span>
-              <b>{preis(rechnung.summe)}</b>
+              <b>{rechnung.summe === 0 && rechnung.sonder ? sonderobjekt.preisLabel : preis(rechnung.summe)}</b>
             </div>
             {rechnung.sonder && (
               <p className="qb-cfg-book-note">

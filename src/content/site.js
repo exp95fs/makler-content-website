@@ -13,30 +13,43 @@
  * Seitenverhältnis einhalten, sonst springt das Layout.
  * ------------------------------------------------------------------ */
 export const images = {
-  // 16:9, min. 2000px Breite. Aktuell echtes Bild aus einer Objektproduktion.
+  // 16:9, 2400 px. Außenaufnahme aus einer Objektproduktion.
   hero: '/images/hero/hero.jpg',
-  // 4:5 Hochformat, min. 1200px Breite. PLATZHALTER: Porträt Fabian.
+  // 4:5 Hochformat, min. 1200 px. PLATZHALTER: Porträt Fabian.
   portrait: '/images/portrait/portrait.jpg',
-  // 3:1 quer, einfarbig (currentColor). PLATZHALTER: vier Kundenlogos.
+  // Kundenlogos, PNG mit Transparenz, einheitlich 160 px hoch.
   logos: [
-    { src: '/images/logos/kunde-01.svg', alt: 'Logo Kunde 1' },
-    { src: '/images/logos/kunde-02.svg', alt: 'Logo Kunde 2' },
-    { src: '/images/logos/kunde-03.svg', alt: 'Logo Kunde 3' },
-    { src: '/images/logos/kunde-04.svg', alt: 'Logo Kunde 4' },
+    { src: '/images/logos/kunde-01.png', alt: 'Sparkasse ImmoCenter' },
+    { src: '/images/logos/kunde-02.png', alt: 'Bemmann Immobilien' },
+    { src: '/images/logos/kunde-03.png', alt: 'Manufakturhaus Kasbad' },
+    { src: '/images/logos/kunde-04.png', alt: 'Kundenlogo' },
   ],
-  // 3:2 quer, min. 1600px Breite. ref-01 bis ref-07 echte Aufnahmen,
-  // ref-08 bis ref-10 PLATZHALTER.
+  // Referenzaufnahmen, 3:2, 1800 px.
+  // Das Mosaik läuft in Bändern aus je einer großen (2x2 Zellen) und vier
+  // kleinen Kacheln. Ein Band füllt bei vier Spalten genau zwei Zeilen,
+  // deshalb steht `gross` auf jeder fünften Position und die Liste umfasst
+  // ein Vielfaches von fünf Aufnahmen.
   referenzen: [
-    { src: '/images/referenzen/ref-01.jpg', alt: 'Mehrfamilienhaus, Außenaufnahme mit Zufahrt und Carport' },
-    { src: '/images/referenzen/ref-02.jpg', alt: 'Luftaufnahme eines Wohnobjekts mit Umgebung und Lage' },
-    { src: '/images/referenzen/ref-03.jpg', alt: 'Wohnraum mit Parkett und bodentiefen Fenstern' },
-    { src: '/images/referenzen/ref-04.jpg', alt: 'Außenansicht mit Balkonen und Blick über die Felder' },
-    { src: '/images/referenzen/ref-05.jpg', alt: 'Offene Wohnküche mit Tageslicht' },
-    { src: '/images/referenzen/ref-06.jpg', alt: 'Eingangsbereich mit Briefkastenanlage' },
-    { src: '/images/referenzen/ref-07.jpg', alt: 'Großzügiger Wohnraum mit Blick in den Garten' },
-    { src: '/images/referenzen/ref-08.jpg', alt: 'Platzhalter für eine weitere Referenzaufnahme' },
-    { src: '/images/referenzen/ref-09.jpg', alt: 'Platzhalter für eine weitere Referenzaufnahme' },
-    { src: '/images/referenzen/ref-10.jpg', alt: 'Platzhalter für eine weitere Referenzaufnahme' },
+    { src: '/images/referenzen/ref-01.jpg', alt: 'Küche im Erdgeschoss mit Kochinsel', gross: true },
+    { src: '/images/referenzen/ref-02.jpg', alt: 'Küchenzeile mit Blick in den angrenzenden Raum' },
+    { src: '/images/referenzen/ref-03.jpg', alt: 'Wohnbereich im Erdgeschoss mit Sitzgruppe' },
+    { src: '/images/referenzen/ref-04.jpg', alt: 'Küche im Obergeschoss' },
+    { src: '/images/referenzen/ref-05.jpg', alt: 'Essbereich im Obergeschoss' },
+    { src: '/images/referenzen/ref-06.jpg', alt: 'Wohnbereich mit Blick zum Fenster', gross: true },
+    { src: '/images/referenzen/ref-07.jpg', alt: 'Essbereich mit Esstisch und Tageslicht' },
+    { src: '/images/referenzen/ref-08.jpg', alt: 'Badezimmer mit Waschtisch' },
+    { src: '/images/referenzen/ref-09.jpg', alt: 'Wohnbereich mit Sofa und Tageslicht' },
+    { src: '/images/referenzen/ref-10.jpg', alt: 'Wohnbereich aus einer zweiten Perspektive' },
+    { src: '/images/referenzen/ref-11.jpg', alt: 'Schlafzimmer mit Bett und Fensterfront', gross: true },
+    { src: '/images/referenzen/ref-12.jpg', alt: 'Gästezimmer im Haus' },
+    { src: '/images/referenzen/ref-13.jpg', alt: 'Badezimmer im Dachgeschoss' },
+    { src: '/images/referenzen/ref-14.jpg', alt: 'Wohnbereich im Dachgeschoss mit Dachschräge' },
+    { src: '/images/referenzen/ref-15.jpg', alt: 'Balkon mit Ausblick' },
+    { src: '/images/referenzen/ref-16.jpg', alt: 'Küche mit Arbeitsfläche und Oberschränken', gross: true },
+    { src: '/images/referenzen/ref-17.jpg', alt: 'Schlafzimmer mit Kleiderschrank' },
+    { src: '/images/referenzen/ref-18.jpg', alt: 'Wohnbereich mit offener Raumaufteilung' },
+    { src: '/images/referenzen/ref-19.jpg', alt: 'Badezimmer im Obergeschoss mit Dusche' },
+    { src: '/images/referenzen/ref-20.jpg', alt: 'Wohnzimmer mit Sitzecke' },
   ],
 };
 
@@ -55,113 +68,129 @@ export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (übe
   + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
 
 /* ------------------------------------------------------------------ *
- * Objektklassen Fotografie
- * Der Preis richtet sich nach dem Objektumfang, nicht nach Bildqualität.
- * Keine Bildanzahl als Kontingent nach außen kommunizieren.
+ * Objektklassen
+ *
+ * Eine Klasse trägt alle drei Preise: Foto, Objektfilm und Maklerfilm.
+ * Dadurch gibt es genau eine Quelle für Vorschau, Preistabellen und
+ * Buchungsworkflow. Die Qualität ist in jeder Klasse dieselbe, der Preis
+ * folgt allein dem typischen Produktionsumfang.
+ * `stunden` steuert nur die Terminplanung im Buchungsworkflow.
  * ------------------------------------------------------------------ */
 export const objektklassen = [
   {
     key: 'wohnung',
     name: 'Wohnung',
     beschreibung: 'Eine Wohnung innerhalb eines Mehrparteiengebäudes.',
-    preis: 350,
-    stunden: 2,
+    foto: 350,
+    video: 650,
+    maklerfilm: 950,
+    stunden: { foto: 2, video: 4, maklerfilm: 5 },
   },
   {
     key: 'einfamilienhaus',
     name: 'Einfamilienhaus',
     beschreibung: 'Eigenständiges Wohngebäude mit einer Wohneinheit und den üblichen Außenbereichen.',
-    preis: 450,
-    stunden: 3,
+    foto: 450,
+    video: 800,
+    maklerfilm: 1150,
+    stunden: { foto: 3, video: 5, maklerfilm: 6 },
   },
   {
     key: 'mehrfamilienhaus',
-    name: 'Mehrfamilienhaus',
+    name: 'Mehrfamilienhaus / mehrere Wohneinheiten',
+    kurz: 'Mehrfamilienhaus',
     beschreibung: 'Typischerweise zwei bis drei Wohneinheiten mit Gemeinschafts- und Außenbereichen.',
-    preis: 550,
-    stunden: 4,
+    foto: 550,
+    video: 1050,
+    maklerfilm: 1350,
+    stunden: { foto: 4, video: 6, maklerfilm: 7 },
   },
 ];
 
+/** Objekte außerhalb der drei Klassen. Fließt nicht in die Summe ein. */
 export const sonderobjekt = {
   key: 'sonder',
-  stunden: 4,
-  name: 'Größere oder komplexe Objekte',
-  beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude oder besondere Anforderungen. Sie erhalten ein individuelles Festpreisangebot.',
-  preisLabel: 'Festpreis nach Objektprüfung',
+  name: 'Außergewöhnliche Objekte',
+  beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude, deutlich überdurchschnittlicher Umfang.',
+  preisLabel: 'individuelle Prüfung',
+  stunden: { foto: 4, video: 6, maklerfilm: 7 },
 };
 
-/** Vorteil je weiterem Objekt am selben Produktionstag, nur auf den Fotokern. */
-export const buendelVorteil = {
-  betrag: 50,
-  bedingungen: 'Gilt für den fotografischen Grundpreis, bei gleichem Kunden, gemeinsamer Rechnung, sinnvoller Route und ohne zusätzliche Anfahrt. Wird nicht mit anderen Vorteilen kombiniert.',
-};
-
-/* ------------------------------------------------------------------ *
- * Filmpakete
- * Der frühere "Makler-Film" (1.290 €) ist aufgelöst: Objektfilm plus die
- * Option "Makler vor der Kamera".
- * `stunden` steuert nur die Terminplanung im Konfigurator.
- * ------------------------------------------------------------------ */
-export const filmpakete = [
+/** Die beiden Filmarten. `feld` verweist auf den Preis in der Objektklasse. */
+export const filmarten = [
   {
     key: 'objektfilm',
+    feld: 'video',
     name: 'Objektfilm',
-    preis: 890,
-    stunden: 5,
-    beschreibung: 'Hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll vermittelt, ganz ohne Personen vor der Kamera. Ideal für eine emotionale Präsentation.',
+    beschreibung: 'Ein Film, der Räume, Details und Atmosphäre des Objekts vermittelt, ohne Personen vor der Kamera.',
+  },
+  {
+    key: 'maklerfilm',
+    feld: 'maklerfilm',
+    name: 'Maklerfilm',
+    beschreibung: 'Der Objektfilm, erweitert um Ihre persönliche Präsentation vor der Kamera.',
   },
 ];
 
+/** Preisangaben für die kompakte Leistungs-Vorschau. */
+export const abPreise = {
+  foto: Math.min(...objektklassen.map((k) => k.foto)),
+  video: Math.min(...objektklassen.map((k) => k.video)),
+};
+
+/** Vorteil je weiterem Objekt am selben Produktionstag, nur auf den Fotopreis. */
+export const buendelVorteil = {
+  betrag: 50,
+  bedingungen: 'Gilt für den fotografischen Grundpreis, nicht für Video, Maklerfilm oder sonstige Optionen. '
+    + 'Voraussetzung sind derselbe Kunde, eine gemeinsame Rechnung, eine sinnvolle Route und ein vorbereitetes Objekt.',
+};
+
 /* ------------------------------------------------------------------ *
- * Optionen (Erweiterungen)
+ * Erweiterungen
  * `preis`      – fester Betrag
  * `jeEinheit`  – Mengenpreis, ab `staffelAb` gilt `jeEinheitAb`
  * `zuschlag`   – prozentualer Aufschlag mit Mindestbetrag
  * ------------------------------------------------------------------ */
 export const optionen = [
   {
-    key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '+170 €', stunden: 1,
-    note: 'Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und attraktiven Lagen.',
+    key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '170 €', stunden: 1,
+    note: 'Immobilie, Grundstück und Umgebung aus der Luft. Besonders bei Häusern, großen Grundstücken und attraktiven Lagen.',
   },
   {
-    key: 'drohnenmedia', name: 'Drohnen-Media', preis: 260, preisLabel: '+260 €', stunden: 1,
-    note: 'Drohnenfotos und zusätzlich bewegtes Material, das im Reel oder im Objektfilm verwendet werden kann.',
+    key: 'drohnenmedia', name: 'Drohnen-Media', zusatz: 'Fotos plus bewegtes Material',
+    preis: 260, preisLabel: '260 €', stunden: 1,
+    note: 'Drohnenfotos und zusätzlich bewegte Aufnahmen, die im Reel oder im Film verwendet werden.',
   },
   {
-    key: 'launchreel', name: 'Launch-Reel', preis: 390, preisLabel: '+390 €', stunden: 2,
-    note: 'Vertikaler Clip von etwa 30 bis 45 Sekunden für die Ankündigung des Objekts. Ideal für Instagram, Facebook und Ihre Website.',
+    key: 'launchreel', name: 'Launch-Reel', zusatz: 'vertikal, ca. 30 bis 45 Sekunden',
+    preis: 390, preisLabel: '390 €', stunden: 2,
+    note: 'Vertikaler Clip für die Ankündigung des Objekts auf Instagram, Facebook und Ihrer Website.',
   },
   {
-    key: 'maklerkamera', name: 'Makler vor der Kamera', preis: 350, preisLabel: '+350 €', stunden: 2,
-    nurMitFilm: true,
-    note: 'Sie präsentieren das Objekt persönlich im Film. Das schafft Vertrauen und stärkt zugleich Ihre eigene Marke.',
-  },
-  {
-    key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '+190 €',
+    key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '190 €',
     nurMitFilm: true,
     note: 'Ihre Stimme führt durch den Film, ohne Auftritt vor der Kamera.',
   },
   {
-    key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', preis: 180, preisLabel: '+180 €',
-    nurMitFilm: true,
-    note: 'Ein weiterer Schnitt aus vorhandenem Material, etwa kürzer oder für einen anderen Kanal.',
+    key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', zusatz: 'aus vorhandenem Material',
+    preis: 180, preisLabel: '180 €', nurMitFilm: true,
+    note: 'Ein weiterer Schnitt aus dem Material des Termins, etwa kürzer oder für einen anderen Kanal.',
   },
   {
-    key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '+450 €',
+    key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '450 €',
     note: 'Drei Ausleitungen für benannte Anlässe im Vermarktungsverlauf, etwa Ankündigung, Highlight und Abschluss.',
   },
   {
     key: 'homestaging', name: 'Virtuelles Home Staging',
-    jeEinheit: 89, jeEinheitAb: 69, staffelAb: 3, maxMenge: 10,
-    preisLabel: '89 € je Bild, ab drei Bildern 69 €',
+    jeEinheit: 89, jeEinheitAb: 69, staffelAb: 3,
+    preisLabel: '89 € je Bild, ab drei Bildern 69 € je Bild',
     nurMitFoto: true,
-    note: 'Leere Räume werden digital möbliert. Einrichtungsstil, Möbel und Dekoration werden passend zum Objekt und zur gewünschten Zielgruppe ausgewählt.',
+    note: 'Leere Räume werden digital möbliert, passend zum Objekt und zur gewünschten Zielgruppe.',
   },
   {
     key: 'express', name: 'Express', zuschlag: 0.30, zuschlagMin: 120,
-    preisLabel: '+30 %, mind. 120 €',
-    note: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss. Der Aufschlag wird auf die beschleunigten Positionen dieses Objekts gerechnet, mindestens jedoch 120 €.',
+    preisLabel: 'Aufschlag 30 %, mindestens 120 €', preisLabelKurz: '+30 %, mind. 120 €',
+    note: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss. Der Aufschlag gilt für die Positionen dieses Objekts.',
   },
 ];
 

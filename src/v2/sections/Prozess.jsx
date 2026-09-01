@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Split, gsap, ScrollTrigger, prefersReducedMotion } from '../fx.jsx';
+import { Split, gsap, ScrollTrigger, prefersReducedMotion, scrollToId } from '../fx.jsx';
 
 /**
  * "So läuft's ab" von der Live-Seite. Texte wörtlich, mit einer Korrektur
@@ -53,6 +53,18 @@ export function Prozess() {
             </li>
           ))}
         </ol>
+        <p className="v2-flow-weiter" data-reveal>
+          Von hier führen zwei Wege weiter: Sie stellen Ihre Produktion direkt zusammen und fragen
+          einen Termin an, oder Sie melden sich unverbindlich über das Kontaktformular.
+          {' '}
+          <button type="button" className="v2-link-inline" onClick={() => scrollToId('preise')}>
+            Zum Buchungsprozess
+          </button>
+          {' · '}
+          <button type="button" className="v2-link-inline" onClick={() => scrollToId('kontakt')}>
+            Zum Kontaktformular
+          </button>
+        </p>
       </div>
     </section>
   );

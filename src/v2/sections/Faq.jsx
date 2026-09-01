@@ -20,12 +20,12 @@ const items = [
   {
     q: 'Wie läuft die Terminanfrage ab?',
     // Angepasst: der frühere 10-%-Rabatt gilt nicht mehr.
-    a: 'Sie stellen Ihr Paket im Anfragebereich zusammen und wählen einen Wunschtermin. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.',
+    a: 'Sie stellen Ihr Paket im Buchungsbereich zusammen und wählen einen Wunschtermin. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.',
   },
   {
     q: 'Was kostet die Produktion?',
     // Angepasst an die neue Preisarchitektur.
-    a: 'Der Fotopreis richtet sich nach dem Objektumfang: 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus. Der Objektfilm kostet 890 €, dazu kommen optionale Erweiterungen wie Drohne, Launch-Reel oder Home Staging. Für jedes weitere Objekt am selben Produktionstag sinkt der fotografische Grundpreis um 50 €. Ihr genauer Preis wird in der Terminanfrage berechnet.',
+    a: 'Alle Preise richten sich nach der Objektklasse. Fotografie kostet 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus und 550 € für ein Mehrfamilienhaus. Der Objektfilm liegt bei 650, 800 beziehungsweise 1.050 €, der Maklerfilm mit Ihrem Auftritt vor der Kamera bei 950, 1.150 beziehungsweise 1.350 €. Dazu kommen optionale Erweiterungen wie Drohne, Launch-Reel oder Home Staging. Für jedes weitere Objekt am selben Produktionstag sinkt der fotografische Grundpreis um 50 €. Ihr genauer Preis wird im Buchungsprozess berechnet.',
   },
   {
     q: 'Wie viel Zeit kostet mich das?',

@@ -30,7 +30,7 @@ export function Kontakt() {
   };
 
   return (
-    <section className="v2-sec bg-ink" id="anfrage">
+    <section className="v2-sec bg-ink" id="kontakt">
       <div className="v2-wrap">
         <div className="v2-contact">
           <div className="v2-contact-info">

@@ -7,11 +7,10 @@ import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
 /** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
 export const PAGES = [
   { id: 'leistungen', label: 'Leistungen' },
-  { id: 'segmente', label: 'Verkauf/Miete' },
-  { id: 'marke', label: 'Markenbildung' },
-  { id: 'gruende', label: 'Warum Content' },
-  { id: 'prozess', label: 'Prozess' },
-  { id: 'portfolio', label: 'Portfolio' },
+  { id: 'referenzen', label: 'Referenzen' },
+  { id: 'warum', label: 'Warum wir' },
+  { id: 'preise', label: 'Preise & Buchung' },
+  { id: 'ueber', label: 'Über uns' },
   { id: 'faq', label: 'FAQ' },
 ];
 
@@ -62,7 +61,7 @@ function Nav({ active, dark }) {
           </nav>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Magnetic strength={0.25}>
-              <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('start'); }}>
+              <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('preise'); }}>
                 Termin anfragen <Arrow size={15} />
               </button>
             </Magnetic>
@@ -93,7 +92,7 @@ function Nav({ active, dark }) {
           ))}
         </nav>
         <div className="v2-menu-foot">
-          <button type="button" className="v2-btn" onClick={() => { setOpen(false); setTimeout(() => scrollToId('start'), 50); }}>
+          <button type="button" className="v2-btn" onClick={() => { setOpen(false); setTimeout(() => scrollToId('preise'), 50); }}>
             Termin anfragen <Arrow />
           </button>
           <p>Bühl · Mittelbaden · Ortenau</p>
