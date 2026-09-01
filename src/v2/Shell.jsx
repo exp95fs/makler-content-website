@@ -9,6 +9,7 @@ export const PAGES = [
   { id: 'leistungen', label: 'Leistungen' },
   { id: 'segmente', label: 'Verkauf/Miete' },
   { id: 'marke', label: 'Markenbildung' },
+  { id: 'gruende', label: 'Warum Content' },
   { id: 'prozess', label: 'Prozess' },
   { id: 'portfolio', label: 'Portfolio' },
   { id: 'faq', label: 'FAQ' },

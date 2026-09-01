@@ -5,7 +5,6 @@ import { Split } from '../fx.jsx';
  * Punkt 2 hieß dort "Bewusst auf wenige Kunden begrenzt" und ist durch
  * einen Punkt zur planbaren Abwicklung ersetzt: Die alte Aussage weckt
  * bei Maklerbüros Zweifel an der Lieferfähigkeit.
- * Der Schlusskasten mit den 9 % ist entfallen.
  */
 const usps = [
   {
@@ -48,8 +47,8 @@ export function Usp() {
         <div className="v2-chance" data-reveal>
           <span className="label">Die Chance</span>
           <p>
-            Objektspezifisches Bewegtbild ist in unserer Region die Ausnahme. Wer jetzt in gute
-            Aufnahmen investiert, hebt sich sichtbar vom Markt ab.
+            Nur rund 9 % der Makler produzieren objektspezifische Videos, in unserer Region noch
+            weniger. Wer jetzt in gutes Bewegtbild investiert, hebt sich sichtbar vom Markt ab.
           </p>
         </div>
       </div>

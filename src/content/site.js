@@ -41,6 +41,20 @@ export const images = {
 };
 
 /* ------------------------------------------------------------------ *
+ * Kennzahlen unter dem Hero
+ * Werte und Quellenhinweis wörtlich von der Live-Seite.
+ * ------------------------------------------------------------------ */
+export const kennzahlen = [
+  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen mit Video' },
+  { wert: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
+  { wert: 73, prefix: '', suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
+  { wert: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
+];
+
+export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international). '
+  + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
+
+/* ------------------------------------------------------------------ *
  * Objektklassen Fotografie
  * Der Preis richtet sich nach dem Objektumfang, nicht nach Bildqualität.
  * Keine Bildanzahl als Kontingent nach außen kommunizieren.
@@ -51,22 +65,27 @@ export const objektklassen = [
     name: 'Wohnung',
     beschreibung: 'Eine Wohnung innerhalb eines Mehrparteiengebäudes.',
     preis: 350,
+    stunden: 2,
   },
   {
     key: 'einfamilienhaus',
     name: 'Einfamilienhaus',
     beschreibung: 'Eigenständiges Wohngebäude mit einer Wohneinheit und den üblichen Außenbereichen.',
     preis: 450,
+    stunden: 3,
   },
   {
     key: 'mehrfamilienhaus',
     name: 'Mehrfamilienhaus',
     beschreibung: 'Typischerweise zwei bis drei Wohneinheiten mit Gemeinschafts- und Außenbereichen.',
     preis: 550,
+    stunden: 4,
   },
 ];
 
 export const sonderobjekt = {
+  key: 'sonder',
+  stunden: 4,
   name: 'Größere oder komplexe Objekte',
   beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude oder besondere Anforderungen. Sie erhalten ein individuelles Festpreisangebot.',
   preisLabel: 'Festpreis nach Objektprüfung',
@@ -80,38 +99,70 @@ export const buendelVorteil = {
 
 /* ------------------------------------------------------------------ *
  * Filmpakete
- * Der frühere "Makler-Film" ist aufgelöst: Objektfilm plus die
- * Erweiterung "Makler vor der Kamera".
+ * Der frühere "Makler-Film" (1.290 €) ist aufgelöst: Objektfilm plus die
+ * Option "Makler vor der Kamera".
+ * `stunden` steuert nur die Terminplanung im Konfigurator.
  * ------------------------------------------------------------------ */
 export const filmpakete = [
   {
     key: 'objektfilm',
     name: 'Objektfilm',
     preis: 890,
+    stunden: 5,
     beschreibung: 'Hochwertiger Immobilienfilm, der Räume, Details und Atmosphäre eindrucksvoll vermittelt, ganz ohne Personen vor der Kamera. Ideal für eine emotionale Präsentation.',
   },
 ];
 
 /* ------------------------------------------------------------------ *
- * Erweiterungen
- * Stehen nicht als Preisliste auf der Seite, sondern im Optionen-Teil
- * der Terminanfrage, wo sie mitgerechnet werden.
+ * Optionen (Erweiterungen)
  * `preis`      – fester Betrag
- * `jeEinheit`  – Mengenpreis, Formular zeigt ein Mengenfeld
- * `zuschlag`   – prozentualer Aufschlag auf die Summe
+ * `jeEinheit`  – Mengenpreis, ab `staffelAb` gilt `jeEinheitAb`
+ * `zuschlag`   – prozentualer Aufschlag mit Mindestbetrag
  * ------------------------------------------------------------------ */
-export const erweiterungen = [
-  { key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '170 €' },
-  { key: 'drohnenmedia', name: 'Drohnen-Media', zusatz: 'Fotos plus bewegtes Material', preis: 260, preisLabel: '260 €' },
-  { key: 'launchreel', name: 'Launch-Reel', zusatz: 'vertikal, ca. 30 bis 45 Sekunden', preis: 390, preisLabel: '390 €' },
-  { key: 'maklerkamera', name: 'Makler vor der Kamera', preis: 350, preisLabel: '350 €' },
-  { key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '190 €' },
-  { key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', zusatz: 'aus vorhandenem Material', preis: 180, preisLabel: '180 €' },
-  { key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '450 €' },
-  { key: 'homestaging', name: 'Virtuelles Home Staging', jeEinheit: 89, jeEinheitAb3: 69,
-    preisLabel: '89 € je Bild, ab drei Bildern 69 €' },
-  { key: 'express', name: 'Express', zuschlag: 0.30, zuschlagMin: 120,
-    preisLabel: 'Aufschlag 30 %, mindestens 120 €', preisLabelKurz: '+30 %, mind. 120 €' },
+export const optionen = [
+  {
+    key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '+170 €', stunden: 1,
+    note: 'Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und attraktiven Lagen.',
+  },
+  {
+    key: 'drohnenmedia', name: 'Drohnen-Media', preis: 260, preisLabel: '+260 €', stunden: 1,
+    note: 'Drohnenfotos und zusätzlich bewegtes Material, das im Reel oder im Objektfilm verwendet werden kann.',
+  },
+  {
+    key: 'launchreel', name: 'Launch-Reel', preis: 390, preisLabel: '+390 €', stunden: 2,
+    note: 'Vertikaler Clip von etwa 30 bis 45 Sekunden für die Ankündigung des Objekts. Ideal für Instagram, Facebook und Ihre Website.',
+  },
+  {
+    key: 'maklerkamera', name: 'Makler vor der Kamera', preis: 350, preisLabel: '+350 €', stunden: 2,
+    nurMitFilm: true,
+    note: 'Sie präsentieren das Objekt persönlich im Film. Das schafft Vertrauen und stärkt zugleich Ihre eigene Marke.',
+  },
+  {
+    key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '+190 €',
+    nurMitFilm: true,
+    note: 'Ihre Stimme führt durch den Film, ohne Auftritt vor der Kamera.',
+  },
+  {
+    key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', preis: 180, preisLabel: '+180 €',
+    nurMitFilm: true,
+    note: 'Ein weiterer Schnitt aus vorhandenem Material, etwa kürzer oder für einen anderen Kanal.',
+  },
+  {
+    key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '+450 €',
+    note: 'Drei Ausleitungen für benannte Anlässe im Vermarktungsverlauf, etwa Ankündigung, Highlight und Abschluss.',
+  },
+  {
+    key: 'homestaging', name: 'Virtuelles Home Staging',
+    jeEinheit: 89, jeEinheitAb: 69, staffelAb: 3, maxMenge: 10,
+    preisLabel: '89 € je Bild, ab drei Bildern 69 €',
+    nurMitFoto: true,
+    note: 'Leere Räume werden digital möbliert. Einrichtungsstil, Möbel und Dekoration werden passend zum Objekt und zur gewünschten Zielgruppe ausgewählt.',
+  },
+  {
+    key: 'express', name: 'Express', zuschlag: 0.30, zuschlagMin: 120,
+    preisLabel: '+30 %, mind. 120 €',
+    note: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss. Der Aufschlag wird auf die beschleunigten Positionen dieses Objekts gerechnet, mindestens jedoch 120 €.',
+  },
 ];
 
 /* ------------------------------------------------------------------ *

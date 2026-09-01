@@ -2,10 +2,13 @@ import { Split } from '../fx.jsx';
 import { images } from '../../content/site.js';
 
 /**
- * "Ob Verkauf oder Vermietung" von der Live-Seite.
- * Verkaufsteil wörtlich. Im Vermietungsteil sind Ferienwohnung,
- * Kurzzeitvermietung und Airbnb entfallen, ebenso die beiden
- * Statistik-Punkte und die Quellenfußnote.
+ * "Ob Verkauf oder Vermietung" von der Live-Seite: zwei gleichwertige
+ * Karten nebeneinander mit Label, Überschrift, Absatz, drei Bullets und
+ * Bildbereich darunter. Auf schmalen Viewports untereinander.
+ *
+ * Ferienwohnung, Kurzzeitvermietung und Airbnb bleiben ungenannt, das
+ * ist eine bestehende Vorgabe. Die Kennzahlen und die Quellenfußnote
+ * stehen wieder wie live.
  */
 const segmente = [
   {
@@ -23,12 +26,11 @@ const segmente = [
   {
     tag: 'Vermieten',
     tone: 'sage',
-    flip: true,
     title: 'Mietobjekte',
     text: 'Content, der Mietanfragen steigert und das Objekt in kurzer Zeit verständlich macht.',
     punkte: [
-      'Aufnahmen, die über eine einzelne Vermietung hinaus verwendbar bleiben',
-      'Realistische Darstellung, damit Anfragen zum Objekt passen',
+      'Bis zu +40 % mehr Buchungen mit Profi-Fotos',
+      '~26 % höhere erzielbare Preise, weniger Leerstand',
       'Wiederverwendbarer Content für Portale & Social Media',
     ],
     img: images.referenzen[4],
@@ -45,25 +47,28 @@ export function Segmente() {
             Ob Verkauf oder Vermietung: Der richtige Content für Ihr Objekt.
           </Split>
         </div>
-        {segmente.map((s) => (
-          <div className={`v2-seg ${s.flip ? 'flip' : ''}`} key={s.tag}>
-            <div className="media" data-cursor="view" data-cursor-label={s.tag}>
-              <div className="frame" data-clip-reveal>
-                <img src={s.img.src} alt={s.img.alt} loading="lazy" data-parallax="14" width="2000" height="1333" />
-              </div>
-            </div>
-            <div className="body" data-reveal>
+
+        <div className="v2-segkarten">
+          {segmente.map((s, i) => (
+            <article className="v2-segkarte" key={s.tag} data-reveal data-delay={i * 0.1}>
               <span className={`v2-seg-tag ${s.tone}`}>{s.tag}</span>
-              <h3 className="v2-h-display v2-h-md">{s.title}</h3>
+              <h3>{s.title}</h3>
               <p>{s.text}</p>
               <ul>
                 {s.punkte.map((p) => (
                   <li key={p}><span className="tick">→</span>{p}</li>
                 ))}
               </ul>
-            </div>
-          </div>
-        ))}
+              <div className="frame">
+                <img src={s.img.src} alt={s.img.alt} loading="lazy" width="2000" height="1333" />
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <p className="v2-fine is-text" data-reveal>
+          Vermietungszahlen: Branchen-Zusammenstellungen. Richtwerte, keine Garantie.
+        </p>
       </div>
     </section>
   );
