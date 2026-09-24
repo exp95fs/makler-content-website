@@ -1,107 +1,80 @@
-import { Split } from '../fx.jsx';
-import { objektklassen, sonderobjekt, filmarten, optionen, buendelVorteil, preis } from '../../content/site.js';
+import { Split, Magnetic, scrollToId } from '../fx.jsx';
+import { Arrow } from '../ui.jsx';
+import { fotoklassen, sonderobjekt, weitereErgaenzungen, preis } from '../../content/site.js';
 
 /**
- * Vollständige Preisdarstellung. Alle Werte kommen aus src/content/site.js,
- * derselben Datei, aus der auch die Vorschau und der Buchungsworkflow lesen.
+ * Drei Fotopakete als Kacheln, keine vollständige Preisliste. Ergänzungen
+ * stehen nur als Aufzählung ohne Preise: sie werden im Buchungsprozess
+ * ausgewählt oder im Abstimmungstermin auf das Objekt zugeschnitten.
  */
-const objektfilm = filmarten.find((f) => f.key === 'objektfilm');
-const maklerfilm = filmarten.find((f) => f.key === 'maklerfilm');
-const kurz = (k) => k.kurz || k.name;
-
-function Tabelle({ titel, zeilen, spalte = 'netto' }) {
-  return (
-    <div className="v2-preistabelle">
-      <div className="kopf">
-        <span>{titel}</span>
-        <span>{spalte}</span>
-      </div>
-      {zeilen.map((z) => (
-        <div className="zeile" key={z.name}>
-          <div>
-            <b>{z.name}</b>
-            {z.text && <p>{z.text}</p>}
-          </div>
-          <span className={`betrag ${z.istText ? 'is-text' : ''}`}>{z.wert}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export function Preise() {
   return (
     <section className="v2-sec bg-linen" id="preise">
       <div className="v2-wrap">
         <div className="v2-sec-head">
-          <p className="v2-eyebrow" data-reveal>Leistungen &amp; Preise</p>
+          <p className="v2-eyebrow" data-reveal>Pakete und Preise</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Alle Leistungen, alle Preise, direkt buchbar.
+            Ein Festpreis je Objektklasse. Keine Überraschungen.
           </Split>
           <p className="v2-lead" data-reveal>
-            Der Preis richtet sich nach der Objektklasse. Darunter stellen Sie Ihre Produktion
-            zusammen und fragen einen Termin an, mit denselben Preisen.
+            Jede Klasse erhält dieselbe professionelle Qualität. Der Preis richtet
+            sich nach dem Produktionsumfang des Objekts, nicht nach einer Basis-
+            oder Premiumstufe. Was Ihr Objekt kostet, steht vor dem Termin fest.
           </p>
         </div>
 
-        <div className="v2-preisbloecke">
-          {/* 7.1 Foto */}
-          <div data-reveal>
-            <Tabelle
-              titel="Foto"
-              zeilen={[
-                ...objektklassen.map((k) => ({ name: k.name, text: k.beschreibung, wert: preis(k.foto) })),
-                { name: sonderobjekt.name, text: sonderobjekt.beschreibung, wert: sonderobjekt.preisLabel, istText: true },
-              ]}
-            />
-            <p className="v2-preisnote" data-reveal>
-              Jede Objektkategorie erhält dieselbe professionelle Qualität. Der Preis richtet sich
-              nach dem typischen Produktionsumfang, nicht nach einer Basis- oder Premiumqualität.
-            </p>
-          </div>
+        <div className="qb-pakete">
+          {fotoklassen.map((k, i) => (
+            <article className={`qb-paket ${k.empfohlen ? 'is-rec' : ''}`} key={k.key}
+                     data-reveal data-delay={i * 0.08}>
+              {k.empfohlen && <span className="flag">Häufigste Klasse</span>}
+              <h3>{k.name}</h3>
+              <p className="was">{k.beschreibung}</p>
+              <div className="preis">
+                {preis(k.foto)}<small>netto, Festpreis</small>
+              </div>
+              <p className="umfang">{k.umfang}</p>
+              <Magnetic strength={0.18}>
+                <button type="button" className={`v2-btn ${k.empfohlen ? '' : 'ghost'} sm`}
+                        onClick={() => scrollToId('booking')}>
+                  Diese Klasse anfragen <Arrow size={15} />
+                </button>
+              </Magnetic>
+            </article>
+          ))}
+        </div>
 
-          {/* 7.2 Video */}
-          <div data-reveal>
-            <Tabelle
-              titel="Video · Objektfilm"
-              zeilen={[
-                ...objektklassen.map((k) => ({ name: kurz(k), wert: preis(k[objektfilm.feld]) })),
-                { name: sonderobjekt.name, wert: sonderobjekt.preisLabel, istText: true },
-              ]}
-            />
-            <p className="v2-preisnote">{objektfilm.beschreibung}</p>
+        <div className="qb-sonder" data-reveal>
+          <div>
+            <b>{sonderobjekt.name}</b>
+            <p>{sonderobjekt.beschreibung} Sie erhalten nach einer kurzen Objektprüfung einen verbindlichen Festpreis.</p>
           </div>
+          <span className="label">{sonderobjekt.preisLabel}</span>
+        </div>
 
-          {/* 7.3 Maklerfilm */}
-          <div data-reveal>
-            <Tabelle
-              titel="Maklerfilm"
-              zeilen={[
-                ...objektklassen.map((k) => ({ name: kurz(k), wert: preis(k[maklerfilm.feld]) })),
-                { name: sonderobjekt.name, wert: sonderobjekt.preisLabel, istText: true },
-              ]}
-            />
-            <p className="v2-preisnote">
-              Der Maklerfilm erweitert den Objektfilm um Ihre persönliche Präsentation vor der
-              Kamera.
+        <div className="qb-ergaenzung" data-reveal>
+          <div className="text">
+            <span className="k">Dazu buchbar</span>
+            <h3>Was sich sinnvoll ergänzen lässt</h3>
+            <p>
+              Nicht jedes Objekt braucht dasselbe. Deshalb gibt es hier keine
+              Preisliste zum Abhaken, sondern eine Auswahl, die zum Objekt passt.
+              Im Buchungsprozess wählen Sie direkt aus, alles Weitere stimmen wir
+              in einem kurzen Gespräch ab und stellen ein Vermarktungspaket
+              zusammen, das zur Immobilie passt.
             </p>
+            <div className="ctas">
+              <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
+                Im Buchungsprozess auswählen <Arrow size={15} />
+              </button>
+              <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('kontakt')}>
+                Abstimmungstermin vereinbaren
+              </button>
+            </div>
           </div>
-
-          {/* 7.4 Erweiterungen */}
-          <div data-reveal>
-            <Tabelle
-              titel="Weitere Erweiterungen"
-              zeilen={optionen.map((o) => ({
-                name: o.zusatz ? `${o.name} (${o.zusatz})` : o.name,
-                wert: o.preisLabel,
-                istText: !o.preis,
-              }))}
-            />
-            <p className="v2-preisnote">
-              Für jedes weitere Objekt am selben Produktionstag reduziert sich der fotografische
-              Grundpreis um {preis(buendelVorteil.betrag)}. {buendelVorteil.bedingungen}
-            </p>
-          </div>
+          <ul className="liste">
+            {weitereErgaenzungen.map((e) => <li key={e}>{e}</li>)}
+          </ul>
         </div>
 
         <p className="v2-fine is-text" data-reveal>Alle Preise netto, zzgl. gesetzl. MwSt.</p>

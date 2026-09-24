@@ -68,130 +68,77 @@ export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (übe
   + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
 
 /* ------------------------------------------------------------------ *
- * Objektklassen
+ * Foto-Objektklassen
  *
- * Eine Klasse trägt alle drei Preise: Foto, Objektfilm und Maklerfilm.
- * Dadurch gibt es genau eine Quelle für Vorschau, Preistabellen und
- * Buchungsworkflow. Die Qualität ist in jeder Klasse dieselbe, der Preis
- * folgt allein dem typischen Produktionsumfang.
+ * Jede Klasse erhält dieselbe professionelle Qualitätszusage. Die Klasse
+ * schützt den Produktionsaufwand, nicht die Bildqualität. Keine Trennung
+ * in Basis- und Premiumqualität.
+ *
  * `stunden` steuert nur die Terminplanung im Buchungsworkflow.
  * ------------------------------------------------------------------ */
-export const objektklassen = [
+export const fotoklassen = [
   {
     key: 'wohnung',
     name: 'Wohnung',
     beschreibung: 'Eine Wohnung innerhalb eines Mehrparteiengebäudes.',
+    umfang: 'Innenräume, Gemeinschaftsbereiche und die Außenansicht des Gebäudes.',
     foto: 350,
-    video: 650,
-    maklerfilm: 950,
-    stunden: { foto: 2, video: 4, maklerfilm: 5 },
+    stunden: 2,
   },
   {
     key: 'einfamilienhaus',
     name: 'Einfamilienhaus',
     beschreibung: 'Eigenständiges Wohngebäude mit einer Wohneinheit und den üblichen Außenbereichen.',
+    umfang: 'Innenräume, Neben- und Technikräume, Außenansichten und Grundstück.',
     foto: 450,
-    video: 800,
-    maklerfilm: 1150,
-    stunden: { foto: 3, video: 5, maklerfilm: 6 },
+    empfohlen: true,
+    stunden: 3,
   },
   {
     key: 'mehrfamilienhaus',
-    name: 'Mehrfamilienhaus / mehrere Wohneinheiten',
+    name: 'Mehrfamilienhaus',
     kurz: 'Mehrfamilienhaus',
     beschreibung: 'Typischerweise zwei bis drei Wohneinheiten mit Gemeinschafts- und Außenbereichen.',
+    umfang: 'Alle Einheiten, Gemeinschaftsflächen, Neben- und Technikräume, Außenbereiche.',
     foto: 550,
-    video: 1050,
-    maklerfilm: 1350,
-    stunden: { foto: 4, video: 6, maklerfilm: 7 },
+    stunden: 4,
   },
 ];
 
-/** Objekte außerhalb der drei Klassen. Fließt nicht in die Summe ein. */
+/** Objekte außerhalb der drei Klassen. Kein Listenpreis, individuelle Prüfung. */
 export const sonderobjekt = {
   key: 'sonder',
-  name: 'Außergewöhnliche Objekte',
-  beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude, deutlich überdurchschnittlicher Umfang.',
-  preisLabel: 'individuelle Prüfung',
-  stunden: { foto: 4, video: 6, maklerfilm: 7 },
-};
-
-/** Die beiden Filmarten. `feld` verweist auf den Preis in der Objektklasse. */
-export const filmarten = [
-  {
-    key: 'objektfilm',
-    feld: 'video',
-    name: 'Objektfilm',
-    beschreibung: 'Ein Film, der Räume, Details und Atmosphäre des Objekts vermittelt, ohne Personen vor der Kamera.',
-  },
-  {
-    key: 'maklerfilm',
-    feld: 'maklerfilm',
-    name: 'Maklerfilm',
-    beschreibung: 'Der Objektfilm, erweitert um Ihre persönliche Präsentation vor der Kamera.',
-  },
-];
-
-/** Preisangaben für die kompakte Leistungs-Vorschau. */
-export const abPreise = {
-  foto: Math.min(...objektklassen.map((k) => k.foto)),
-  video: Math.min(...objektklassen.map((k) => k.video)),
-};
-
-/** Vorteil je weiterem Objekt am selben Produktionstag, nur auf den Fotopreis. */
-export const buendelVorteil = {
-  betrag: 50,
-  bedingungen: 'Gilt für den fotografischen Grundpreis, nicht für Video, Maklerfilm oder sonstige Optionen. '
-    + 'Voraussetzung sind derselbe Kunde, eine gemeinsame Rechnung, eine sinnvolle Route und ein vorbereitetes Objekt.',
+  name: 'Größere oder besondere Objekte',
+  beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude oder deutlich überdurchschnittlicher Umfang.',
+  preisLabel: 'Festpreis nach Objektprüfung',
+  stunden: 4,
 };
 
 /* ------------------------------------------------------------------ *
- * Erweiterungen
- * `preis`      – fester Betrag
- * `jeEinheit`  – Mengenpreis, ab `staffelAb` gilt `jeEinheitAb`
- * `zuschlag`   – prozentualer Aufschlag mit Mindestbetrag
+ * Ergänzungen
+ *
+ * Auf der Seite stehen sie nur als Hinweis, ohne Preisliste. Buchbar ist
+ * im Workflow aktuell allein das Launch-Reel; alles Weitere wird im
+ * Abstimmungstermin auf das Objekt zugeschnitten.
  * ------------------------------------------------------------------ */
-export const optionen = [
-  {
-    key: 'drohnenfotos', name: 'Drohnenfotos', preis: 170, preisLabel: '170 €', stunden: 1,
-    note: 'Immobilie, Grundstück und Umgebung aus der Luft. Besonders bei Häusern, großen Grundstücken und attraktiven Lagen.',
-  },
-  {
-    key: 'drohnenmedia', name: 'Drohnen-Media', zusatz: 'Fotos plus bewegtes Material',
-    preis: 260, preisLabel: '260 €', stunden: 1,
-    note: 'Drohnenfotos und zusätzlich bewegte Aufnahmen, die im Reel oder im Film verwendet werden.',
-  },
-  {
-    key: 'launchreel', name: 'Launch-Reel', zusatz: 'vertikal, ca. 30 bis 45 Sekunden',
-    preis: 390, preisLabel: '390 €', stunden: 2,
-    note: 'Vertikaler Clip für die Ankündigung des Objekts auf Instagram, Facebook und Ihrer Website.',
-  },
-  {
-    key: 'voiceover', name: 'Voice-over des Maklers', preis: 190, preisLabel: '190 €',
-    nurMitFilm: true,
-    note: 'Ihre Stimme führt durch den Film, ohne Auftritt vor der Kamera.',
-  },
-  {
-    key: 'zusatzschnitt', name: 'Zusätzlicher Schnitt', zusatz: 'aus vorhandenem Material',
-    preis: 180, preisLabel: '180 €', nurMitFilm: true,
-    note: 'Ein weiterer Schnitt aus dem Material des Termins, etwa kürzer oder für einen anderen Kanal.',
-  },
-  {
-    key: 'aktivierungen', name: 'Drei Content-Aktivierungen', preis: 450, preisLabel: '450 €',
-    note: 'Drei Ausleitungen für benannte Anlässe im Vermarktungsverlauf, etwa Ankündigung, Highlight und Abschluss.',
-  },
-  {
-    key: 'homestaging', name: 'Virtuelles Home Staging',
-    jeEinheit: 89, jeEinheitAb: 69, staffelAb: 3,
-    preisLabel: '89 € je Bild, ab drei Bildern 69 € je Bild',
-    nurMitFoto: true,
-    note: 'Leere Räume werden digital möbliert, passend zum Objekt und zur gewünschten Zielgruppe.',
-  },
-  {
-    key: 'express', name: 'Express', zuschlag: 0.30, zuschlagMin: 120,
-    preisLabel: 'Aufschlag 30 %, mindestens 120 €', preisLabelKurz: '+30 %, mind. 120 €',
-    note: 'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss. Der Aufschlag gilt für die Positionen dieses Objekts.',
-  },
+export const buchbareErgaenzung = {
+  key: 'launchreel',
+  name: 'Launch-Reel',
+  zusatz: 'vertikaler Rundgang, ca. 30 bis 45 Sekunden',
+  preis: 390,
+  preisLabel: '390 €',
+  stunden: 2,
+  note: 'Ein vertikaler Clip durch das Objekt für Instagram, Facebook und Ihre Website. '
+    + 'Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch.',
+};
+
+/** Nur als Aufzählung auf der Seite, ohne Preise. */
+export const weitereErgaenzungen = [
+  'Drohnenaufnahmen von Gebäude, Grundstück und Lage',
+  'Objektfilm mit geführtem Rundgang',
+  'Ihr Auftritt vor der Kamera oder als Stimme im Film',
+  'Virtuelles Home Staging für leer stehende Räume',
+  'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss',
 ];
 
 /* ------------------------------------------------------------------ *

@@ -29,7 +29,10 @@ function Stat({ wert, prefix = '', suffix = '', label }) {
         const dauer = 1200;
         const start = performance.now();
         const tick = (jetzt) => {
-          const p = Math.min((jetzt - start) / dauer, 1);
+          // rAF liefert den Frame-Zeitstempel, der vor `start` liegen kann.
+          // Ohne die untere Grenze wird der Fortschritt negativ und der
+          // Zähler zeigt kurzzeitig negative Werte.
+          const p = Math.min(Math.max((jetzt - start) / dauer, 0), 1);
           setAnzeige(Math.round(wert * (1 - Math.pow(1 - p, 3))));
           if (p < 1) frame = requestAnimationFrame(tick);
         };

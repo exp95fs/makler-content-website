@@ -7,10 +7,10 @@ import { Split, gsap, ScrollTrigger, prefersReducedMotion, scrollToId } from '..
  * selbst vor der Kamera steht.
  */
 const schritte = [
-  { t: 'Kurzes Briefing', x: '10 Minuten am Telefon: Objekt, Ziel (Verkauf/Vermietung), Termin.' },
-  { t: 'Ein Termin vor Ort', x: 'Fotos und Video in einem Durchgang. Sie müssen nicht dabei sein, außer Sie möchten selbst vor der Kamera stehen.' },
-  { t: 'Konzipierter Schnitt', x: 'Geschnitten nach Konzept, nicht nach Schema.' },
-  { t: 'Schnelle Lieferung', x: 'Sie erhalten Ihre finalen Fotos, Videos und Reels einsatzbereit für Portale, Exposé und Social Media.' },
+  { t: 'Anfrage', x: 'Sie nennen Objekt, Wunschtermin und den Kontakt zum Eigentümer. Das ist Ihr einziger Aufwand.', wer: 'Sie' },
+  { t: 'Abstimmung', x: 'Wir melden uns beim Eigentümer, vereinbaren den Termin und schicken die Checkliste zur Vorbereitung.', wer: 'Wir' },
+  { t: 'Produktion', x: 'Wir sind vor Ort und treten dabei als Teil Ihrer Vermarktung auf. Sie müssen nicht dabei sein.', wer: 'Wir' },
+  { t: 'Lieferung', x: 'Sie erhalten die fertigen Aufnahmen zum zugesagten Termin, einsatzbereit für Exposé, Portale und Social Media.', wer: 'Wir' },
 ];
 
 export function Prozess() {
@@ -40,7 +40,7 @@ export function Prozess() {
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>So läuft&rsquo;s ab</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            In vier Schritten zum fertigen Objekt-Content.
+            Ein Schritt bei Ihnen, drei bei uns.
           </Split>
         </div>
         <ol className="v2-flow">
@@ -48,6 +48,7 @@ export function Prozess() {
           {schritte.map((s, i) => (
             <li className="v2-flow-step" key={s.t} data-reveal data-delay={Math.min(i * 0.09, 0.3)}>
               <span className="n">0{i + 1}</span>
+              <span className="wer">{s.wer}</span>
               <h3>{s.t}</h3>
               <p>{s.x}</p>
             </li>

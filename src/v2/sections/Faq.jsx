@@ -7,33 +7,38 @@ import { Split } from '../fx.jsx';
  */
 const items = [
   {
-    q: 'Lohnt sich das wirtschaftlich?',
-    // Antwort komplett neu: die frühere baute auf Statistiken auf, für die
-    // keine belastbare Primärquelle für den deutschen Markt vorliegt.
-    a: 'Im Portal steht Ihr Objekt neben vielen anderen, und dort entscheidet die Darstellung darüber, ob jemand weiterklickt. Wer das Objekt vorher gesehen und verstanden hat, meldet sich gezielter, was Ihnen Besichtigungen erspart, die zu nichts führen. Dazu kommt die Wirkung im Eigentümergespräch: Sie zeigen, wie Sie vermarkten, statt es zu beschreiben. Gemessen an der Provision eines einzelnen Objekts bewegt sich die Produktion ab 350 € netto in einer Größenordnung, die sich schon über einen Auftrag rechnet.',
-  },
-  {
-    q: 'Erstellen Sie auch Content für Objekte zur Vermietung?',
-    // Angepasst: Ferien- und Kurzzeitobjekte werden nicht mehr genannt.
-    a: 'Ja. Neben Verkaufsobjekten produzieren wir gezielt Content für Mietobjekte. Dort zählt vor allem, dass das Objekt schnell verstanden wird und die Aufnahmen über eine einzelne Vermietung hinaus nutzbar bleiben.',
-  },
-  {
-    q: 'Wie läuft die Terminanfrage ab?',
-    // Angepasst: der frühere 10-%-Rabatt gilt nicht mehr.
-    a: 'Sie stellen Ihr Paket im Buchungsbereich zusammen und wählen einen Wunschtermin. Die Anfrage ist unverbindlich, wir melden uns innerhalb von 1–2 Werktagen persönlich mit einer verbindlichen Bestätigung.',
-  },
-  {
     q: 'Was kostet die Produktion?',
-    // Angepasst an die neue Preisarchitektur.
-    a: 'Alle Preise richten sich nach der Objektklasse. Fotografie kostet 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus und 550 € für ein Mehrfamilienhaus. Der Objektfilm liegt bei 650, 800 beziehungsweise 1.050 €, der Maklerfilm mit Ihrem Auftritt vor der Kamera bei 950, 1.150 beziehungsweise 1.350 €. Dazu kommen optionale Erweiterungen wie Drohne, Launch-Reel oder Home Staging. Für jedes weitere Objekt am selben Produktionstag sinkt der fotografische Grundpreis um 50 €. Ihr genauer Preis wird im Buchungsprozess berechnet.',
+    a: 'Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Aufwand, keine Nachberechnung.',
   },
   {
     q: 'Wie viel Zeit kostet mich das?',
-    a: '10 Minuten Briefing und Zugang zum Objekt. Den Rest machen wir.',
+    a: 'Die Anfrage. Mehr nicht. Wir stimmen den Termin direkt mit dem Eigentümer ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Sie müssen nicht dabei sein.',
+  },
+  {
+    q: 'Wer spricht mit dem Eigentümer?',
+    a: 'Wir. Und wir treten dabei als Teil Ihrer Vermarktung auf, nicht als unabhängiger Dienstleister. Der Verkauf einer Immobilie ist für Eigentümer ein sensibler Vorgang, entsprechend verhalten wir uns vor Ort: angekündigt, pünktlich, zurückhaltend und im Namen Ihres Büros.',
+  },
+  {
+    q: 'Wie muss die Immobilie vorbereitet sein?',
+    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Die Checkliste dazu geht vorab an Sie und auf Wunsch direkt an den Eigentümer. Ist ein Objekt nicht so weit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
+  },
+  {
+    q: 'Wie schnell wird geliefert?',
+    // TODO: Angabe durch Fabian bestätigen (Regellieferzeit je Objektklasse).
+    a: 'Den Liefertermin nennen wir verbindlich mit der Bestätigung, gemeinsam mit dem Festpreis. Wenn es schneller gehen muss, ist eine vorgezogene Bearbeitung gegen Aufschlag möglich.',
+  },
+  {
+    q: 'Was passiert bei schlechtem Wetter?',
+    a: 'Die Innenaufnahmen finden statt. Außen- und Drohnenaufnahmen holen wir an einem passenden Tag nach, ohne dass ein zweiter Produktionstag berechnet wird. Ob am Standort geflogen werden darf, prüfen wir vor dem Termin.',
+  },
+  {
+    q: 'Was lässt sich ergänzen?',
+    a: 'Im Buchungsprozess können Sie direkt ein Launch-Reel dazubuchen, einen vertikalen Rundgang für Social Media. Drohnenaufnahmen, ein Objektfilm oder Ihr Auftritt vor der Kamera sind ebenfalls möglich. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.',
   },
   {
     q: 'Wem gehören die Aufnahmen?',
-    a: 'Sie erhalten die volle Nutzung für Vermarktung und Ihre Kanäle. Wir dürfen das Ergebnis als Arbeitsprobe zeigen.',
+    // TODO: Angabe durch Fabian bestätigen (genauer Umfang der Nutzungsrechte).
+    a: 'Sie erhalten die Rechte, die Aufnahmen für die Vermarktung des Objekts und auf Ihren eigenen Kanälen zu nutzen. Ob wir das Ergebnis als Arbeitsprobe zeigen dürfen, vereinbaren wir separat, und Sie können das jederzeit widerrufen.',
   },
 ];
 
