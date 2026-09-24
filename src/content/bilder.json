@@ -1,0 +1,267 @@
+{
+ "/images/hero/hero.jpg": {
+  "basis": "/images/opt/immobilienfoto-wohnhaus-holzfassade",
+  "breiten": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "fallback": 1280,
+  "width": 2400,
+  "height": 1350
+ },
+ "/images/referenzen/ref-01.jpg": {
+  "basis": "/images/opt/immobilienfoto-wohnkueche-kochinsel",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-02.jpg": {
+  "basis": "/images/opt/immobilienfoto-kuechenzeile-barhocker",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-03.jpg": {
+  "basis": "/images/opt/immobilienfoto-wohn-essbereich-offene-kueche",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-04.jpg": {
+  "basis": "/images/opt/immobilienfoto-kueche-dachfenster",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-05.jpg": {
+  "basis": "/images/opt/immobilienfoto-essbereich-holzbalkendecke",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1193
+ },
+ "/images/referenzen/ref-06.jpg": {
+  "basis": "/images/opt/immobilienfoto-dachgeschoss-wohnraum-kuechenzeile",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-07.jpg": {
+  "basis": "/images/opt/immobilienfoto-essplatz-verglaste-zimmertuer",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-08.jpg": {
+  "basis": "/images/opt/immobilienfoto-badezimmer-doppelwaschtisch",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-09.jpg": {
+  "basis": "/images/opt/immobilienfoto-dachgeschoss-kuechenzeile",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-10.jpg": {
+  "basis": "/images/opt/immobilienfoto-dachgeschoss-dachstuhl",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-11.jpg": {
+  "basis": "/images/opt/immobilienfoto-dachgeschoss-sprossenfenster",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-12.jpg": {
+  "basis": "/images/opt/immobilienfoto-schlafzimmer-schreibtisch",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-13.jpg": {
+  "basis": "/images/opt/immobilienfoto-badezimmer-badewanne-dachfenster",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-14.jpg": {
+  "basis": "/images/opt/immobilienfoto-zimmer-dachschraege-essplatz",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-15.jpg": {
+  "basis": "/images/opt/immobilienfoto-terrasse-sitzbank",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-16.jpg": {
+  "basis": "/images/opt/immobilienfoto-kueche-gruene-fronten",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-17.jpg": {
+  "basis": "/images/opt/immobilienfoto-schlafzimmer-einbauschrank",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-18.jpg": {
+  "basis": "/images/opt/immobilienfoto-wohnbereich-terrassenzugang",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-19.jpg": {
+  "basis": "/images/opt/immobilienfoto-badezimmer-dusche",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1201
+ },
+ "/images/referenzen/ref-20.jpg": {
+  "basis": "/images/opt/immobilienfoto-wohnraum-kuechenblock",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1199
+ },
+ "/images/referenzen/ref-21.jpg": {
+  "basis": "/images/opt/immobilienfoto-mehrfamilienhaus-aussenansicht",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-22.jpg": {
+  "basis": "/images/opt/immobilienfoto-holzhaus-wohn-essbereich",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-23.jpg": {
+  "basis": "/images/opt/immobilienfoto-essplatz-eckbank",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1198
+ }
+}
