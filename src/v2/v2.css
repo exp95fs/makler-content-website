@@ -1985,7 +1985,7 @@ button.v2-link-inline {
 
 .qb-cfg-book-summary {
   background: rgba(243, 238, 229, 0.05); border: 1px solid var(--line-dark);
-  border-radius: 8px; padding: clamp(22px, 2.6vw, 30px); position: sticky; top: 100px;
+  border-radius: 8px; padding: clamp(22px, 2.6vw, 30px);
 }
 .qb-cfg-book-summary h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--linen); margin: 0 0 14px; }
 .qb-cfg-book-summary .leer { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-inv-soft); }
@@ -2252,7 +2252,7 @@ button.v2-link-inline {
    Komposition über alle Breiten gleich bleibt. Die Seitenverhältnisse
    liegen bewusst Richtung Querformat - bei Hochformat schneidet der
    Zuschnitt zu viel vom Raum weg. */
-.qb-strecke { position: relative; margin: 0; padding: 22px 0 24%; }
+.qb-strecke { position: relative; margin: 0; padding: 22px 0 25%; }
 .qb-strecke > span {
   display: block; border-radius: 7px; overflow: clip; background: var(--sage-deep);
 }
@@ -2261,16 +2261,16 @@ button.v2-link-inline {
   transition: transform 1s var(--ease-out);
 }
 .qb-strecke .a {
-  width: 84%; aspect-ratio: 3 / 2;
+  width: 84%; aspect-ratio: 3 / 2; margin-left: auto;
   box-shadow: 0 40px 80px -46px rgba(42, 42, 34, 0.55);
 }
 .qb-strecke .b {
-  position: absolute; right: 0; top: 16%; width: 48%; aspect-ratio: 3 / 2; z-index: 2;
+  position: absolute; right: 0; bottom: 0; width: 44%; aspect-ratio: 3 / 2; z-index: 2;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
 .qb-strecke .c {
-  position: absolute; left: 8%; bottom: 0; width: 56%; aspect-ratio: 3 / 2; z-index: 3;
+  position: absolute; left: 0; bottom: 3%; width: 44%; aspect-ratio: 3 / 2; z-index: 3;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
@@ -2294,10 +2294,10 @@ button.v2-link-inline {
   .qb-einstieg { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .qb-strecke { padding-bottom: 27%; }
-  .qb-strecke .a { width: 84%; }
-  .qb-strecke .b { width: 48%; border-width: 4px; }
-  .qb-strecke .c { width: 58%; left: 5%; border-width: 4px; }
+  .qb-strecke { padding-bottom: 26%; }
+  .qb-strecke .a { width: 86%; }
+  .qb-strecke .b { width: 46%; border-width: 4px; }
+  .qb-strecke .c { width: 46%; left: 0; border-width: 4px; }
   .qb-strecke figcaption { font-size: 9.5px; letter-spacing: 0.1em; }
 }
 
@@ -2818,3 +2818,25 @@ main section[tabindex="-1"]:focus { outline: none; }
 
 /* Kennzahlen: Zeilenumbrüche aus den Daten übernehmen (siehe site.js) */
 .v2-stat-label { white-space: pre-line; }
+
+/* Kennzahlenband: Spiegel der Quellenzeile oben, unsichtbar, gleiche Höhe */
+.v2-stats-src.qb-spiegel {
+  visibility: hidden; margin: 0 0 12px; padding: 0 0 10px; border-top: 0;
+  border-bottom: 1px solid transparent;
+}
+
+/* Bruttopreise */
+.qb-brutto { font-weight: 500; }
+.qb-cfg-choice .qb-brutto { font-size: 12.5px; color: var(--text-inv-soft); }
+.qb-cfg-choice .qb-brutto::before { content: ' · '; }
+.qb-cfg-checkbox .pr { text-align: right; }
+.qb-cfg-checkbox .qb-brutto { display: block; font-size: 12px; color: var(--text-inv-soft); }
+.qb-cfg-book-summary .row.summe { margin-top: 6px; padding-top: 10px; border-top: 1px solid var(--line-dark); }
+
+/* Ergänzungen in der Preissektion: Name, Preis, Kurzbeschreibung */
+.qb-ergaenzung .liste li { display: grid; gap: 4px; }
+.qb-ergaenzung .liste .kopf { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; align-items: baseline; }
+.qb-ergaenzung .liste b { font-family: var(--font-display); font-weight: 600; color: var(--text); }
+.qb-ergaenzung .liste .betrag { font-size: 13px; font-weight: 700; color: var(--terra-deep); }
+.qb-ergaenzung .liste .x { font-size: 13.5px; line-height: 1.6; color: var(--text-soft); }
+.qb-signale { padding-bottom: clamp(18px, 2vw, 26px); }

@@ -23,18 +23,6 @@ export const ANKER = [
   { id: 'faq', label: 'FAQ' },
 ];
 
-/**
- * Vertiefende Unterseiten, dezent im Footer verlinkt. Eigene Linktexte,
- * damit sie sich von den gleichnamigen Ankern unterscheiden.
- */
-const UNTERSEITEN = [
-  ['immobilienfotografie', 'Immobilienfotografie'],
-  ['referenzen', 'Alle Referenzen'],
-  ['preise', 'Preisübersicht'],
-  ['ueber', 'Über Quadratblick'],
-  ['anfrage', 'Projekt anfragen'],
-];
-
 const ankerHref = (start, id) => (start ? `#${id}` : `/#${id}`);
 
 /* ---------- Navigation ---------- */
@@ -160,9 +148,6 @@ function Footer({ start }) {
           </div>
           <nav className="v2-footer-links" aria-label="Sektionen der Startseite">
             {ANKER.map((p) => <a key={p.id} href={ankerHref(start, p.id)}>{p.label}</a>)}
-          </nav>
-          <nav className="v2-footer-links" aria-label="Mehr erfahren">
-            {UNTERSEITEN.map(([key, text]) => <a key={key} href={SEITEN[key].pfad}>{text}</a>)}
           </nav>
           <div className="v2-footer-links">
             <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>

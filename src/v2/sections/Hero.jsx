@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
-import { Arrow, Bild, PreisNetto } from '../ui.jsx';
-import { images, abPreis, preishinweisKurz } from '../../content/site.js';
+import { Arrow, Bild } from '../ui.jsx';
+import { images } from '../../content/site.js';
 
 /**
  * Hero des Onepagers. Gestaltung und Texte wie im bisherigen Onepager.
@@ -9,7 +9,7 @@ import { images, abPreis, preishinweisKurz } from '../../content/site.js';
  * Subline wie im bisherigen Onepager (auf Wunsch von Fabian), Region
  * Bühl, Baden-Baden, Achern statt Ortenau.
  *
- * Eyebrow, H1, Lead, CTAs und Preiszeile tragen bewusst KEINE
+ * Eyebrow, H1, Lead und CTAs tragen bewusst KEINE
  * Reveal-Animation: sie sind im vorgerenderten HTML sofort sichtbar und
  * verzögern weder die Lesbarkeit noch den Largest Contentful Paint.
  * Das Hintergrundbild zoomt beim Laden leicht aus und läuft mit Parallax.
@@ -36,9 +36,9 @@ export function Hero() {
         </h1>
         <p className="v2-lead v2-hero-lead">
           Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
-          Baden-Baden, Achern und Umgebung. Hochwertiger Content, der Ihre Objekte
-          schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
-          als Marke sichtbar macht.
+          Baden-Baden, Achern und Umgebung. Hochwertiger Content, der qualifizierte
+          Anfragen bringt, Ihre Objekte schneller vermittelt und Ihre Marke
+          sichtbar macht.
         </p>
         <div className="v2-hero-ctas">
           <Magnetic>
@@ -52,11 +52,6 @@ export function Hero() {
             </a>
           </Magnetic>
         </div>
-        <p className="v2-hero-note">
-          Festpreis ab <PreisNetto n={abPreis()} /> je Objekt
-          {' · '}verbindlich vor dem Termin{' · '}Anfrage unverbindlich
-          <span className="fein">{preishinweisKurz}</span>
-        </p>
       </div>
       <div className="v2-hero-scroll" aria-hidden="true">
         <span>Scroll</span>

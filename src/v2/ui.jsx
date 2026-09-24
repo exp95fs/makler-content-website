@@ -1,5 +1,5 @@
 import bilder from '../content/bilder.json';
-import { preis } from '../content/site.js';
+import { preis, preisBrutto } from '../content/site.js';
 
 /* Kleine geteilte UI-Bausteine, die von mehreren Seiten genutzt werden. */
 
@@ -51,9 +51,14 @@ export function Bild({ src, alt, sizes = '100vw', vorrang = false, className, ..
 
 
 /**
- * Betrag mit kleinem Nettozusatz, wie auf der bisherigen Live-Seite:
- * "350 €" groß, "netto" klein dahinter.
+ * Betrag mit kleinem Nettozusatz: "350 €" groß, "netto" klein dahinter.
+ * `brutto`: zusätzlich klein der Bruttopreis inkl. USt.
  */
-export function PreisNetto({ n }) {
-  return <>{preis(n)}<span className="qb-netto">{"\u00A0"}netto</span></>;
+export function PreisNetto({ n, brutto: mitBrutto = false }) {
+  return (
+    <>
+      {preis(n)}<span className="qb-netto">{'\u00A0'}netto</span>
+      {mitBrutto && <span className="qb-brutto">{preisBrutto(n)}</span>}
+    </>
+  );
 }

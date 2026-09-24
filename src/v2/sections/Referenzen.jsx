@@ -178,10 +178,6 @@ export function Referenzen({ variante = 'seite' }) {
             <a className="v2-link-inline" href={kontakt.instagram} target="_blank" rel="noopener noreferrer">
               <InstagramGlyph size={15} />&nbsp;Mehr Arbeitsproben auf Instagram
             </a>
-            <a className="v2-link-inline" href={SEITEN.referenzen.pfad}>
-              Alle Referenzen ansehen <Arrow size={14} />
-            </a>
-            <span className="v2-idx">{reihenfolge.length} Aufnahmen · {referenzGruppen.length} Objekte</span>
           </div>
         )}
       </div>

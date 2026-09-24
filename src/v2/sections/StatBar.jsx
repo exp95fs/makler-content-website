@@ -52,6 +52,9 @@ export function StatBar() {
   return (
     <section className="v2-stats qb-signale" aria-label="Kennzahlen">
       <div className="v2-wrap">
+        {/* Unsichtbarer Spiegel der Quellenzeile: gleicht deren Höhe oben aus,
+            damit die Kennzahlen im Band mittig stehen. */}
+        <p className="v2-stats-src qb-spiegel" aria-hidden="true">{kennzahlenQuelle}</p>
         <div className="v2-stats-grid">
           {kennzahlen.map((k) => (
             <Stat key={k.label} wert={k.wert} prefix={k.prefix} suffix={k.suffix} label={k.label} />

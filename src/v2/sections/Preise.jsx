@@ -2,18 +2,15 @@ import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
-import { fotoklassen, sonderobjekt, weitereErgaenzungen, ergaenzungen, preisNetto } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
- * drei gleichwertige Kacheln, ein CTA darunter, Sonderobjekte, Ergänzungen.
+ * drei gleichwertige Kacheln, ein CTA darunter, Ergänzungen.
  *
- * Buchbar sind Drohnenaufnahmen und das Objekt-Kurzvideo zum festen
- * Preis. Preise mit kleinem "netto"; der vollständige Hinweis zur
- * Umsatzsteuer steht im Footer.
+ * Preise netto mit kleinem "netto", darunter der Bruttopreis inkl. USt.
+ * Der vollständige Hinweis zur Umsatzsteuer steht im Footer.
  */
-const drohne = ergaenzungen.find((e) => e.key === 'drohne');
-const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 
 export function Preise() {
   const ref = useRef(null);
@@ -25,12 +22,12 @@ export function Preise() {
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Pakete und Preise</p>
           <Split as="h2" id="preise-titel" className="v2-h-display v2-h-lg">
-            Ein Festpreis je Objektklasse. Keine Überraschungen.
+            Ein Festpreis. Alles inkludiert. Ohne Überraschungen.
           </Split>
           <p className="v2-lead" data-reveal>
-            In jeder Klasse steckt dasselbe Vermarktungspaket: derselbe Ablauf,
-            dieselbe Bearbeitung, dieselbe Qualität. Was sich unterscheidet, ist
-            allein die Größe des Objekts und damit die Anzahl der Bilder.
+            Jedes Paket enthält alle Bilder, die Sie für eine erfolgreiche Vermarktung
+            brauchen. Die Preise unterscheiden sich allein nach Größe des Objekts und
+            damit nach der Anzahl der Bilder.
           </p>
         </div>
 
@@ -43,7 +40,7 @@ export function Preise() {
               </div>
               <p className="preis">
                 <b><PreisNetto n={k.foto} /></b>
-                <small>Festpreis je Objekt</small>
+                <small>{preis(brutto(k.foto))} inkl. 19 % USt.</small>
               </p>
               <p className="menge">{k.bilder}</p>
             </article>
@@ -56,20 +53,6 @@ export function Preise() {
               Objekt anfragen <Arrow size={16} />
             </a>
           </Magnetic>
-          <p className="dazu">
-            In jeder Klasse enthalten: 1 bis 2 Bilder je Raum, innen, außen und
-            Nebenräume, vollständig bearbeitet.
-            {' '}
-            <a className="v2-link-inline on-light" href="#ablauf">Ablauf ansehen</a>
-          </p>
-        </div>
-
-        <div className="qb-sonder" data-reveal>
-          <div>
-            <h3>{sonderobjekt.name}</h3>
-            <p>{sonderobjekt.beschreibung} Sie erhalten nach einer kurzen Objektprüfung einen verbindlichen Festpreis.</p>
-          </div>
-          <span className="label">{sonderobjekt.preisLabel}</span>
         </div>
 
         <div className="qb-ergaenzung" data-reveal>
@@ -77,10 +60,9 @@ export function Preise() {
             <span className="k">Dazu buchbar</span>
             <h3>Was sich sinnvoll ergänzen lässt</h3>
             <p>
-              Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen ({preisNetto(drohne.preis)}) und
-              ein Objekt-Kurzvideo ({preisNetto(kurzvideo.preis)}) wählen Sie direkt im
-              Buchungsprozess aus, alles Weitere stimmen wir in einem kurzen Gespräch auf das
-              Objekt ab.
+              Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen und ein Objekt-Kurzvideo
+              wählen Sie direkt im Buchungsprozess aus, alles Weitere stimmen wir in einem
+              kurzen Gespräch auf das Objekt ab.
             </p>
             <div className="ctas">
               <a className="v2-btn ghost sm" href="#booking">
@@ -92,7 +74,15 @@ export function Preise() {
             </div>
           </div>
           <ul className="liste">
-            {weitereErgaenzungen.map((e) => <li key={e}>{e}</li>)}
+            {ergaenzungen.map((e) => (
+              <li key={e.key}>
+                <span className="kopf">
+                  <b>{e.name}</b>
+                  <span className="betrag">+ {preisNetto(e.preis)} · {preisBrutto(e.preis)}</span>
+                </span>
+                <span className="x">{e.kurz}</span>
+              </li>
+            ))}
           </ul>
         </div>
 

@@ -1,7 +1,6 @@
 import { Split } from '../fx.jsx';
-import { Arrow, Bild, PreisNetto } from '../ui.jsx';
-import { SEITEN } from '../seiten.js';
-import { images, abPreis } from '../../content/site.js';
+import { Arrow, Bild } from '../ui.jsx';
+import { images } from '../../content/site.js';
 
 /**
  * Erste Sektion nach dem Hero, wie im bisherigen Onepager: das
@@ -60,13 +59,7 @@ export function LeistungenVorschau() {
               <a className="v2-btn" href="#preise">
                 Pakete und Preise <Arrow size={16} />
               </a>
-              <span className="ab">Festpreis ab <PreisNetto n={abPreis()} /></span>
             </div>
-            <p className="qb-mehr-link" data-reveal>
-              <a className="v2-link-inline on-light" href={SEITEN.immobilienfotografie.pfad}>
-                Mehr zur Immobilienfotografie <Arrow size={14} />
-              </a>
-            </p>
           </div>
 
           <div className="bild">

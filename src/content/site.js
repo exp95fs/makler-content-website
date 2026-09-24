@@ -251,6 +251,7 @@ export const ergaenzungen = [
     name: 'Drohnenaufnahmen',
     preis: 130,
     stunden: 1,
+    kurz: 'Luftaufnahmen von Objekt, Grundstück und Umgebung, sofern am Objekt zulässig und witterungsbedingt möglich.',
     note: 'Luftaufnahmen von Immobilie, Grundstück und Umgebung. Möglich, sofern am Objekt '
       + 'rechtlich zulässig und witterungsbedingt durchführbar – das klären wir vor dem Termin.',
   },
@@ -259,6 +260,7 @@ export const ergaenzungen = [
     name: 'Objekt-Kurzvideo',
     preis: 390,
     stunden: 2,
+    kurz: 'Rundgang in 4K, im Hoch- oder Querformat, für Exposé, Website und Social Media.',
     note: 'Ein professionell produzierter Rundgang, der Raumgefühl und Atmosphäre authentisch '
       + 'vermittelt. Ideal für Exposé, Website und Social Media – in 4K sowie im Hoch- oder Querformat.',
   },
@@ -269,14 +271,6 @@ export const ergaenzungen = [
  * Standardangebote, nicht im strukturierten Datenmodell.
  */
 export const weitereMedien = 'Weitere Medienformate auf Anfrage.';
-
-/**
- * Aufzählung "Dazu buchbar" in der Preissektion der Startseite.
- */
-export const weitereErgaenzungen = [
-  'Drohnenaufnahmen von Objekt, Grundstück und Umgebung, sofern am Objekt zulässig und witterungsbedingt möglich',
-  'Objekt-Kurzvideo: Rundgang in 4K, im Hoch- oder Querformat, für Exposé, Website und Social Media',
-];
 
 /* ------------------------------------------------------------------ *
  * Kontakt
@@ -293,30 +287,41 @@ export const kontakt = {
 /* ------------------------------------------------------------------ *
  * Preisangaben
  *
- * Alle Beträge sind Nettopreise. Sie werden als "350 € netto" angezeigt.
- * Der vollständige Hinweis steht bei den Preisen, im Wizard und im Footer.
- *
- * Hintergrund: Reine B2B-Angebote dürfen netto ausgezeichnet werden, wenn
- * erkennbar ist, dass sie sich ausschließlich an Unternehmer richten.
- * TODO: Formulierung vor dem Live-Gang fachlich prüfen lassen.
+ * Kalkuliert wird netto; "350 € netto" ist die Hauptangabe. Weil sich das
+ * Angebot nicht mehr ausschließlich an Unternehmer richtet, sondern auch
+ * an Privatpersonen (etwa beim Verkauf ohne Makler), steht zu jedem Preis
+ * auch der Bruttopreis inkl. 19 % USt. (Preisangabenverordnung: gegenüber
+ * Verbrauchern ist der Gesamtpreis anzugeben).
+ * TODO: Darstellung vor dem Live-Gang rechtlich prüfen lassen.
  * ------------------------------------------------------------------ */
 
-/** Betrag formatieren, ohne Zusatz. */
-export const preis = (n) => n.toLocaleString('de-DE') + '\u00A0€';
+/** Umsatzsteuersatz, derzeit 19 %. */
+export const UST = 0.19;
+
+/** Betrag formatieren, ohne Zusatz. Cent nur, wenn nötig. */
+export const preis = (n) => n.toLocaleString('de-DE', {
+  minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2,
+}) + '\u00A0€';
+
+/** Bruttobetrag, auf den Cent gerundet. */
+export const brutto = (n) => Math.round(n * (1 + UST) * 100) / 100;
 
 /** Betrag mit Nettozusatz, überall dort wo ein Preis genannt wird. */
 export const preisNetto = (n) => preis(n) + '\u00A0netto';
+
+/** Bruttoangabe als Text: "416,50 € inkl. USt." */
+export const preisBrutto = (n) => preis(brutto(n)) + '\u00A0inkl.\u00A0USt.';
+
+/** Netto mit Brutto in Klammern, für Fließtext. */
+export const preisVoll = (n) => `${preisNetto(n)} (${preisBrutto(n)})`;
 
 /** Kleinste Objektklasse, für "ab"-Angaben. */
 export const abPreis = () => Math.min(...fotoklassen.map((k) => k.foto));
 
 export const preishinweis = 'Alle Preise sind Nettopreise in Euro zuzüglich der gesetzlichen '
-  + 'Umsatzsteuer. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne des § 14 BGB.';
+  + 'Umsatzsteuer von derzeit 19 %; die Bruttopreise sind jeweils angegeben.';
 
 /** Vollständiger Hinweis, steht im Footer. */
 export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
-  + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Unsere Leistungen richten sich '
-  + 'ausschließlich an Unternehmer im Sinne des § 14 BGB, nicht an Verbraucher.';
-
-/** Kurzform für enge Stellen, etwa unter dem Hero. */
-export const preishinweisKurz = 'Alle Preise netto zzgl. USt. · Angebot ausschließlich für Unternehmer';
+  + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Die Bruttopreise inklusive Umsatzsteuer '
+  + 'sind jeweils mit angegeben.';

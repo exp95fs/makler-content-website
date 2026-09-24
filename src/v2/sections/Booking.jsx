@@ -3,7 +3,7 @@ import { Split } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { fotoklassen, ergaenzungen, kontakt, preis, preisNetto, preishinweis } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisNetto, preisVoll } from '../../content/site.js';
 
 /**
  * Anfrage-Wizard für genau ein Objekt.
@@ -23,7 +23,8 @@ import { fotoklassen, ergaenzungen, kontakt, preis, preisNetto, preishinweis } f
  *
  * Texte und Gestaltung wie im bisherigen Onepager. Korrigiert: keine
  * Antwortzeit ("1 bis 2 Werktage"), keine Eigentümerabstimmung als
- * Standard, keine AGB-Bestätigung ohne AGB-Seite. Zusatzleistungen:
+ * Standard, keine AGB-Bestätigung ohne AGB-Seite, keine Beschränkung auf
+ * Unternehmer (auch Privatpersonen können anfragen). Zusatzleistungen:
  * Drohnenaufnahmen und Objekt-Kurzvideo (Daten in site.js).
  *
  * `kopf`: Sektionskopf des Onepagers ("Objekt anfragen", id "booking").
@@ -95,7 +96,6 @@ export function Booking({ kopf = false }) {
   const [fallback, setFallback] = useState(false);
   const [offenerTag, setOffenerTag] = useState(null);
   const [daten, setDaten] = useState(LEER);
-  const [unternehmer, setUnternehmer] = useState(false);
   const [versucht, setVersucht] = useState({});
   const [status, setStatus] = useState('bereit'); // bereit | sendet | erfolg | fehler
   const [kandidaten, setKandidaten] = useState([]);
@@ -183,14 +183,13 @@ export function Booking({ kopf = false }) {
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
       `Zusatzleistung: ${gewaehlteZusatz.length ? gewaehlteZusatz.map((e) => e.name).join(', ') : 'keine'}`,
       `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage'}`,
-      `Preisorientierung: ${preis(summe)} netto zzgl. USt.`,
+      `Preisorientierung: ${preisVoll(summe)}`,
     ].join('\n');
   }
 
   async function senden(e) {
     e.preventDefault();
     if (step !== 5) return;
-    if (!unternehmer) { setVersucht((v) => ({ ...v, 5: true })); return; }
     if (sendet.current) return;
     sendet.current = true;
     setStatus('sendet');
@@ -202,7 +201,6 @@ export function Booking({ kopf = false }) {
       zusatzleistung: gewaehlteZusatz.map((z) => z.name).join(', ') || 'keine',
       wunschtermin: slot ? slot.label : 'Individuelle Terminanfrage',
       ...daten,
-      unternehmer: unternehmer ? 'ja' : 'nein',
       zusammenfassung: zusammenfassung(),
     });
 
@@ -212,7 +210,7 @@ export function Booking({ kopf = false }) {
       setStatus('erfolg');
       // Erst jetzt zurücksetzen
       setKlasse(''); setAddons({}); terminReset(); setDaten(LEER);
-      setUnternehmer(false); setVersucht({}); setStep(1); setMaxStep(1);
+      setVersucht({}); setStep(1); setMaxStep(1);
       gestartet.current = false;
     } else {
       track('formular_fehler', { formular: 'terminanfrage', grund: ergebnis.grund });
@@ -305,7 +303,7 @@ export function Booking({ kopf = false }) {
                                checked={klasse === k.key}
                                onChange={() => { starten(); setKlasse(k.key); terminReset(); }} />
                         <span className="t">{k.name}</span>
-                        <span className="pr"><PreisNetto n={k.foto} /></span>
+                        <span className="pr"><PreisNetto n={k.foto} brutto /></span>
                         <span className="p">{k.beschreibung}</span>
                       </label>
                     ))}
@@ -324,7 +322,7 @@ export function Booking({ kopf = false }) {
                   </p>
                   {ergaenzungen.map((e) => (
                     <Haken key={e.key} id={`wz-${e.key}`} an={!!addons[e.key]} name={e.name}
-                           preisText={<>+ <PreisNetto n={e.preis} /></>} note={e.note}
+                           preisText={<>+ <PreisNetto n={e.preis} brutto /></>} note={e.note}
                            umschalten={() => { setAddons((a) => ({ ...a, [e.key]: !a[e.key] })); terminReset(); }} />
                   ))}
                   <p className="qb-cfg-book-note">
@@ -435,22 +433,8 @@ export function Booking({ kopf = false }) {
                     <Zeile label="Kontakt" wert={`${daten.vorname} ${daten.nachname} · ${daten.email}`} />
                     <Zeile label="Objektadresse" wert={daten.adresse} />
                     {daten.eigentuemer && <Zeile label="Eigentümerkontakt" wert={daten.eigentuemer} />}
-                    <Zeile label="Festpreis" wert={preisNetto(summe)} />
+                    <Zeile label="Festpreis" wert={preisVoll(summe)} />
                   </dl>
-                  <div className={`qb-cfg-einwilligung ${versucht[5] && !unternehmer ? 'is-fehler' : ''}`}>
-                    <input id="wz-unternehmer" type="checkbox" checked={unternehmer}
-                           onChange={(e) => setUnternehmer(e.target.checked)}
-                           aria-invalid={versucht[5] && !unternehmer ? 'true' : undefined}
-                           aria-describedby={versucht[5] && !unternehmer ? 'wz-unternehmer-fehler' : undefined} />
-                    <label htmlFor="wz-unternehmer">
-                      Ich frage als Unternehmer im Sinne des § 14 BGB an. *
-                    </label>
-                  </div>
-                  {versucht[5] && !unternehmer && (
-                    <p className="qb-cfg-book-hint" id="wz-unternehmer-fehler" role="alert">
-                      Bitte bestätigen Sie, dass Sie als Unternehmer anfragen.
-                    </p>
-                  )}
                   <p className="qb-cfg-book-note">
                     Informationen zur Verarbeitung Ihrer Angaben finden Sie in der{' '}
                     <a href="/datenschutz.html">Datenschutzerklärung</a>.
@@ -477,12 +461,15 @@ export function Booking({ kopf = false }) {
                     Zurück
                   </button>
                 ) : <span />}
+                {/* Eigene keys: sonst macht React aus dem geklickten "Weiter"-Button
+                    beim Wechsel auf Schritt 5 den Absenden-Button, und der laufende
+                    Klick schickt die Anfrage ungeprüft ab. */}
                 {step < 5 ? (
-                  <button type="button" className="v2-btn" onClick={weiter}>
+                  <button key="weiter" type="button" className="v2-btn" onClick={weiter}>
                     {WEITER[step]} <Arrow size={16} />
                   </button>
                 ) : (
-                  <button type="submit" className="v2-btn" disabled={status === 'sendet'}>
+                  <button key="senden" type="submit" className="v2-btn" disabled={status === 'sendet'}>
                     {status === 'sendet' ? 'Wird gesendet …' : status === 'fehler' ? 'Erneut senden' : 'Anfrage senden'}
                     {status !== 'sendet' && <Arrow size={16} />}
                   </button>
@@ -503,9 +490,15 @@ export function Booking({ kopf = false }) {
                 ))}
               </>
             )}
+            {gewaehlt && (
+              <>
+                <div className="row summe"><span>Summe netto</span><b>{preis(summe)}</b></div>
+                <div className="row"><span>zzgl. 19 % USt.</span><b>{preis(Math.round((brutto(summe) - summe) * 100) / 100)}</b></div>
+              </>
+            )}
             <div className="gesamt">
-              <span>Festpreis</span>
-              <b>{gewaehlt ? <PreisNetto n={summe} /> : '–'}</b>
+              <span>Festpreis inkl. USt.</span>
+              <b>{gewaehlt ? preis(brutto(summe)) : '–'}</b>
             </div>
             {dauer > 0 && (
               <div className="hinweis">
@@ -515,7 +508,7 @@ export function Booking({ kopf = false }) {
               </div>
             )}
             <p className="fuss">
-              {preishinweis} Der Preis steht mit unserer Bestätigung fest.
+              Alle Einzelpreise netto. Der Preis steht mit unserer Bestätigung fest.
               Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
             </p>
           </aside>
