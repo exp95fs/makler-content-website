@@ -3,6 +3,7 @@ import { useSmoothScroll, scrollToId, Split, Cursor, Magnetic } from './fx.jsx';
 import { Arrow } from './ui.jsx';
 import logoWhite from '../assets/logo/quadratblick-logo-weiss.png';
 import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
+import { preishinweis } from '../content/site.js';
 
 /** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
 export const PAGES = [
@@ -130,6 +131,7 @@ function Footer() {
             <a href="/datenschutz.html">Datenschutz</a>
           </div>
         </div>
+        <p className="v2-footer-preis">{preishinweis}</p>
         <div className="v2-footer-base">
           <span>© 2026 · Quadratblick</span>
           <span>Bühl · Mittelbaden · Ortenau</span>

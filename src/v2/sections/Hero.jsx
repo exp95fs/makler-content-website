@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Split, Magnetic, scrollToId, gsap, prefersReducedMotion } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { images } from '../../content/site.js';
+import { images, fotoklassen, preisStern, preishinweisKurz } from '../../content/site.js';
 
 /**
  * Die Headline spitzt allein auf die Bilder zu. Der Lead nennt den Nutzen,
@@ -53,7 +53,9 @@ export function Hero() {
           </Magnetic>
         </div>
         <p className="v2-hero-note" data-reveal data-delay="0.65">
-          Festpreis ab 350 € netto je Objekt · verbindlich vor dem Termin · Anfrage unverbindlich
+          Festpreis ab {preisStern(Math.min(...fotoklassen.map((k) => k.foto)))} je Objekt
+          {' · '}verbindlich vor dem Termin{' · '}Anfrage unverbindlich
+          <span className="fein">{preishinweisKurz}</span>
         </p>
       </div>
       <div className="v2-hero-scroll" aria-hidden="true">

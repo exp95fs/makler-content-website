@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { fotoklassen, sonderobjekt, ergaenzungen, kontakt, preis } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, kontakt, preis, preisStern, preishinweis } from '../../content/site.js';
 
 /**
  * Buchungsworkflow für genau ein Objekt.
  *
  * Bewusst reduziert: keine Mehrfachobjekt-Auswahl, keine Rabattlogik, keine
  * Videopakete. Buchbar sind die drei Fotoklassen und zwei Ergänzungen.
+ * Größere und besondere Objekte laufen nicht über den Workflow, sondern
+ * über die Preissektion und das Kontaktformular.
  * Alles Weitere wird im Abstimmungstermin geklärt, nicht hier
  * durchkonfiguriert.
  *
@@ -57,8 +59,7 @@ function zeitfenster(tag, dauer) {
   return slots;
 }
 
-const klasseVon = (key) => (key === 'sonder' ? sonderobjekt : fotoklassen.find((k) => k.key === key) || null);
-const istSonder = (key) => key === 'sonder';
+const klasseVon = (key) => fotoklassen.find((k) => k.key === key) || null;
 
 const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const leererKontakt = { vorname: '', nachname: '', email: '', telefon: '', firma: '', adresse: '', nachricht: '' };
@@ -76,7 +77,6 @@ export function Booking() {
   const [agb, setAgb] = useState(false);
 
   const gewaehlt = klasseVon(klasse);
-  const sonder = istSonder(klasse);
 
   const dauer = useMemo(() => {
     if (!gewaehlt) return 0;
@@ -85,15 +85,13 @@ export function Booking() {
   }, [gewaehlt, addons]);
 
   const rechnung = useMemo(() => {
-    if (!gewaehlt) return { zeilen: [], summe: 0, sonder: false };
-    const zeilen = [];
-    if (sonder) zeilen.push({ name: `Fotografie · ${sonderobjekt.name}`, betrag: null, hinweis: sonderobjekt.preisLabel });
-    else zeilen.push({ name: `Fotografie · ${gewaehlt.name}`, betrag: gewaehlt.foto });
+    if (!gewaehlt) return { zeilen: [], summe: 0 };
+    const zeilen = [{ name: `Fotografie · ${gewaehlt.name}`, betrag: gewaehlt.foto }];
     ergaenzungen.forEach((e) => {
       if (addons[e.key]) zeilen.push({ name: e.name, betrag: e.preis });
     });
-    return { zeilen, summe: zeilen.reduce((s, z) => s + (z.betrag || 0), 0), sonder };
-  }, [gewaehlt, sonder, addons]);
+    return { zeilen, summe: zeilen.reduce((s, z) => s + (z.betrag || 0), 0) };
+  }, [gewaehlt, addons]);
 
   const gewaehlteErgaenzungen = ergaenzungen.filter((e) => addons[e.key]);
 
@@ -140,9 +138,7 @@ export function Booking() {
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
       `Ergänzungen: ${gewaehlteErgaenzungen.length ? gewaehlteErgaenzungen.map((e) => e.name).join(', ') : 'keine'}`,
       `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage (persönliche Abstimmung)'}`,
-      sonder
-        ? 'Preis: Festpreis nach Objektprüfung'
-        : `Preisorientierung (netto): ${preis(rechnung.summe)}`,
+      `Preisorientierung: ${preis(rechnung.summe)} netto zzgl. USt.`,
     ].join('\n');
   }
 
@@ -202,12 +198,9 @@ export function Booking() {
                   <div className="qb-cfg-book-group">
                     {fotoklassen.map((k) => (
                       <Wahl key={k.key} an={klasse === k.key} name={k.name}
-                            preisText={`${preis(k.foto)} netto`} text={k.beschreibung}
+                            preisText={preisStern(k.foto)} text={k.beschreibung}
                             onClick={() => { setKlasse(k.key); terminReset(); }} />
                     ))}
-                    <Wahl an={klasse === 'sonder'} name={sonderobjekt.name}
-                          preisText={sonderobjekt.preisLabel} text={sonderobjekt.beschreibung}
-                          onClick={() => { setKlasse('sonder'); terminReset(); }} />
                   </div>
                   {!klasse && <p className="qb-cfg-book-hint">Bitte wählen Sie eine Objektklasse, um fortzufahren.</p>}
                 </Panel>
@@ -218,7 +211,7 @@ export function Booking() {
                        text="Optional und im selben Termin produziert. Weitere Ergänzungen wie ein Objektfilm stimmen wir im Gespräch auf das Objekt ab.">
                   {ergaenzungen.map((e) => (
                     <Haken key={e.key} an={!!addons[e.key]} name={e.name}
-                           preisText={`${e.preisLabel} netto`}
+                           preisText={e.preisLabel}
                            note={e.note}
                            onClick={() => {
                              setAddons((a) => ({ ...a, [e.key]: !a[e.key] }));
@@ -306,16 +299,16 @@ export function Booking() {
                     <Zeile label="Wunschtermin" wert={slot ? slot.label : 'Individuelle Terminanfrage'} />
                     <Zeile label="Kontakt" wert={`${kontaktDaten.vorname} ${kontaktDaten.nachname} · ${kontaktDaten.email}`} />
                     <Zeile label="Objektadresse" wert={kontaktDaten.adresse} />
-                    <Zeile label="Festpreis" wert={sonder ? sonderobjekt.preisLabel : `${preis(rechnung.summe)} netto`} />
+                    <Zeile label="Festpreis" wert={preisStern(rechnung.summe)} />
                   </div>
                   <button type="button" className={`qb-cfg-choice wide ${agb ? 'is-on' : ''}`} onClick={() => setAgb((v) => !v)}>
                     <span className="p">
-                      Ich bestätige die Allgemeinen Geschäftsbedingungen von Quadratblick,
-                      insbesondere die Abrechnung nach Umsetzung sowie die Storno- und
-                      Widerrufsregelung.
+                      Ich handle als Unternehmer im Sinne des § 14 BGB und bestätige die
+                      Allgemeinen Geschäftsbedingungen von Quadratblick, insbesondere die
+                      Abrechnung nach Umsetzung sowie die Storno- und Widerrufsregelung.
                     </span>
                   </button>
-                  {!agb && <p className="qb-cfg-book-hint">Bitte bestätigen Sie die Geschäftsbedingungen, um die Anfrage zu senden.</p>}
+                  {!agb && <p className="qb-cfg-book-hint">Bitte bestätigen Sie die Angaben, um die Anfrage zu senden.</p>}
                 </Panel>
               )}
 
@@ -360,8 +353,9 @@ export function Booking() {
               ))
             )}
             <div className="gesamt">
-              <span>Festpreis (netto)</span>
-              <b>{sonder ? sonderobjekt.preisLabel : preis(rechnung.summe)}</b>
+              <span>Festpreis</span>
+              {/* Ohne gewählte Klasse stünde hier sonst "0 €". */}
+              <b>{rechnung.zeilen.length ? preisStern(rechnung.summe) : '–'}</b>
             </div>
             {dauer > 0 && (
               <div className="hinweis">
@@ -371,8 +365,8 @@ export function Booking() {
               </div>
             )}
             <p className="fuss">
-              Alle Preise netto, zzgl. gesetzl. MwSt. Der Preis steht mit unserer
-              Bestätigung fest. Fragen vorab? {kontakt.telefon}
+              {preishinweis} Der Preis steht mit unserer Bestätigung fest.
+              Fragen vorab? {kontakt.telefon}
             </p>
           </aside>
         </div>

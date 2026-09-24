@@ -8,7 +8,7 @@ import { Split } from '../fx.jsx';
 const items = [
   {
     q: 'Was kostet die Produktion?',
-    a: 'Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: 350 € netto für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Aufwand, keine Nachberechnung.',
+    a: 'Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: 350 € für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus, jeweils netto zzgl. der gesetzlichen Umsatzsteuer. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Aufwand, keine Nachberechnung.',
   },
   {
     q: 'Wie viel Zeit kostet mich das?',

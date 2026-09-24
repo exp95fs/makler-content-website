@@ -24,32 +24,21 @@ export const images = {
     { src: '/images/logos/kunde-03.png', alt: 'Manufakturhaus Kasbad' },
     { src: '/images/logos/kunde-04.png', alt: 'Kundenlogo' },
   ],
-  // Bildstrecken für die Teaser in der Leistungssektion. Je Strecke drei
-  // Aufnahmen: ein Hauptbild und zwei kleinere, versetzt darüber gelegt.
+  // Bildstrecke für den Teaser in der Leistungssektion: ein Hauptbild und
+  // zwei kleinere, versetzt darüber gelegt. Alle drei liegen Richtung
+  // Querformat, damit beim Zuschnitt möglichst wenig verloren geht.
   //
-  // TODO: Angabe durch Fabian bestätigen - die drei Aufnahmen einer Strecke
-  // sind eine Auswahl, nicht nachweislich dasselbe Objekt. Für ein echtes
-  // Beispielinserat drei Bilder aus einer Produktion einsetzen.
-  inserate: [
-    {
-      key: 'inserat-1',
-      label: 'Beispiel-Bildstrecke',
-      bilder: [
-        { src: '/images/inserate/inserat-1-aussen.jpg', alt: 'Außenansicht eines Wohngebäudes mit Holzfassade' },
-        { src: '/images/inserate/inserat-1-kueche.jpg', alt: 'Helle Küche mit Kochinsel unter Dachfenstern' },
-        { src: '/images/inserate/inserat-1-bad.jpg', alt: 'Badezimmer mit Doppelwaschtisch und Badewanne' },
-      ],
-    },
-    {
-      key: 'inserat-2',
-      label: 'Beispiel-Bildstrecke',
-      bilder: [
-        { src: '/images/inserate/inserat-2-aussen.jpg', alt: 'Außenansicht eines Mehrfamilienhauses mit Stellplätzen' },
-        { src: '/images/inserate/inserat-2-wohnen-1.jpg', alt: 'Wohnbereich mit Essplatz und verglaster Zimmertür' },
-        { src: '/images/inserate/inserat-2-wohnen-2.jpg', alt: 'Heller Wohnraum im Dachgeschoss mit Fensterreihe' },
-      ],
-    },
-  ],
+  // TODO: Angabe durch Fabian bestätigen - die drei Aufnahmen sind eine
+  // Auswahl. Für ein echtes Beispielinserat drei Bilder aus derselben
+  // Produktion einsetzen.
+  inserat: {
+    label: 'Beispiel-Bildstrecke',
+    bilder: [
+      { src: '/images/inserate/inserat-2-aussen.jpg', alt: 'Außenansicht eines Mehrfamilienhauses mit Stellplätzen' },
+      { src: '/images/inserate/inserat-2-wohnen-1.jpg', alt: 'Wohnbereich mit Essplatz und verglaster Zimmertür' },
+      { src: '/images/inserate/inserat-2-wohnen-2.jpg', alt: 'Heller Wohnraum im Dachgeschoss mit Fensterreihe' },
+    ],
+  },
   // Referenzaufnahmen, 3:2, 1800 px. Reihenfolge wie in `referenzGruppen`.
   referenzen: [
     { src: '/images/referenzen/ref-01.jpg', alt: 'Wohnküche mit Kochinsel und dunkler Küchenfront' },
@@ -161,17 +150,43 @@ export const fotoklassen = [
 ];
 
 /**
- * Was in jeder Klasse gleichermaßen enthalten ist. Steht als horizontaler
- * Ablauf unter den Paketen, nicht im Buchungsworkflow: dort unterbricht die
- * Aufzählung den Ablauf, und in den Kacheln macht sie die Klassen
- * ununterscheidbar.
+ * Der Ablauf einer Produktion, von der Beauftragung bis zur Lieferung.
+ * Steht als eigene Sektion, nicht bei den Paketen: dort machte die
+ * Aufzählung die Preisübersicht unübersichtlich.
+ *
+ * Die Schritte benennen konkret, was passiert - das ist der Unterschied
+ * zwischen "Bearbeitung" und einer Leistung, deren Wert erkennbar ist.
+ *
+ * TODO: Angabe durch Fabian bestätigen - die technischen Angaben in 04
+ * und 05 (Belichtungsreihen, manuelles Blending, Ausblicksoptimierung)
+ * beschreiben den dokumentierten HDR-Workflow. Bitte gegenprüfen, bevor
+ * sie live gehen, damit nichts zugesagt wird, was nicht immer gilt.
  */
-export const enthalten = [
-  { t: 'Terminabstimmung mit dem Eigentümer', x: 'Wir melden uns direkt und vereinbaren den Termin.' },
-  { t: 'Checkliste zur Objektvorbereitung', x: 'Vorab und verständlich, damit vor Ort nichts aufhält.' },
-  { t: 'Aufnahme vor Ort', x: 'Innen, außen und die Bereiche, die ins Exposé gehören.' },
-  { t: 'Vollständige Bearbeitung', x: 'Einsatzfertig für Exposé, Portale und Ihre Website.' },
-  { t: 'Zugesagter Liefertermin', x: 'Sie wissen vor dem Termin, wann die Bilder bei Ihnen sind.' },
+export const ablauf = [
+  {
+    t: 'Beauftragung',
+    x: 'Sie nennen uns das Objekt und den Kontakt zum Eigentümer. Das ist Ihr einziger Aufwand im gesamten Ablauf.',
+  },
+  {
+    t: 'Terminabstimmung mit dem Eigentümer',
+    x: 'Wir melden uns direkt beim Eigentümer, klären den Zugang und legen den Aufnahmetermin fest.',
+  },
+  {
+    t: 'Checkliste zur Objektvorbereitung',
+    x: 'Der Eigentümer erhält vorab eine verständliche Anleitung, worauf es ankommt. So hält vor Ort nichts auf.',
+  },
+  {
+    t: 'Aufnahmen vor Ort',
+    x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.',
+  },
+  {
+    t: 'High-End-Postproduktion',
+    x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung Bild für Bild.',
+  },
+  {
+    t: 'Bereitstellung zum vereinbarten Termin',
+    x: 'Die fertigen Aufnahmen liegen zum zugesagten Termin bei Ihnen, einsatzfertig für Exposé, Portale und Ihre Kanäle.',
+  },
 ];
 
 /** Objekte außerhalb der drei Klassen. Kein Listenpreis, individuelle Prüfung. */
@@ -201,7 +216,7 @@ export const ergaenzungen = [
     key: 'drohne',
     name: 'Drohnenaufnahmen',
     preis: 130,
-    preisLabel: '+ 130 €',
+    preisLabel: '+ 130\u202F€\u202F*',
     stunden: 1,
     note: 'Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen '
       + 'Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und '
@@ -212,7 +227,7 @@ export const ergaenzungen = [
     key: 'reel',
     name: 'Kurzes Objektreel',
     preis: 390,
-    preisLabel: '+ 390 €',
+    preisLabel: '+ 390\u202F€\u202F*',
     stunden: 2,
     note: 'Ein vertikaler Rundgang durch das Objekt, ca. 30 bis 45 Sekunden, für Instagram, '
       + 'Facebook und Ihre Website. Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch.',
@@ -239,5 +254,35 @@ export const kontakt = {
   region: 'Bühl · Mittelbaden · Ortenau',
 };
 
-/** Preis für die Anzeige formatieren. */
+/* ------------------------------------------------------------------ *
+ * Preisangaben
+ *
+ * Alle Beträge auf der Seite sind Nettopreise. Statt hinter jeden Betrag
+ * "netto" zu schreiben, steht ein Sternchen am Preis und einmal je
+ * Sektion der vollständige Hinweis.
+ *
+ * Rechtlicher Hintergrund: die Preisangabenverordnung verlangt
+ * Endpreise inklusive Umsatzsteuer nur gegenüber Verbrauchern. Reine
+ * B2B-Angebote dürfen netto ausgezeichnet werden, wenn erkennbar ist,
+ * dass sich das Angebot ausschließlich an Unternehmer richtet und diese
+ * Eingrenzung auch durchgesetzt wird. Deshalb nennt der Hinweis beides,
+ * und im Buchungsworkflow bestätigt der Anfragende seine
+ * Unternehmereigenschaft.
+ *
+ * TODO: Angabe durch Fabian bestätigen - Formulierung vor dem Live-Gang
+ * anwaltlich oder über die IHK gegenprüfen lassen.
+ * ------------------------------------------------------------------ */
+
+/** Preis für die Anzeige formatieren. Ohne Sternchen. */
 export const preis = (n) => n.toLocaleString('de-DE') + ' €';
+
+/** Preis mit Sternchen, überall dort wo ein konkreter Betrag steht. */
+export const preisStern = (n) => preis(n) + '\u202F*';
+
+/** Der vollständige Hinweis. Steht in jeder Sektion, die Preise zeigt. */
+export const preishinweis = '* Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
+  + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Unsere Leistungen richten sich '
+  + 'ausschließlich an Unternehmer im Sinne des § 14 BGB, nicht an Verbraucher.';
+
+/** Kurzform für enge Stellen, etwa unter dem Hero. */
+export const preishinweisKurz = 'Alle Preise netto zzgl. USt. · Angebot ausschließlich für Unternehmer';

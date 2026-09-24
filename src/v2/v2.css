@@ -488,6 +488,14 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   transition: border-color 0.35s var(--ease-soft), color 0.35s var(--ease-soft);
 }
 .v2-link-inline:hover { color: var(--terra-soft); border-color: var(--terra-soft); }
+/* Als <button> würde sonst die Browser-Umrandung stehen bleiben. */
+button.v2-link-inline {
+  background: none; border-top: 0; border-left: 0; border-right: 0;
+  padding-left: 0; padding-right: 0; cursor: pointer;
+}
+/* Variante für helle Flächen: die Grundfarbe ist für dunklen Grund gesetzt. */
+.v2-link-inline.on-light { color: var(--text); border-bottom-color: var(--taupe); }
+.v2-link-inline.on-light:hover { color: var(--terra-deep); border-color: var(--terra-deep); }
 
 /* ---------- Segmente ---------- */
 .v2-seg {
@@ -1022,6 +1030,16 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 .v2-footer-links { display: grid; gap: 4px; font-size: 14px; }
 .v2-footer-links a { color: var(--text-inv-soft); text-decoration: none; padding: 4px 0; transition: color 0.3s var(--ease-soft); }
 .v2-footer-links a:hover { color: var(--terra-soft); }
+.v2-footer-preis {
+  margin: clamp(22px, 2.6vw, 32px) 0 0; padding-top: 16px;
+  border-top: 1px solid var(--line-dark);
+  font-family: var(--font-body); font-size: 11px; line-height: 1.7;
+  color: rgba(243, 238, 229, 0.42); max-width: 92ch;
+}
+.v2-hero-note .fein {
+  display: block; margin-top: 7px;
+  font-size: 11px; letter-spacing: 0.04em; color: rgba(243, 238, 229, 0.42);
+}
 .v2-footer-base {
   margin-top: clamp(36px, 5vw, 56px); padding: 22px 0 30px;
   border-top: 1px solid var(--line-dark);
@@ -2174,7 +2192,6 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   border-top: 1px solid var(--line);
   font-size: 14.5px; line-height: 1.75; color: var(--text-soft); max-width: 78ch;
 }
-.v2-flow-weiter .v2-link-inline { background: none; border-top: 0; border-left: 0; border-right: 0; cursor: pointer; font: inherit; }
 
 .v2-mosaik-mehr { display: flex; justify-content: center; margin-top: clamp(20px, 2.4vw, 30px); }
 
@@ -2213,14 +2230,12 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 .qb-einstieg .ab { font-family: var(--font-body); font-size: 13px; color: var(--text-soft); }
 .qb-einstieg .bild { display: grid; align-content: center; gap: 18px; }
 
-/* Zwei Bildstrecken als Teaser. Jede besteht aus einem Hauptbild und zwei
-   kleineren, die versetzt darüber liegen. Alle Maße sind prozentual zur
-   Spaltenbreite, damit die Komposition über alle Breiten gleich bleibt.
-   Die beiden Strecken sind gegeneinander eingerückt. */
-.qb-strecken { display: grid; gap: clamp(30px, 3.6vw, 52px); }
-.qb-strecke { position: relative; margin: 0; padding: 22px 0 15%; }
-.qb-strecke.hoch { margin-right: 6%; }
-.qb-strecke.tief { margin-left: 10%; }
+/* Eine Bildstrecke als Teaser: ein Hauptbild und zwei kleinere, versetzt
+   darüber gelegt. Alle Maße sind prozentual zur Spaltenbreite, damit die
+   Komposition über alle Breiten gleich bleibt. Die Seitenverhältnisse
+   liegen bewusst Richtung Querformat - bei Hochformat schneidet der
+   Zuschnitt zu viel vom Raum weg. */
+.qb-strecke { position: relative; margin: 0; padding: 22px 0 17%; }
 .qb-strecke > span {
   display: block; border-radius: 7px; overflow: clip; background: var(--sage-deep);
 }
@@ -2229,18 +2244,18 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   transition: transform 1s var(--ease-out);
 }
 .qb-strecke .a {
-  width: 76%; aspect-ratio: 3 / 2;
+  width: 74%; aspect-ratio: 3 / 2;
   box-shadow: 0 40px 80px -46px rgba(42, 42, 34, 0.55);
 }
 .qb-strecke .b {
-  position: absolute; right: 0; top: 24%; width: 34%; aspect-ratio: 1 / 1; z-index: 2;
-  border: 5px solid var(--linen);
-  box-shadow: 0 24px 50px -30px rgba(42, 42, 34, 0.5);
+  position: absolute; right: 0; top: 19%; width: 40%; aspect-ratio: 4 / 3; z-index: 2;
+  border: 6px solid var(--linen);
+  box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
 .qb-strecke .c {
-  position: absolute; left: 21%; bottom: 0; width: 29%; aspect-ratio: 3 / 4; z-index: 3;
-  border: 5px solid var(--linen);
-  box-shadow: 0 24px 50px -30px rgba(42, 42, 34, 0.5);
+  position: absolute; left: 11%; bottom: 0; width: 46%; aspect-ratio: 16 / 10; z-index: 3;
+  border: 6px solid var(--linen);
+  box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
 .qb-strecke:hover img { transform: scale(1.04); }
 .qb-strecke figcaption {
@@ -2261,14 +2276,12 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 @media (max-width: 900px) {
   .qb-einstieg { grid-template-columns: 1fr; }
   .qb-einstieg .bild { order: -1; }
-  .qb-strecke.hoch { margin-right: 4%; }
-  .qb-strecke.tief { margin-left: 6%; }
 }
 @media (max-width: 560px) {
-  .qb-strecke { padding-bottom: 19%; }
-  .qb-strecke .a { width: 78%; }
-  .qb-strecke .b { width: 36%; }
-  .qb-strecke .c { width: 32%; left: 18%; }
+  .qb-strecke { padding-bottom: 20%; }
+  .qb-strecke .a { width: 76%; }
+  .qb-strecke .b { width: 42%; border-width: 4px; }
+  .qb-strecke .c { width: 48%; left: 9%; border-width: 4px; }
   .qb-strecke figcaption { font-size: 9.5px; letter-spacing: 0.1em; }
 }
 
@@ -2279,14 +2292,15 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
    Optionen gewählt, die Objektgröße entscheidet. */
 .qb-pakete {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto;
   gap: clamp(12px, 1.5vw, 20px); margin-top: clamp(30px, 3.6vw, 44px);
 }
 .qb-paket {
-  grid-row: span 4; display: grid; grid-template-rows: subgrid;
+  grid-row: span 3; display: grid; grid-template-rows: subgrid;
   position: relative; overflow: clip;
-  background: var(--linen-2); border: 1px solid var(--line); border-radius: 10px;
-  padding: clamp(22px, 2.4vw, 30px);
+  background: #fff; border: 1px solid var(--taupe); border-radius: 10px;
+  padding: clamp(18px, 2vw, 26px);
+  box-shadow: 0 18px 44px -32px rgba(42, 42, 34, 0.4);
   transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), border-color 0.35s var(--ease-soft);
 }
 .qb-paket::after {
@@ -2295,7 +2309,7 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   transform: scaleX(0); transform-origin: left;
   transition: transform 0.6s var(--ease-out);
 }
-.qb-paket:hover { transform: translateY(-6px); box-shadow: 0 34px 68px -36px rgba(42, 42, 34, 0.32); border-color: var(--taupe); }
+.qb-paket:hover { transform: translateY(-6px); box-shadow: 0 34px 68px -34px rgba(42, 42, 34, 0.42); border-color: var(--terra-soft); }
 .qb-paket:hover::after { transform: scaleX(1); }
 .qb-paket h3 {
   font-family: var(--font-display); font-weight: 600;
@@ -2303,12 +2317,12 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 }
 .qb-paket .was { margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-soft); }
 .qb-paket .preis {
-  align-self: end; margin-top: 18px; padding: 16px 0 0;
+  align-self: end; margin-top: 16px; padding: 14px 0 0;
   border-top: 1px solid var(--line);
 }
 .qb-paket .preis b {
   display: block; font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.7rem, 2.6vw, 2.2rem); letter-spacing: -0.03em; line-height: 1;
+  font-size: clamp(1.6rem, 2.3vw, 2rem); letter-spacing: -0.03em; line-height: 1;
   color: var(--terra-deep);
 }
 .qb-paket .preis small {
@@ -2319,16 +2333,25 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 /* Einziges Unterscheidungsmerkmal in der Kachel: die Bildanzahl. Alles
    Gemeinsame steht im Ablauf darunter. */
 .qb-paket .menge {
-  align-self: start; margin: 14px 0 20px; padding: 9px 13px;
-  border: 1px solid var(--line); border-radius: 999px; justify-self: start;
-  font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
-  color: var(--terra-deep); background: rgba(188, 107, 73, 0.07);
+  align-self: start; margin: 12px 0 0; padding: 8px 12px;
+  border: 1px solid var(--terra-soft); border-radius: 999px; justify-self: start;
+  font-family: var(--font-body); font-weight: 700; font-size: 12px;
+  color: var(--terra-deep); background: rgba(188, 107, 73, 0.09);
 }
-.qb-paket .v2-btn { align-self: end; justify-self: start; }
 @media (max-width: 900px) {
   .qb-pakete { grid-template-columns: 1fr; grid-template-rows: none; max-width: 560px; }
   .qb-paket { grid-row: auto; grid-template-rows: none; display: block; }
-  .qb-paket .preis, .qb-paket .menge, .qb-paket .v2-btn { align-self: auto; }
+  .qb-paket .preis, .qb-paket .menge { align-self: auto; }
+}
+
+/* Ein CTA unter allen drei Kacheln statt eines je Kachel. */
+.qb-pakete-fuss {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px 26px;
+  margin-top: clamp(20px, 2.4vw, 28px);
+}
+.qb-pakete-fuss .dazu {
+  margin: 0; max-width: 56ch;
+  font-size: 13px; line-height: 1.65; color: var(--text-soft);
 }
 
 .qb-sonder {
@@ -2380,54 +2403,37 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   font-family: var(--font-display); font-weight: 600; font-size: 14.5px; color: var(--linen);
 }
 
-/* ---------- Was in jeder Klasse enthalten ist ---------- */
-/* Horizontaler Ablauf statt zweispaltiger Liste: fünf Schritte nebeneinander,
-   verbunden durch eine durchgehende Linie. Braucht deutlich weniger Höhe und
-   zeigt zugleich, dass es eine Reihenfolge ist. */
-.qb-enthalten {
-  margin-top: clamp(34px, 4vw, 52px); padding-top: clamp(24px, 2.8vw, 34px);
+/* ---------- Ablauf einer Produktion ---------- */
+/* Kopf links, Schritte rechts als Liste mit Haarlinien. Jeder Schritt
+   trägt seine eigene Leistung, deshalb bekommt er zwei Zeilen statt einer. */
+.qb-ablauf {
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.35fr);
+  gap: clamp(28px, 4vw, 72px); align-items: start;
+}
+.qb-ablauf .kopf h2 { margin: 18px 0 0; max-width: 14ch; }
+.qb-ablauf .kopf .v2-lead { margin: 18px 0 0; max-width: 40ch; }
+.qb-ablauf .ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: clamp(22px, 2.6vw, 30px); }
+.qb-ablauf .liste { list-style: none; margin: 0; padding: 0; }
+.qb-ablauf .liste li {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr);
+  gap: 5px 16px; padding: clamp(16px, 1.8vw, 22px) 0;
   border-top: 1px solid var(--line);
 }
-.qb-enthalten .kopf {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px;
+.qb-ablauf .liste li:last-child { border-bottom: 1px solid var(--line); }
+.qb-ablauf .liste .n {
+  grid-row: span 2; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1rem, 1.3vw, 1.15rem); color: var(--terra-deep); padding-top: 1px;
+  font-variant-numeric: tabular-nums;
 }
-.qb-enthalten .k {
-  font-family: var(--font-body); font-weight: 700; font-size: 10.5px;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-deep);
-  flex: none;
+.qb-ablauf .liste b {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(0.97rem, 1.25vw, 1.08rem); color: var(--text); letter-spacing: -0.01em;
 }
-.qb-enthalten .kopf p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
-.qb-enthalten .ablauf {
-  list-style: none; margin: clamp(22px, 2.6vw, 32px) 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: clamp(12px, 1.6vw, 22px);
+.qb-ablauf .liste .x { font-size: 13.5px; line-height: 1.65; color: var(--text-soft); max-width: 62ch; }
+@media (max-width: 900px) {
+  .qb-ablauf { grid-template-columns: 1fr; }
+  .qb-ablauf .kopf h2 { max-width: 20ch; }
 }
-.qb-enthalten .ablauf li {
-  position: relative; padding-top: 26px;
-  display: grid; grid-template-rows: auto auto; align-content: start; gap: 5px;
-}
-/* Die Linie verbindet die Schritte und endet beim letzten. */
-.qb-enthalten .ablauf li::before {
-  content: ''; position: absolute; left: 0; right: calc(-1 * clamp(12px, 1.6vw, 22px)); top: 5px;
-  height: 1px; background: var(--line);
-}
-.qb-enthalten .ablauf li:last-child::before { right: 0; }
-.qb-enthalten .ablauf li::after {
-  content: ''; position: absolute; left: 0; top: 2px;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--terra);
-}
-.qb-enthalten .ablauf .n {
-  font-family: var(--font-display); font-weight: 600; font-size: 11.5px;
-  letter-spacing: 0.08em; color: var(--terra-deep);
-}
-.qb-enthalten .ablauf b { font-family: var(--font-display); font-weight: 600; font-size: 14px; line-height: 1.35; color: var(--text); }
-.qb-enthalten .ablauf .x { font-size: 12.5px; line-height: 1.55; color: var(--text-soft); }
-@media (max-width: 1080px) {
-  .qb-enthalten .ablauf { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: clamp(20px, 2.4vw, 28px); }
-  .qb-enthalten .ablauf li:nth-child(3)::before { right: 0; }
-}
-@media (max-width: 620px) {
-  .qb-enthalten .ablauf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .qb-enthalten .ablauf li:nth-child(3)::before { right: calc(-1 * clamp(12px, 1.6vw, 22px)); }
-  .qb-enthalten .ablauf li:nth-child(2n)::before { right: 0; }
+@media (max-width: 480px) {
+  .qb-ablauf .liste li { grid-template-columns: 40px minmax(0, 1fr); gap: 4px 12px; }
 }

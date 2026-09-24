@@ -1,6 +1,6 @@
 import { Split, Magnetic, scrollToId } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { fotoklassen, sonderobjekt, enthalten, weitereErgaenzungen, preis } from '../../content/site.js';
+import { fotoklassen, sonderobjekt, weitereErgaenzungen, preisStern, preishinweis } from '../../content/site.js';
 
 /**
  * Drei Fotopakete als gleichwertige Kacheln. Bewusst keine Hervorhebung
@@ -9,8 +9,11 @@ import { fotoklassen, sonderobjekt, enthalten, weitereErgaenzungen, preis } from
  * Namen oder Beschreibungen unterschiedlich lang umbrechen.
  *
  * In der Kachel steht nur, was sich zwischen den Klassen unterscheidet:
- * Name, Objektbeschreibung, Preis und die Bildanzahl. Alles Gemeinsame
- * steht darunter im Ablauf, sonst lesen sich die drei Kacheln gleich.
+ * Name, Objektbeschreibung, Preis und die Bildanzahl. Ein einziger CTA
+ * steht unter den Kacheln, nicht drei nebeneinander: die Klasse wird im
+ * Buchungsprozess ohnehin noch einmal gewählt.
+ *
+ * Was in jeder Klasse enthalten ist, steht als eigene Sektion "Ablauf".
  */
 export function Preise() {
   return (
@@ -36,17 +39,28 @@ export function Preise() {
                 <p className="was">{k.beschreibung}</p>
               </div>
               <div className="preis">
-                <b>{preis(k.foto)}</b>
-                <small>netto · Festpreis</small>
+                <b>{preisStern(k.foto)}</b>
+                <small>Festpreis je Objekt</small>
               </div>
               <p className="menge">{k.bilder}</p>
-              <Magnetic strength={0.18}>
-                <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
-                  Diese Klasse anfragen <Arrow size={15} />
-                </button>
-              </Magnetic>
             </article>
           ))}
+        </div>
+
+        <div className="qb-pakete-fuss" data-reveal>
+          <Magnetic strength={0.18}>
+            <button type="button" className="v2-btn" onClick={() => scrollToId('booking')}>
+              Objekt anfragen <Arrow size={16} />
+            </button>
+          </Magnetic>
+          <p className="dazu">
+            In jeder Klasse enthalten: 1 bis 2 Bilder je Raum, innen, außen und
+            Nebenräume, vollständig bearbeitet.
+            {' '}
+            <button type="button" className="v2-link-inline on-light" onClick={() => scrollToId('ablauf')}>
+              Ablauf ansehen
+            </button>
+          </p>
         </div>
 
         <div className="qb-sonder" data-reveal>
@@ -57,34 +71,14 @@ export function Preise() {
           <span className="label">{sonderobjekt.preisLabel}</span>
         </div>
 
-        <div className="qb-enthalten" data-reveal>
-          <div className="kopf">
-            <span className="k">In jeder Klasse enthalten</span>
-            <p>
-              Jedes Paket enthält 1 bis 2 Bilder je Raum, innen, außen und
-              Nebenräume. Ihr Aufwand beschränkt sich auf die Anfrage.
-            </p>
-          </div>
-          <ol className="ablauf">
-            {enthalten.map((e, i) => (
-              <li key={e.t}>
-                <span className="n">{String(i + 1).padStart(2, '0')}</span>
-                <b>{e.t}</b>
-                <span className="x">{e.x}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-
         <div className="qb-ergaenzung" data-reveal>
           <div className="text">
             <span className="k">Dazu buchbar</span>
             <h3>Was sich sinnvoll ergänzen lässt</h3>
             <p>
-              Nicht jedes Objekt braucht dasselbe. Deshalb gibt es hier keine
-              Preisliste zum Abhaken, sondern eine Auswahl, die zum Objekt passt.
-              Im Buchungsprozess wählen Sie direkt aus, alles Weitere stimmen wir
-              in einem kurzen Gespräch ab.
+              Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen und ein kurzes
+              Objektreel wählen Sie direkt im Buchungsprozess aus, alles Weitere
+              stimmen wir in einem kurzen Gespräch auf das Objekt ab.
             </p>
             <div className="ctas">
               <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
@@ -101,8 +95,8 @@ export function Preise() {
         </div>
 
         <p className="v2-fine is-text" data-reveal>
-          Alle Preise netto, zzgl. gesetzl. MwSt. Die Bildanzahl ist eine
-          Orientierung nach Objektgröße, keine feste Stückzahl.
+          {preishinweis} Die Bildanzahl ist eine Orientierung nach Objektgröße,
+          keine feste Stückzahl.
         </p>
       </div>
     </section>
