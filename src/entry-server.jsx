@@ -1,8 +1,12 @@
-import { renderToStaticMarkup } from 'react-dom/server';
-import Onepage from './v2/Onepage.jsx';
+import { renderToString } from 'react-dom/server';
+import App from './v2/App.jsx';
+import { SEITEN } from './v2/seiten.js';
+import { headHtml } from './v2/head.js';
+import { SITE_URL } from './content/site.js';
 
-// Nur zur Buildzeit (SSG-Prerender): erzeugt das statische Markup,
-// das in dist/index.html in #root eingesetzt wird.
-export function render() {
-  return renderToStaticMarkup(<Onepage />);
+// Nur zur Buildzeit (SSG-Prerender). renderToString statt
+// renderToStaticMarkup, weil der Client das Markup hydriert.
+export function render(seite) {
+  return renderToString(<App seite={seite} />);
 }
+export { SEITEN, headHtml, SITE_URL };

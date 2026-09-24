@@ -1,83 +1,89 @@
 import { useEffect, useRef, useState } from 'react';
 import { Split } from '../fx.jsx';
+import { fotoklassen, ergaenzungen, preisNetto } from '../../content/site.js';
 
 /**
- * FAQ von der Live-Seite. Fragen und Reihenfolge unverändert.
- * Vier Antworten sind angepasst, siehe Kommentare an der jeweiligen Stelle.
+ * Häufige Fragen als semantisches HTML (Button + Region). Kein FAQ-Schema.
+ * Antworten nur mit belegten Angaben: keine Lieferzeiten, keine
+ * Rechtebedingungen, keine pauschale Eigentümerkoordination.
  */
-const items = [
-  {
-    q: 'Was kostet die Produktion?',
-    a: 'Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: 350 € für eine Wohnung, 450 € für ein Einfamilienhaus, 550 € für ein Mehrfamilienhaus, jeweils netto zzgl. der gesetzlichen Umsatzsteuer. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Aufwand, keine Nachberechnung.',
-  },
-  {
-    q: 'Wie viel Zeit kostet mich das?',
-    a: 'Die Anfrage. Mehr nicht. Wir stimmen den Termin direkt mit dem Eigentümer ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Sie müssen nicht dabei sein.',
-  },
-  {
-    q: 'Wer spricht mit dem Eigentümer?',
-    a: 'Wir. Und wir treten dabei als Teil Ihrer Vermarktung auf, nicht als unabhängiger Dienstleister. Der Verkauf einer Immobilie ist für Eigentümer ein sensibler Vorgang, entsprechend verhalten wir uns vor Ort: angekündigt, pünktlich, zurückhaltend und im Namen Ihres Büros.',
-  },
-  {
-    q: 'Wie muss die Immobilie vorbereitet sein?',
-    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Die Checkliste dazu geht vorab an Sie und auf Wunsch direkt an den Eigentümer. Ist ein Objekt nicht so weit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
-  },
-  {
-    q: 'Wie schnell wird geliefert?',
-    // TODO: Angabe durch Fabian bestätigen (Regellieferzeit je Objektklasse).
-    a: 'Den Liefertermin nennen wir verbindlich mit der Bestätigung, gemeinsam mit dem Festpreis. Wenn es schneller gehen muss, ist eine vorgezogene Bearbeitung gegen Aufschlag möglich.',
-  },
-  {
-    q: 'Was passiert bei schlechtem Wetter?',
-    a: 'Die Innenaufnahmen finden statt. Außen- und Drohnenaufnahmen holen wir an einem passenden Tag nach, ohne dass ein zweiter Produktionstag berechnet wird. Ob am Standort geflogen werden darf, prüfen wir vor dem Termin.',
-  },
-  {
-    q: 'Was lässt sich ergänzen?',
-    a: 'Im Buchungsprozess können Sie direkt ein Launch-Reel dazubuchen, einen vertikalen Rundgang für Social Media. Drohnenaufnahmen, ein Objektfilm oder Ihr Auftritt vor der Kamera sind ebenfalls möglich. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.',
-  },
-  {
-    q: 'Wem gehören die Aufnahmen?',
-    // TODO: Angabe durch Fabian bestätigen (genauer Umfang der Nutzungsrechte).
-    a: 'Sie erhalten die Rechte, die Aufnahmen für die Vermarktung des Objekts und auf Ihren eigenen Kanälen zu nutzen. Ob wir das Ergebnis als Arbeitsprobe zeigen dürfen, vereinbaren wir separat, und Sie können das jederzeit widerrufen.',
-  },
-];
+const [wohnung, efh, mfh] = fotoklassen;
+const drohne = ergaenzungen.find((e) => e.key === 'drohne');
 
-function Item({ q, a, open, onToggle }) {
-  const bodyRef = useRef(null);
+export const FRAGEN = {
+  kosten: {
+    q: 'Was kostet die Immobilienfotografie?',
+    a: `Der Preis richtet sich nach der Objektklasse: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus und ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen Festpreis.`,
+  },
+  anwesenheit: {
+    q: 'Muss ich beim Fototermin dabei sein?',
+    a: 'Bei den ersten Projekten stimmen wir den Ablauf persönlich und eng miteinander ab. Wenn die Zusammenarbeit eingespielt ist, kann Quadratblick auf Wunsch die Terminabstimmung mit Eigentümern direkt übernehmen.',
+  },
+  bereitstellung: {
+    q: 'Wann erhalte ich die Bilder?',
+    a: 'Den Zeitpunkt der Bereitstellung bestätigen wir zusammen mit Leistungsumfang, Preis und Termin persönlich. Die Bilder werden digital bereitgestellt.',
+  },
+  video: {
+    q: 'Bieten Sie auch Video an?',
+    a: 'Der Schwerpunkt liegt auf Immobilienfotografie. Weitere Medienformate, etwa Video, sind auf Anfrage möglich.',
+  },
+  bilder: {
+    q: 'Wie viele Bilder erhalte ich?',
+    a: `Als Orientierung: ${wohnung.bilder} bei einer Wohnung, ${efh.bilder} bei einem Einfamilienhaus und ${mfh.bilder} bei einem Mehrfamilienhaus, jeweils 1 bis 2 Bilder je Raum. Die genaue Anzahl richtet sich nach dem Objekt.`,
+  },
+  vorbereitung: {
+    q: 'Wie sollte die Immobilie vorbereitet sein?',
+    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Eine Checkliste zur Objektvorbereitung erhalten Sie vorab.',
+  },
+  wetter: {
+    q: 'Was passiert bei schlechtem Wetter?',
+    a: 'Innenaufnahmen sind weitgehend wetterunabhängig. Ob Außen- und Drohnenaufnahmen wie geplant möglich sind, hängt von Witterung und Standort ab. Das stimmen wir vor dem Termin ab.',
+  },
+  rechte: {
+    q: 'Wie dürfen die Bilder genutzt werden?',
+    // TODO: Angabe durch Fabian bestätigen (Umfang der Nutzungsrechte).
+    a: 'Den Umfang der Nutzungsrechte legen wir mit der Auftragsbestätigung fest.',
+  },
+};
+
+function Eintrag({ id, q, a, offen, umschalten }) {
+  const koerper = useRef(null);
   useEffect(() => {
-    const el = bodyRef.current;
-    if (!el) return;
-    el.style.height = open ? `${el.scrollHeight}px` : '0px';
-  }, [open]);
+    const el = koerper.current;
+    if (el) el.style.height = offen ? `${el.scrollHeight}px` : '0px';
+  }, [offen]);
   return (
-    <div className={`v2-faq-item ${open ? 'is-open' : ''}`}>
-      <button type="button" className="v2-faq-q" onClick={onToggle} aria-expanded={open}>
-        <span>{q}</span>
-        <span className="ico" aria-hidden="true">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
-        </span>
-      </button>
-      <div className="v2-faq-a" ref={bodyRef} aria-hidden={!open}>
+    <div className={`v2-faq-item ${offen ? 'is-open' : ''}`}>
+      <h3 className="v2-faq-h">
+        <button type="button" className="v2-faq-q" id={`${id}-frage`}
+                aria-expanded={offen} aria-controls={`${id}-antwort`} onClick={umschalten}>
+          <span>{q}</span>
+          <span className="ico" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+          </span>
+        </button>
+      </h3>
+      <div className="v2-faq-a" id={`${id}-antwort`} role="region" aria-labelledby={`${id}-frage`}
+           ref={koerper} {...(offen ? {} : { inert: '' })}>
         <p>{a}</p>
       </div>
     </div>
   );
 }
 
-export function Faq() {
-  const [open, setOpen] = useState(0);
+export function Faq({ fragen, titel = 'Häufige Fragen', id = 'faq', bg = 'bg-linen-2' }) {
+  const [offen, setOffen] = useState(0);
   return (
-    <section className="v2-sec bg-linen-2" id="faq">
+    <section className={`v2-sec ${bg}`} id={id} aria-labelledby={`${id}-titel`}>
       <div className="v2-wrap">
         <div className="v2-sec-head center">
-          <p className="v2-eyebrow" data-reveal>Häufige Fragen</p>
-          <Split as="h2" className="v2-h-display v2-h-lg">
-            Damit keine Fragen offen bleiben.
-          </Split>
+          <p className="v2-eyebrow" data-reveal>FAQ</p>
+          <Split as="h2" id={`${id}-titel`} className="v2-h-display v2-h-lg">{titel}</Split>
         </div>
         <div className="v2-faq" data-reveal>
-          {items.map((it, i) => (
-            <Item key={it.q} q={it.q} a={it.a} open={open === i} onToggle={() => setOpen(open === i ? -1 : i)} />
+          {fragen.map((key, i) => (
+            <Eintrag key={key} id={`${id}-${key}`} q={FRAGEN[key].q} a={FRAGEN[key].a}
+                     offen={offen === i} umschalten={() => setOffen(offen === i ? -1 : i)} />
           ))}
         </div>
       </div>

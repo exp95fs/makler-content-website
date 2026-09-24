@@ -1,26 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSmoothScroll, scrollToId, Split, Cursor, Magnetic } from './fx.jsx';
+import { useSmoothScroll, Cursor, Magnetic } from './fx.jsx';
 import { Arrow } from './ui.jsx';
-import logoWhite from '../assets/logo/quadratblick-logo-weiss.png';
-import logoBlack from '../assets/logo/quadratblick-logo-schwarz.png';
-import { preishinweis } from '../content/site.js';
+import { useKlickTracking } from './tracking.js';
+import { SEITEN, NAVIGATION } from './seiten.js';
+import logoWhite from '../assets/logo/quadratblick-logo-weiss-400.png';
+import logoBlack from '../assets/logo/quadratblick-logo-schwarz-400.png';
+import { kontakt, preishinweis } from '../content/site.js';
 
-/** Navigation des Onepagers. Alle Ziele sind Anker auf dieser Seite. */
-export const PAGES = [
-  { id: 'leistungen', label: 'Leistungen' },
-  { id: 'referenzen', label: 'Referenzen' },
-  { id: 'warum', label: 'Warum wir' },
-  { id: 'preise', label: 'Preise & Buchung' },
-  { id: 'ueber', label: 'Über uns' },
-  { id: 'faq', label: 'FAQ' },
-];
+const ANFRAGE = SEITEN.anfrage.pfad;
 
-/* ---------- Navigation (seitenübergreifend) ---------- */
-function Nav({ active, dark }) {
+/* ---------- Navigation ---------- */
+/**
+ * Echte Links auf eigene Seiten, keine JavaScript-Sprünge. Das Mobilmenü
+ * ist ein modaler Bereich: beim Öffnen liegt der Fokus auf dem ersten Link,
+ * Tab bleibt im Menü, Escape schließt und gibt den Fokus an den Menübutton
+ * zurück. Geschlossen ist das Menü `inert` und damit nicht fokussierbar.
+ */
+function Nav({ aktiv }) {
   const [solid, setSolid] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
   const lastY = useRef(0);
+  const burger = useRef(null);
+  const menu = useRef(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -29,48 +31,67 @@ function Nav({ active, dark }) {
       setHidden(y > 500 && y > lastY.current && !open);
       lastY.current = y;
     };
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [open]);
 
   useEffect(() => {
-    document.documentElement.style.overflow = open ? 'hidden' : '';
-    return () => { document.documentElement.style.overflow = ''; };
+    if (!open) return undefined;
+    document.documentElement.style.overflow = 'hidden';
+    const erster = menu.current?.querySelector('a, button');
+    erster?.focus();
+    const taste = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setOpen(false);
+        burger.current?.focus();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const ziele = [burger.current, ...menu.current.querySelectorAll('a, button')].filter(Boolean);
+      const idx = ziele.indexOf(document.activeElement);
+      if (e.shiftKey && idx <= 0) { e.preventDefault(); ziele[ziele.length - 1].focus(); }
+      else if (!e.shiftKey && idx === ziele.length - 1) { e.preventDefault(); ziele[0].focus(); }
+    };
+    document.addEventListener('keydown', taste);
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.removeEventListener('keydown', taste);
+    };
   }, [open]);
 
-  const onLight = solid || !dark;
+  const logo = solid && !open ? logoBlack : logoWhite;
 
   return (
     <>
-      <header className={`v2-nav ${solid ? 'is-solid' : ''} ${hidden ? 'is-hidden' : ''} ${!dark ? 'on-light' : ''} ${open ? 'menu-open' : ''}`}>
+      <header className={`v2-nav ${solid ? 'is-solid' : ''} ${hidden ? 'is-hidden' : ''} ${open ? 'menu-open' : ''}`}>
         <div className="v2-nav-inner">
-          <a href="#top" className="v2-nav-logo" aria-label="Quadratblick, zum Seitenanfang" onClick={(e) => { e.preventDefault(); scrollToId('top'); }}>
-            <img src={onLight && !open ? logoBlack : logoWhite} alt="Quadratblick" />
+          <a href="/" className="v2-nav-logo" aria-label="Quadratblick, zur Startseite">
+            <img src={logo} alt="" width="400" height="94" />
           </a>
           <nav className="v2-nav-links" aria-label="Hauptnavigation">
-            {PAGES.map((p) => (
-              <a
-                key={p.id}
-                href={`#${p.id}`}
-                className={`v2-nav-link ${active === p.id ? 'is-active' : ''}`}
-                aria-current={active === p.id ? 'true' : undefined}
-                onClick={(e) => { e.preventDefault(); scrollToId(p.id); }}
-              >
-                {p.label}
+            {NAVIGATION.map((key) => (
+              <a key={key} href={SEITEN[key].pfad}
+                 className={`v2-nav-link ${aktiv === key ? 'is-active' : ''}`}
+                 aria-current={aktiv === key ? 'page' : undefined}>
+                {SEITEN[key].name}
               </a>
             ))}
           </nav>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="v2-nav-aktionen">
             <Magnetic strength={0.25}>
-              <button type="button" className="v2-btn sm v2-nav-cta" onClick={() => { setOpen(false); scrollToId('preise'); }}>
-                Termin anfragen <Arrow size={15} />
-              </button>
+              <a className="v2-btn sm v2-nav-cta" href={ANFRAGE} data-event="cta_primary">
+                Verfügbarkeit prüfen <Arrow size={15} />
+              </a>
             </Magnetic>
             <button
+              ref={burger}
               type="button"
               className={`v2-burger ${open ? 'is-open' : ''}`}
               aria-label={open ? 'Menü schließen' : 'Menü öffnen'}
               aria-expanded={open}
+              aria-controls="mobilmenue"
               onClick={() => setOpen((v) => !v)}
             >
               <span /><span /><span />
@@ -79,62 +100,64 @@ function Nav({ active, dark }) {
         </div>
       </header>
 
-      <div className={`v2-menu ${open ? 'is-open' : ''}`} aria-hidden={!open}>
-        <nav className="v2-menu-links" aria-label="Mobiles Menü">
-          {PAGES.map((p) => (
-            <a
-              key={p.id}
-              href={`#${p.id}`}
-              className={active === p.id ? 'is-active' : ''}
-              onClick={(e) => { e.preventDefault(); setOpen(false); setTimeout(() => scrollToId(p.id), 60); }}
-            >
-              {p.label}
+      <div id="mobilmenue" ref={menu} className={`v2-menu ${open ? 'is-open' : ''}`}
+           role="dialog" aria-modal="true" aria-label="Menü"
+           {...(open ? {} : { inert: '', 'aria-hidden': 'true' })}>
+        <nav className="v2-menu-links" aria-label="Mobile Navigation">
+          {NAVIGATION.map((key) => (
+            <a key={key} href={SEITEN[key].pfad}
+               className={aktiv === key ? 'is-active' : ''}
+               aria-current={aktiv === key ? 'page' : undefined}
+               onClick={() => setOpen(false)}>
+              {SEITEN[key].name}
             </a>
           ))}
         </nav>
         <div className="v2-menu-foot">
-          <button type="button" className="v2-btn" onClick={() => { setOpen(false); setTimeout(() => scrollToId('preise'), 50); }}>
-            Termin anfragen <Arrow />
-          </button>
-          <p>Bühl · Mittelbaden · Ortenau</p>
+          <a className="v2-btn" href={ANFRAGE} data-event="cta_primary" onClick={() => setOpen(false)}>
+            Verfügbarkeit prüfen <Arrow />
+          </a>
+          <p>
+            <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
+            {' · '}
+            <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>
+          </p>
         </div>
       </div>
     </>
   );
 }
 
-/* ---------- Footer (seitenübergreifend) ---------- */
+/* ---------- Footer ---------- */
 function Footer() {
   return (
     <footer className="v2-footer">
       <div className="v2-wrap">
         <div className="v2-footer-grid">
           <div className="v2-footer-brand">
-            <img src={logoWhite} alt="Quadratblick" />
-            <p>
-              Foto- &amp; Videoproduktion für Immobilien · Verkauf &amp; Vermietung ·
-              Raum Bühl · Mittelbaden · Ortenau
-            </p>
+            <img src={logoWhite} alt="Quadratblick" width="400" height="94" loading="lazy" />
+            <p>Immobilienfotografie für Makler in Bühl, Baden-Baden, Achern und Mittelbaden.</p>
           </div>
-          <div className="v2-footer-links">
-            {PAGES.map((p) => (
-              <a key={p.id} href={`#${p.id}`} onClick={(e) => { e.preventDefault(); scrollToId(p.id); }}>{p.label}</a>
-            ))}
-          </div>
-          <div className="v2-footer-links">
-            <a href="mailto:info@quadratblick.de">info@quadratblick.de</a>
-            <a href="tel:+4915904692843">0159 0469 2843</a>
-            <a href="https://www.instagram.com/quadratblick_de" target="_blank" rel="noopener noreferrer">Instagram</a>
-          </div>
-          <div className="v2-footer-links">
+          <nav className="v2-footer-links" aria-label="Seiten">
+            {NAVIGATION.map((key) => <a key={key} href={SEITEN[key].pfad}>{SEITEN[key].name}</a>)}
+            <a href={ANFRAGE}>Verfügbarkeit prüfen</a>
+          </nav>
+          <nav className="v2-footer-links" aria-label="Service und Rechtliches">
+            <a href="/#faq">FAQ</a>
+            <a href={`${ANFRAGE}#kontakt`}>Kontakt</a>
             <a href="/impressum.html">Impressum</a>
             <a href="/datenschutz.html">Datenschutz</a>
+          </nav>
+          <div className="v2-footer-links">
+            <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>
+            <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
+            <a href={kontakt.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>
           </div>
         </div>
         <p className="v2-footer-preis">{preishinweis}</p>
         <div className="v2-footer-base">
-          <span>© 2026 · Quadratblick</span>
-          <span>Bühl · Mittelbaden · Ortenau</span>
+          <span>© {new Date().getFullYear()} Quadratblick · Fabian Schneebiegl</span>
+          <span>Bühl · Mittelbaden</span>
         </div>
       </div>
     </footer>
@@ -143,76 +166,22 @@ function Footer() {
 
 /* ---------- Seiten-Hülle ---------- */
 /**
- * PageShell — gemeinsame Hülle aller Seiten: Cursor, Grain, Nav, Footer,
- * Smooth Scrolling und Hash-Scroll nach Seitenwechsel.
- * `dark`: true, wenn die Seite mit einer dunklen Hero-Fläche beginnt
- * (steuert die Logo-/Linkfarbe der transparenten Nav).
+ * Gemeinsame Hülle aller Seiten: Skiplink, Cursor, Grain, Navigation,
+ * Footer, Smooth Scrolling und Klick-Tracking.
+ * `seite`: Schlüssel aus seiten.js, markiert den aktiven Navigationspunkt.
  */
-export function PageShell({ active, dark = true, children }) {
+export function PageShell({ seite, children }) {
   useSmoothScroll();
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-    const hash = window.location.hash;
-    if (hash) {
-      const t = setTimeout(() => scrollToId(hash.slice(1)), 350);
-      return () => clearTimeout(t);
-    }
-    return undefined;
-  }, []);
+  useKlickTracking();
 
   return (
     <>
+      <a className="v2-skip" href="#inhalt">Zum Inhalt springen</a>
       <Cursor />
       <div className="v2-grain" aria-hidden="true" />
-      <Nav active={active} dark={dark} />
-      <main>{children}</main>
+      <Nav aktiv={seite} />
+      <main id="inhalt" tabIndex={-1}>{children}</main>
       <Footer />
     </>
-  );
-}
-
-/* ---------- Unterseiten-Hero ---------- */
-export function SubHero({ eyebrow, title, lead, image, imageAlt = '', ctas = null, trust = null }) {
-  return (
-    <section className={`v2-hero sub ${image ? '' : 'no-img'}`} id="top">
-      {image && (
-        <div className="v2-hero-media">
-          <img src={image} alt={imageAlt} data-parallax="12" fetchpriority="high" />
-        </div>
-      )}
-      <div className="v2-hero-scrim" />
-      <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark" data-reveal>{eyebrow}</p>
-        <Split as="h1" className="v2-h-display v2-h-sub v2-hero-h" style={{ marginTop: 18 }}>
-          {title}
-        </Split>
-        {lead && (
-          <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.3">{lead}</p>
-        )}
-        {ctas && <div className="v2-hero-ctas" data-reveal data-delay="0.45">{ctas}</div>}
-        {trust && <p className="v2-hero-note" data-reveal data-delay="0.6">{trust}</p>}
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Querverweis-Kachel auf die jeweils andere Leistungs-Seite ---------- */
-export function CrossLink({ eyebrow, title, text, href, cta }) {
-  return (
-    <section className="v2-sec tight bg-linen-2">
-      <div className="v2-wrap">
-        <div className="v2-crosslink" data-reveal>
-          <div>
-            <p className="v2-eyebrow">{eyebrow}</p>
-            <h3>{title}</h3>
-            <p className="txt">{text}</p>
-          </div>
-          <Magnetic>
-            <a className="v2-btn" href={href}>{cta} <Arrow /></a>
-          </Magnetic>
-        </div>
-      </div>
-    </section>
   );
 }

@@ -1,3 +1,24 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+# Dauerhafte Weiterleitungen für URLs aus der früheren Sitemap.
+# Netlify wertet die Regeln unabhängig vom abschließenden Schrägstrich aus.
+# Kein Redirect für /marke-und-social/: der Pfad lieferte in Produktion
+# bereits 404 und hat keine passende Zielseite; er ist aus der Sitemap entfernt.
+[[redirects]]
+  from = "/objektcontent"
+  to = "/immobilienfotografie/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/ueber-uns"
+  to = "/ueber-quadratblick/"
+  status = 301
+  force = true
+
+# Hinweis zur Indexierung: Deploy Previews und Branch Deploys liefert
+# Netlify automatisch mit "X-Robots-Tag: noindex" aus. Hier wird bewusst
+# kein globaler Robots-Header gesetzt, damit die Produktionsdomain
+# indexierbar bleibt.

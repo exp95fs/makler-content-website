@@ -1,23 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Split, Magnetic } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { fotoklassen, ergaenzungen, kontakt, preis, preisStern, preishinweis } from '../../content/site.js';
+import { track } from '../tracking.js';
+import { sendeFormular, emailGueltig } from '../formular.js';
+import { fotoklassen, ergaenzungen, weitereMedien, kontakt, preis, preisNetto, preishinweis } from '../../content/site.js';
 
 /**
- * Buchungsworkflow für genau ein Objekt.
+ * Anfrage-Wizard für genau ein Objekt.
  *
- * Bewusst reduziert: keine Mehrfachobjekt-Auswahl, keine Rabattlogik, keine
- * Videopakete. Buchbar sind die drei Fotoklassen und zwei Ergänzungen.
- * Größere und besondere Objekte laufen nicht über den Workflow, sondern
- * über die Preissektion und das Kontaktformular.
- * Alles Weitere wird im Abstimmungstermin geklärt, nicht hier
- * durchkonfiguriert.
+ * Wichtig für den Versand:
+ * - Die Erfolgsmeldung erscheint NUR, wenn Netlify den POST erfolgreich
+ *   beantwortet (response.ok). Das Erreichen des letzten Schritts löst sie
+ *   nicht aus.
+ * - Während des Versands ist der Button gesperrt, ein zweiter Versand ist
+ *   ausgeschlossen. Bei Fehlern bleiben alle Eingaben erhalten und der
+ *   Versand kann wiederholt werden. Zurückgesetzt wird erst nach Erfolg.
+ * - Formularname und Feldnamen stimmen mit dem statischen Formular
+ *   "terminanfrage" in index.html überein.
  *
- * Die Ergänzungen tragen wie auf der Live-Seite einen Infobutton: ein
- * kleines Fragezeichen, das die Erklärung bei Hover, Fokus oder Klick
- * einblendet.
+ * Die Anfrage ist unverbindlich. Termin, Umfang und Preis bestätigt
+ * Quadratblick persönlich; es gibt keine Sofortbuchung.
  */
-const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen', 'Fertig'];
+const SCHRITTE = ['Objekt', 'Zusatzleistung', 'Wunschtermin', 'Kontakt', 'Prüfen'];
 const MIN_VORLAUF_TAGE = 3;
 const MAX_FENSTER = 8;
 const WOCHENTAG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
@@ -36,6 +39,7 @@ function isoWoche(date) {
 }
 const dritterSamstag = (d) => d.getDay() === 6 && d.getDate() >= 15 && d.getDate() <= 21;
 
+/** Mögliche Produktionstage, wie auf der bisherigen Seite. Nur Vorschläge. */
 function produktionstage(maxTage) {
   const heute = new Date();
   heute.setHours(0, 0, 0, 0);
@@ -59,11 +63,16 @@ function zeitfenster(tag, dauer) {
   return slots;
 }
 
-const klasseVon = (key) => fotoklassen.find((k) => k.key === key) || null;
-
-const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-const leererKontakt = { vorname: '', nachname: '', email: '', telefon: '', firma: '', adresse: '', nachricht: '' };
-const encodeForm = (d) => Object.keys(d).map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(d[k])).join('&');
+const LEER = {
+  vorname: '', nachname: '', email: '', telefon: '', firma: '',
+  adresse: '', eigentuemer: '', nachricht: '',
+};
+const PFLICHT = {
+  vorname: 'Bitte geben Sie Ihren Vornamen an.',
+  nachname: 'Bitte geben Sie Ihren Nachnamen an.',
+  email: 'Bitte geben Sie eine gültige E-Mail-Adresse an.',
+  adresse: 'Bitte geben Sie die Adresse des Objekts an.',
+};
 
 export function Booking() {
   const [step, setStep] = useState(1);
@@ -73,163 +82,228 @@ export function Booking() {
   const [slot, setSlot] = useState(null);
   const [fallback, setFallback] = useState(false);
   const [offenerTag, setOffenerTag] = useState(null);
-  const [kontaktDaten, setKontaktDaten] = useState(leererKontakt);
-  const [agb, setAgb] = useState(false);
+  const [daten, setDaten] = useState(LEER);
+  const [unternehmer, setUnternehmer] = useState(false);
+  const [versucht, setVersucht] = useState({});
+  const [status, setStatus] = useState('bereit'); // bereit | sendet | erfolg | fehler
+  const [kandidaten, setKandidaten] = useState([]);
+  const sendet = useRef(false);
+  const gestartet = useRef(false);
+  const titel = useRef(null);
+  const erfolg = useRef(null);
+  const erstesSchrittRendern = useRef(true);
 
-  const gewaehlt = klasseVon(klasse);
+  const gewaehlt = fotoklassen.find((k) => k.key === klasse) || null;
+  const gewaehlteZusatz = ergaenzungen.filter((e) => addons[e.key]);
 
   const dauer = useMemo(() => {
     if (!gewaehlt) return 0;
-    return (gewaehlt.stunden || 0)
-      + ergaenzungen.reduce((h, e) => h + (addons[e.key] ? e.stunden : 0), 0);
-  }, [gewaehlt, addons]);
+    return gewaehlt.stunden + gewaehlteZusatz.reduce((h, e) => h + e.stunden, 0);
+  }, [gewaehlt, gewaehlteZusatz]);
 
-  const rechnung = useMemo(() => {
-    if (!gewaehlt) return { zeilen: [], summe: 0 };
-    const zeilen = [{ name: `Fotografie · ${gewaehlt.name}`, betrag: gewaehlt.foto }];
-    ergaenzungen.forEach((e) => {
-      if (addons[e.key]) zeilen.push({ name: e.name, betrag: e.preis });
-    });
-    return { zeilen, summe: zeilen.reduce((s, z) => s + (z.betrag || 0), 0) };
-  }, [gewaehlt, addons]);
+  const summe = gewaehlt ? gewaehlt.foto + gewaehlteZusatz.reduce((s, e) => s + e.preis, 0) : 0;
 
-  const gewaehlteErgaenzungen = ergaenzungen.filter((e) => addons[e.key]);
+  // Terminvorschläge erst im Browser berechnen: sie hängen vom heutigen
+  // Datum ab und würden sonst vom vorgerenderten HTML abweichen.
+  useEffect(() => {
+    if (dauer === 0 || dauer > MAX_FENSTER) { setKandidaten([]); return; }
+    setKandidaten(produktionstage(120).filter((d) => d.fenster[1] - d.fenster[0] >= dauer).slice(0, 6));
+  }, [dauer]);
+  const persoenlich = dauer > MAX_FENSTER || (dauer > 0 && kandidaten.length === 0);
+
+  useEffect(() => {
+    if (step === 3 && persoenlich && !slot) setFallback(true);
+  }, [step, persoenlich, slot]);
+
+  // Nach jedem Schrittwechsel den Fokus auf die Schrittüberschrift setzen,
+  // damit Screenreader den neuen Inhalt ansagen.
+  useEffect(() => {
+    if (erstesSchrittRendern.current) { erstesSchrittRendern.current = false; return; }
+    titel.current?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    if (status === 'erfolg') erfolg.current?.focus();
+  }, [status]);
+
+  const starten = () => {
+    if (gestartet.current) return;
+    gestartet.current = true;
+    track('formular_start', { formular: 'terminanfrage' });
+  };
 
   const terminReset = () => { setSlot(null); setFallback(false); setOffenerTag(null); };
 
-  const kontaktOk = kontaktDaten.vorname.trim() && kontaktDaten.nachname.trim()
-    && emailOk(kontaktDaten.email) && kontaktDaten.adresse.trim();
-  const terminOk = !!slot || fallback;
+  const fehlerFeld = (feld) => {
+    if (!PFLICHT[feld]) return null;
+    if (feld === 'email') return emailGueltig(daten.email) ? null : PFLICHT.email;
+    return daten[feld].trim() ? null : PFLICHT[feld];
+  };
+  const kontaktFehler = Object.keys(PFLICHT).filter((f) => fehlerFeld(f));
 
-  function schrittGueltig(s) {
+  function gueltig(s) {
     if (s === 1) return !!klasse;
-    if (s === 3) return terminOk;
-    if (s === 4) return !!kontaktOk;
-    if (s === 5) return agb;
+    if (s === 3) return !!slot || fallback;
+    if (s === 4) return kontaktFehler.length === 0;
     return true;
   }
-  const weiterMoeglich = schrittGueltig(step);
 
-  const kandidaten = useMemo(() => {
-    if (dauer === 0 || dauer > MAX_FENSTER) return [];
-    return produktionstage(120).filter((d) => d.fenster[1] - d.fenster[0] >= dauer).slice(0, 6);
-  }, [dauer]);
-  const ueberlauf = dauer > MAX_FENSTER;
-  const keineTage = !ueberlauf && dauer > 0 && kandidaten.length === 0;
-
-  useEffect(() => {
-    if (step === 3 && (ueberlauf || keineTage) && !slot) setFallback(true);
-  }, [step, ueberlauf, keineTage, slot]);
-
-  function geheZu(n) { setStep(n); setMaxStep((m) => Math.max(m, n)); }
-  function weiter() {
-    if (step === 5) { senden(); geheZu(6); return; }
-    if (step < 6 && weiterMoeglich) geheZu(step + 1);
+  function geheZu(n) {
+    setStep(n);
+    setMaxStep((m) => Math.max(m, n));
+    track('formular_schritt', { formular: 'terminanfrage', schritt: n });
   }
-  function zurueck() { if (step > 1) geheZu(step - 1); }
 
-  const weiterLabel = {
-    1: 'Ergänzung wählen', 2: 'Termin auswählen',
-    3: 'Kontaktdaten eingeben', 4: 'Angaben prüfen', 5: 'Anfrage senden',
-  };
+  function weiter() {
+    if (!gueltig(step)) {
+      setVersucht((v) => ({ ...v, [step]: true }));
+      if (step === 4) {
+        const erstes = kontaktFehler[0];
+        document.getElementById(`wz-${erstes}`)?.focus();
+      }
+      return;
+    }
+    geheZu(step + 1);
+  }
 
   function zusammenfassung() {
     return [
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
-      `Ergänzungen: ${gewaehlteErgaenzungen.length ? gewaehlteErgaenzungen.map((e) => e.name).join(', ') : 'keine'}`,
-      `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage (persönliche Abstimmung)'}`,
-      `Preisorientierung: ${preis(rechnung.summe)} netto zzgl. USt.`,
+      `Zusatzleistung: ${gewaehlteZusatz.length ? gewaehlteZusatz.map((e) => e.name).join(', ') : 'keine'}`,
+      `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminabstimmung'}`,
+      `Preisorientierung: ${preis(summe)} netto zzgl. USt.`,
     ].join('\n');
   }
 
-  function senden() {
-    fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: encodeForm({
-        'form-name': 'terminanfrage', 'bot-field': '',
-        ...kontaktDaten,
-        objektklasse: gewaehlt ? gewaehlt.name : '',
-        wunschtermin: slot ? slot.label : 'Individuelle Terminanfrage',
-        zusammenfassung: zusammenfassung(),
-      }),
-    }).catch(() => {});
+  async function senden(e) {
+    e.preventDefault();
+    if (step !== 5) return;
+    if (!unternehmer) { setVersucht((v) => ({ ...v, 5: true })); return; }
+    if (sendet.current) return;
+    sendet.current = true;
+    setStatus('sendet');
+
+    const ergebnis = await sendeFormular({
+      'form-name': 'terminanfrage',
+      'bot-field': e.target.elements['bot-field']?.value || '',
+      objektklasse: gewaehlt ? gewaehlt.name : '',
+      zusatzleistung: gewaehlteZusatz.map((z) => z.name).join(', ') || 'keine',
+      wunschtermin: slot ? slot.label : 'Individuelle Terminabstimmung',
+      ...daten,
+      unternehmer: unternehmer ? 'ja' : 'nein',
+      zusammenfassung: zusammenfassung(),
+    });
+
+    sendet.current = false;
+    if (ergebnis.ok) {
+      track('formular_erfolg', { formular: 'terminanfrage' });
+      setStatus('erfolg');
+      // Erst jetzt zurücksetzen
+      setKlasse(''); setAddons({}); terminReset(); setDaten(LEER);
+      setUnternehmer(false); setVersucht({}); setStep(1); setMaxStep(1);
+      gestartet.current = false;
+    } else {
+      track('formular_fehler', { formular: 'terminanfrage', grund: ergebnis.grund });
+      setStatus('fehler');
+    }
+  }
+
+  const setFeld = (feld) => (e) => { starten(); setDaten((d) => ({ ...d, [feld]: e.target.value })); };
+
+  if (status === 'erfolg') {
+    return (
+      <section className="v2-sec bg-ink qb-wizard" id="wizard" aria-label="Projektanfrage">
+        <div className="v2-wrap">
+          <div className="qb-cfg-sent" role="status">
+            <span className="ok" aria-hidden="true">✓</span>
+            <h2 ref={erfolg} tabIndex={-1}>Vielen Dank – Ihre Anfrage ist eingegangen.</h2>
+            <p>Wir prüfen die Angaben und melden uns persönlich bei Ihnen.</p>
+            <button type="button" className="v2-btn ghost on-dark sm" onClick={() => setStatus('bereit')}>
+              Weiteres Objekt anfragen
+            </button>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
-    <section className="v2-sec bg-ink" id="booking">
+    <section className="v2-sec bg-ink qb-wizard" id="wizard" aria-label="Projektanfrage">
       <div className="v2-wrap">
-        <div className="v2-sec-head">
-          <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
-          <Split as="h2" className="v2-h-display v2-h-lg">
-            In wenigen Schritten zum festen Termin.
-          </Split>
-          <p className="v2-lead on-dark" data-reveal>
-            Sie wählen die Objektklasse und einen Wunschtermin, den Rest übernehmen
-            wir: Abstimmung mit dem Eigentümer, Vorbereitung, Aufnahme und
-            Bearbeitung. Die Anfrage ist unverbindlich, verbindlich wird sie mit
-            unserer Bestätigung.
-          </p>
-        </div>
-
-        <div className="qb-cfg-book-shell" data-reveal>
+        <div className="qb-cfg-book-shell">
           <div className="qb-cfg-book-main">
-            <div className="qb-cfg-stepper">
+            <ol className="qb-cfg-stepper" aria-label="Schritte der Anfrage">
               {SCHRITTE.map((label, i) => {
                 const s = i + 1;
-                const gesperrt = s > maxStep;
+                const gesperrt = s > maxStep || status === 'sendet';
                 return (
-                  <button key={label} type="button" disabled={gesperrt}
-                          className={`qb-cfg-stepchip ${s === step ? 'is-active' : ''} ${s < step ? 'is-done' : ''}`}
-                          onClick={() => { if (!gesperrt && s !== step) geheZu(s); }}>
-                    <span className="in">
-                      <span className="s">Schritt {s}</span>
-                      <span className="l">{label}</span>
-                    </span>
-                  </button>
+                  <li key={label}>
+                    <button type="button" disabled={gesperrt}
+                            className={`qb-cfg-stepchip ${s === step ? 'is-active' : ''} ${s < step ? 'is-done' : ''}`}
+                            aria-current={s === step ? 'step' : undefined}
+                            onClick={() => { if (!gesperrt && s !== step) geheZu(s); }}>
+                      <span className="in">
+                        <span className="s">Schritt {s}</span>
+                        <span className="l">{label}</span>
+                      </span>
+                    </button>
+                  </li>
                 );
               })}
-            </div>
+            </ol>
 
-            <div className="qb-cfg-book-panel">
+            <form className="qb-cfg-book-panel" name="terminanfrage" onSubmit={senden} noValidate
+                  aria-busy={status === 'sendet'}>
+              <input type="hidden" name="form-name" value="terminanfrage" />
+              <p className="qb-hp" aria-hidden="true">
+                <label>Nicht ausfüllen <input type="text" name="bot-field" tabIndex={-1} autoComplete="off" /></label>
+              </p>
+
               {step === 1 && (
-                <Panel titel="Um welches Objekt geht es?"
-                       text="Die Klasse bestimmt den Festpreis. Die Qualität der Aufnahmen und der Bearbeitung ist in jeder Klasse dieselbe.">
+                <fieldset className="qb-schritt">
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Um welches Objekt geht es?</legend>
+                  <p className="qb-cfg-book-desc">
+                    Die Objektklasse bestimmt Preis und Bildumfang. Aufnahme und Bearbeitung sind in
+                    jeder Klasse gleich.
+                  </p>
                   <div className="qb-cfg-book-group">
                     {fotoklassen.map((k) => (
-                      <Wahl key={k.key} an={klasse === k.key} name={k.name}
-                            preisText={preisStern(k.foto)} text={k.beschreibung}
-                            onClick={() => { setKlasse(k.key); terminReset(); }} />
+                      <label key={k.key} className={`qb-cfg-choice line ${klasse === k.key ? 'is-on' : ''}`}>
+                        <input type="radio" name="objektklasse-wahl" value={k.key} className="qb-sr"
+                               checked={klasse === k.key}
+                               onChange={() => { starten(); setKlasse(k.key); terminReset(); }} />
+                        <span className="t">{k.name}</span>
+                        <span className="pr">{preisNetto(k.foto)}</span>
+                        <span className="p">{k.beschreibung} {k.bilder}.</span>
+                      </label>
                     ))}
                   </div>
-                  {!klasse && <p className="qb-cfg-book-hint">Bitte wählen Sie eine Objektklasse, um fortzufahren.</p>}
-                </Panel>
+                  {versucht[1] && !klasse && (
+                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie eine Objektklasse.</p>
+                  )}
+                </fieldset>
               )}
 
               {step === 2 && (
-                <Panel titel="Möchten Sie etwas ergänzen?"
-                       text="Optional und im selben Termin produziert. Weitere Ergänzungen wie ein Objektfilm stimmen wir im Gespräch auf das Objekt ab.">
+                <fieldset className="qb-schritt">
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Möchten Sie etwas ergänzen?</legend>
+                  <p className="qb-cfg-book-desc">Optional und im selben Termin.</p>
                   {ergaenzungen.map((e) => (
-                    <Haken key={e.key} an={!!addons[e.key]} name={e.name}
-                           preisText={e.preisLabel}
-                           note={e.note}
-                           onClick={() => {
-                             setAddons((a) => ({ ...a, [e.key]: !a[e.key] }));
-                             terminReset();
-                           }} />
+                    <Haken key={e.key} id={`wz-${e.key}`} an={!!addons[e.key]} name={e.name}
+                           preisText={`+ ${preisNetto(e.preis)}`} note={e.note}
+                           umschalten={() => { setAddons((a) => ({ ...a, [e.key]: !a[e.key] })); terminReset(); }} />
                   ))}
-                  <p className="qb-cfg-book-note">
-                    Nichts davon ist Pflicht. Was für Ihr Objekt wirklich sinnvoll ist,
-                    besprechen wir vor der Produktion.
-                  </p>
-                </Panel>
+                  <p className="qb-cfg-book-note">{weitereMedien}</p>
+                </fieldset>
               )}
 
               {step === 3 && (
-                <Panel titel="Wann passt es Ihnen?"
-                       text="Wir planen ausreichend Zeit für eine reibungslose Produktion ein.">
-                  <p className="qb-cfg-book-note"><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std.</p>
-                  {(ueberlauf || keineTage) ? (
+                <fieldset className="qb-schritt">
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Welcher Termin wäre Ihnen recht?</legend>
+                  <p className="qb-cfg-book-desc">
+                    Ihr Terminwunsch ist unverbindlich. Den Termin bestätigen wir persönlich.
+                  </p>
+                  {persoenlich ? (
                     <div className="qb-cfg-warnbox">
                       <b>Persönliche Terminabstimmung</b>
                       <p>Für diesen Umfang stimmen wir den Termin persönlich mit Ihnen ab. Sie können die Anfrage fortsetzen.</p>
@@ -241,21 +315,25 @@ export function Booking() {
                         return (
                           <div className="qb-cfg-dayrow" key={d.key}>
                             <button type="button" className={`qb-cfg-daybtn ${slot && slot.key === d.key ? 'is-on' : ''}`}
-                                    aria-expanded={offen} onClick={() => setOffenerTag(offen ? null : d.key)}>
+                                    aria-expanded={offen} aria-controls={`slots-${d.key}`}
+                                    onClick={() => setOffenerTag(offen ? null : d.key)}>
                               <span className="in">
                                 <span className="d">{datumLabel(d.date)}</span>
                                 <span className="qb-cfg-daybadge">{d.fenster[0]}–{d.fenster[1]} Uhr</span>
                               </span>
                             </button>
                             {offen && (
-                              <div className="qb-cfg-slots">
-                                {zeitfenster(d, dauer).map((z) => (
-                                  <button key={z.start} type="button"
-                                          className={`qb-cfg-slot ${slot && slot.key === d.key && slot.timeLabel === z.label ? 'is-on' : ''}`}
-                                          onClick={() => { setSlot({ key: d.key, timeLabel: z.label, label: `${datumLabel(d.date)}, ${z.label}` }); setFallback(false); }}>
-                                    {z.label}
-                                  </button>
-                                ))}
+                              <div className="qb-cfg-slots" id={`slots-${d.key}`} role="group" aria-label={`Zeitfenster am ${datumLabel(d.date)}`}>
+                                {zeitfenster(d, dauer).map((z) => {
+                                  const an = !!slot && slot.key === d.key && slot.timeLabel === z.label;
+                                  return (
+                                    <button key={z.start} type="button" aria-pressed={an}
+                                            className={`qb-cfg-slot ${an ? 'is-on' : ''}`}
+                                            onClick={() => { setSlot({ key: d.key, timeLabel: z.label, label: `${datumLabel(d.date)}, ${z.label}` }); setFallback(false); }}>
+                                      {z.label}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -263,110 +341,134 @@ export function Booking() {
                       })}
                     </div>
                   )}
-                  <button type="button" className={`qb-cfg-choice wide ${fallback ? 'is-on' : ''}`}
+                  <button type="button" aria-pressed={fallback}
+                          className={`qb-cfg-choice wide ${fallback ? 'is-on' : ''}`}
                           onClick={() => { setFallback(true); setSlot(null); }}>
-                    <span className="t">Individuelle Terminanfrage</span>
+                    <span className="t">Individuelle Terminabstimmung</span>
                     <span className="p">Kein passender Tag dabei? Wir stimmen den Termin persönlich mit Ihnen ab.</span>
                   </button>
-                  {!terminOk && <p className="qb-cfg-book-hint">Bitte wählen Sie einen Termin oder die individuelle Terminanfrage.</p>}
-                </Panel>
+                  {versucht[3] && !slot && !fallback && (
+                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie einen Terminwunsch oder die individuelle Abstimmung.</p>
+                  )}
+                  {slot && <p className="qb-cfg-book-note" aria-live="polite"><b>Ihr Terminwunsch:</b> {slot.label}</p>}
+                </fieldset>
               )}
 
               {step === 4 && (
-                <Panel titel="Ihre Kontaktdaten" text="Damit wir Ihre Anfrage zuordnen und bestätigen können.">
+                <fieldset className="qb-schritt">
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Ihre Kontaktdaten</legend>
+                  <p className="qb-cfg-book-desc">Pflichtfelder sind mit * markiert.</p>
                   <div className="qb-cfg-book-grid">
-                    <Feld label="Vorname *" wert={kontaktDaten.vorname} set={(v) => setKontaktDaten((c) => ({ ...c, vorname: v }))} />
-                    <Feld label="Nachname *" wert={kontaktDaten.nachname} set={(v) => setKontaktDaten((c) => ({ ...c, nachname: v }))} />
-                    <Feld label="E-Mail *" typ="email" wert={kontaktDaten.email} set={(v) => setKontaktDaten((c) => ({ ...c, email: v }))} />
-                    <Feld label="Telefon" typ="tel" wert={kontaktDaten.telefon} set={(v) => setKontaktDaten((c) => ({ ...c, telefon: v }))} />
-                    <Feld label="Firma / Maklerbüro" breit wert={kontaktDaten.firma} set={(v) => setKontaktDaten((c) => ({ ...c, firma: v }))} />
-                    <Feld label="Objektadresse *" breit platzhalter="Straße, PLZ, Ort"
-                          wert={kontaktDaten.adresse} set={(v) => setKontaktDaten((c) => ({ ...c, adresse: v }))} />
-                    <Feld label="Kontakt zum Eigentümer" breit
-                          platzhalter="Name und Telefonnummer, damit wir den Termin direkt abstimmen können"
-                          wert={kontaktDaten.nachricht} set={(v) => setKontaktDaten((c) => ({ ...c, nachricht: v }))} />
+                    <Feld id="vorname" label="Vorname *" wert={daten.vorname} onChange={setFeld('vorname')}
+                          auto="given-name" pflicht fehler={versucht[4] && fehlerFeld('vorname')} />
+                    <Feld id="nachname" label="Nachname *" wert={daten.nachname} onChange={setFeld('nachname')}
+                          auto="family-name" pflicht fehler={versucht[4] && fehlerFeld('nachname')} />
+                    <Feld id="email" label="E-Mail *" typ="email" wert={daten.email} onChange={setFeld('email')}
+                          auto="email" inputMode="email" pflicht fehler={versucht[4] && fehlerFeld('email')} />
+                    <Feld id="telefon" label="Telefon (optional)" typ="tel" wert={daten.telefon}
+                          onChange={setFeld('telefon')} auto="tel" inputMode="tel" />
+                    <Feld id="firma" label="Maklerbüro / Unternehmen (optional)" breit wert={daten.firma}
+                          onChange={setFeld('firma')} auto="organization" />
+                    <Feld id="adresse" label="Adresse des Objekts *" breit wert={daten.adresse}
+                          onChange={setFeld('adresse')} auto="off" platzhalter="Straße, PLZ, Ort"
+                          pflicht fehler={versucht[4] && fehlerFeld('adresse')} />
+                    <Feld id="eigentuemer" label="Kontakt zum Eigentümer (optional)" breit wert={daten.eigentuemer}
+                          onChange={setFeld('eigentuemer')} auto="off"
+                          hinweis="Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen." />
+                    <Feld id="nachricht" label="Nachricht (optional)" breit mehrzeilig wert={daten.nachricht}
+                          onChange={setFeld('nachricht')} />
                   </div>
-                  {!kontaktOk && <p className="qb-cfg-book-hint">Bitte füllen Sie mindestens die mit * markierten Felder korrekt aus.</p>}
-                </Panel>
+                </fieldset>
               )}
 
               {step === 5 && (
-                <Panel titel="Angaben prüfen und senden"
-                       text="Die Anfrage ist unverbindlich, verbindlich wird sie mit unserer Bestätigung.">
-                  <div className="qb-cfg-recap">
-                    <Zeile label="Objektklasse" wert={gewaehlt ? gewaehlt.name : 'offen'} />
-                    <Zeile label="Ergänzungen" wert={gewaehlteErgaenzungen.length ? gewaehlteErgaenzungen.map((e) => e.name).join(', ') : '–'} />
-                    <Zeile label="Wunschtermin" wert={slot ? slot.label : 'Individuelle Terminanfrage'} />
-                    <Zeile label="Kontakt" wert={`${kontaktDaten.vorname} ${kontaktDaten.nachname} · ${kontaktDaten.email}`} />
-                    <Zeile label="Objektadresse" wert={kontaktDaten.adresse} />
-                    <Zeile label="Festpreis" wert={preisStern(rechnung.summe)} />
-                  </div>
-                  <button type="button" className={`qb-cfg-choice wide ${agb ? 'is-on' : ''}`} onClick={() => setAgb((v) => !v)}>
-                    <span className="p">
-                      Ich handle als Unternehmer im Sinne des § 14 BGB und bestätige die
-                      Allgemeinen Geschäftsbedingungen von Quadratblick, insbesondere die
-                      Abrechnung nach Umsetzung sowie die Storno- und Widerrufsregelung.
-                    </span>
-                  </button>
-                  {!agb && <p className="qb-cfg-book-hint">Bitte bestätigen Sie die Angaben, um die Anfrage zu senden.</p>}
-                </Panel>
-              )}
-
-              {step === 6 && (
-                <div className="qb-cfg-sent">
-                  <span className="ok" aria-hidden="true">✓</span>
-                  <h3>Anfrage gesendet</h3>
-                  <p>
-                    Vielen Dank. Wir melden uns in der Regel innerhalb von 1 bis 2 Werktagen
-                    persönlich mit der Bestätigung, dem Festpreis und dem Liefertermin. Die
-                    Abstimmung mit dem Eigentümer übernehmen wir.
+                <fieldset className="qb-schritt">
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Angaben prüfen und senden</legend>
+                  <p className="qb-cfg-book-desc">
+                    Die Anfrage ist unverbindlich. Verbindlich wird sie erst mit unserer persönlichen
+                    Bestätigung zu Termin, Leistungsumfang und Preis.
                   </p>
-                </div>
+                  <dl className="qb-cfg-recap">
+                    <Zeile label="Objektklasse" wert={gewaehlt ? gewaehlt.name : 'offen'} />
+                    <Zeile label="Zusatzleistung" wert={gewaehlteZusatz.length ? gewaehlteZusatz.map((z) => z.name).join(', ') : 'keine'} />
+                    <Zeile label="Terminwunsch" wert={slot ? slot.label : 'Individuelle Terminabstimmung'} />
+                    <Zeile label="Kontakt" wert={`${daten.vorname} ${daten.nachname} · ${daten.email}`} />
+                    <Zeile label="Objektadresse" wert={daten.adresse} />
+                    {daten.eigentuemer && <Zeile label="Eigentümerkontakt" wert={daten.eigentuemer} />}
+                    <Zeile label="Preis" wert={preisNetto(summe)} />
+                  </dl>
+                  <div className={`qb-cfg-einwilligung ${versucht[5] && !unternehmer ? 'is-fehler' : ''}`}>
+                    <input id="wz-unternehmer" type="checkbox" checked={unternehmer}
+                           onChange={(e) => setUnternehmer(e.target.checked)}
+                           aria-invalid={versucht[5] && !unternehmer ? 'true' : undefined}
+                           aria-describedby={versucht[5] && !unternehmer ? 'wz-unternehmer-fehler' : undefined} />
+                    <label htmlFor="wz-unternehmer">
+                      Ich frage als Unternehmer im Sinne des § 14 BGB an. *
+                    </label>
+                  </div>
+                  {versucht[5] && !unternehmer && (
+                    <p className="qb-cfg-book-hint" id="wz-unternehmer-fehler" role="alert">
+                      Bitte bestätigen Sie, dass Sie als Unternehmer anfragen.
+                    </p>
+                  )}
+                  <p className="qb-cfg-book-note">
+                    Informationen zur Verarbeitung Ihrer Angaben finden Sie in der{' '}
+                    <a href="/datenschutz.html">Datenschutzerklärung</a>.
+                  </p>
+                </fieldset>
               )}
 
-              {step !== 6 && (
-                <div className="qb-cfg-book-nav">
-                  <button type="button" className="v2-btn ghost on-dark sm" onClick={zurueck}
-                          style={{ visibility: step === 1 ? 'hidden' : 'visible' }}>
+              <div className="qb-cfg-status" aria-live="polite" role="status">
+                {status === 'sendet' && <p>Ihre Anfrage wird gesendet …</p>}
+                {status === 'fehler' && (
+                  <p className="fehler">
+                    Die Anfrage konnte nicht gesendet werden. Ihre Angaben sind erhalten – bitte
+                    versuchen Sie es erneut oder melden Sie sich direkt unter{' '}
+                    <a href={kontakt.telefonHref}>{kontakt.telefon}</a> bzw.{' '}
+                    <a href={`mailto:${kontakt.email}`}>{kontakt.email}</a>.
+                  </p>
+                )}
+              </div>
+
+              <div className="qb-cfg-book-nav">
+                {step > 1 ? (
+                  <button type="button" className="v2-btn ghost on-dark sm" disabled={status === 'sendet'}
+                          onClick={() => geheZu(step - 1)}>
                     Zurück
                   </button>
-                  <Magnetic strength={0.2}>
-                    <button type="button" className="v2-btn" onClick={weiter} disabled={!weiterMoeglich}>
-                      {weiterLabel[step] || 'Weiter'} <Arrow size={16} />
-                    </button>
-                  </Magnetic>
-                </div>
-              )}
-            </div>
+                ) : <span />}
+                {step < 5 ? (
+                  <button type="button" className="v2-btn" onClick={weiter}>
+                    Weiter <Arrow size={16} />
+                  </button>
+                ) : (
+                  <button type="submit" className="v2-btn" disabled={status === 'sendet'}>
+                    {status === 'sendet' ? 'Wird gesendet …' : status === 'fehler' ? 'Erneut senden' : 'Anfrage senden'}
+                    {status !== 'sendet' && <Arrow size={16} />}
+                  </button>
+                )}
+              </div>
+            </form>
           </div>
 
-          <aside className="qb-cfg-book-summary">
-            <h3>Ihre Auswahl</h3>
-            {rechnung.zeilen.length === 0 ? (
-              <p className="leer">Noch nichts gewählt. Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
+          <aside className="qb-cfg-book-summary" aria-label="Ihre Auswahl">
+            <h2>Ihre Auswahl</h2>
+            {!gewaehlt ? (
+              <p className="leer">Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
             ) : (
-              rechnung.zeilen.map((z) => (
-                <div className="row" key={z.name}>
-                  <span>{z.name}</span>
-                  <b>{z.betrag === null ? z.hinweis : preis(z.betrag)}</b>
-                </div>
-              ))
+              <>
+                <div className="row"><span>Immobilienfotografie · {gewaehlt.name}</span><b>{preis(gewaehlt.foto)}</b></div>
+                {gewaehlteZusatz.map((z) => (
+                  <div className="row" key={z.key}><span>{z.name}</span><b>{preis(z.preis)}</b></div>
+                ))}
+              </>
             )}
             <div className="gesamt">
-              <span>Festpreis</span>
-              {/* Ohne gewählte Klasse stünde hier sonst "0 €". */}
-              <b>{rechnung.zeilen.length ? preisStern(rechnung.summe) : '–'}</b>
+              <span>Preis netto</span>
+              <b>{gewaehlt ? preis(summe) : '–'}</b>
             </div>
-            {dauer > 0 && (
-              <div className="hinweis">
-                {slot ? <><b>Wunschtermin</b><br />{slot.label}</>
-                  : fallback ? <><b>Individuelle Terminanfrage</b><br />Termin wird persönlich abgestimmt.</>
-                    : <><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std. · Termin noch offen</>}
-              </div>
-            )}
             <p className="fuss">
-              {preishinweis} Der Preis steht mit unserer Bestätigung fest.
-              Fragen vorab? {kontakt.telefon}
+              {preishinweis} Termin, Umfang und Preis bestätigen wir persönlich.
             </p>
           </aside>
         </div>
@@ -376,42 +478,16 @@ export function Booking() {
 }
 
 /* ---------- Bausteine ---------- */
-function Panel({ titel, text, children }) {
-  return (
-    <div>
-      <h3 className="qb-cfg-book-h">{titel}</h3>
-      {text && <p className="qb-cfg-book-desc">{text}</p>}
-      {children}
-    </div>
-  );
-}
-
-function Wahl({ an, name, preisText, text, onClick }) {
-  return (
-    <button type="button" className={`qb-cfg-choice line ${an ? 'is-on' : ''}`} onClick={onClick}>
-      <span className="t">{name}</span>
-      <span className="pr">{preisText}</span>
-      <span className="p">{text}</span>
-    </button>
-  );
-}
 
 /**
- * Infobutton wie auf der Live-Seite: ein Fragezeichen neben dem Namen, das
- * die Erklärung einblendet. Öffnet bei Hover, Fokus und Klick, schließt bei
- * Klick daneben, mit Escape oder wenn der Zeiger die Fläche verlässt.
- *
- * Der Klick öffnet nur, er schaltet nicht um: ein Tap löst auf vielen
- * Geräten zuerst ein mouseenter aus, ein Umschalten würde die Blase damit
- * sofort wieder schließen.
- *
- * Der Button liegt bewusst nicht im Haken-Button verschachtelt - ein
- * <button> in einem <button> ist ungültiges Markup. Haken und Infobutton
- * stehen deshalb nebeneinander in einer Zeile.
+ * Infobutton wie auf der bisherigen Seite: ein Fragezeichen neben dem Namen,
+ * das die Erklärung einblendet. Öffnet bei Hover, Fokus und Klick, schließt
+ * bei Klick daneben, mit Escape oder wenn der Zeiger die Fläche verlässt.
  */
 function InfoButton({ note, label }) {
   const [offen, setOffen] = useState(false);
   const huelle = useRef(null);
+  const id = `info-${label.replace(/\W+/g, '-').toLowerCase()}`;
 
   useEffect(() => {
     if (!offen) return undefined;
@@ -425,43 +501,52 @@ function InfoButton({ note, label }) {
     };
   }, [offen]);
 
-  if (!note) return null;
   return (
     <span className="qb-cfg-info" ref={huelle}
           onMouseEnter={() => setOffen(true)} onMouseLeave={() => setOffen(false)}>
       <button type="button" className="qb-cfg-info-btn"
-              aria-expanded={offen}
+              aria-expanded={offen} aria-controls={id}
               aria-label={`Erklärung zu ${label}`}
-              onFocus={() => setOffen(true)}
-              onBlur={() => setOffen(false)}
+              onFocus={() => setOffen(true)} onBlur={() => setOffen(false)}
               onClick={(e) => { e.stopPropagation(); setOffen(true); }}>?</button>
-      {offen && <span className="qb-cfg-info-bubble" role="tooltip">{note}</span>}
+      <span id={id} className="qb-cfg-info-bubble" role="tooltip" hidden={!offen}>{note}</span>
     </span>
   );
 }
 
-function Haken({ an, name, preisText, note, onClick }) {
+function Haken({ id, an, name, preisText, note, umschalten }) {
   return (
     <div className={`qb-cfg-checkbox ${an ? 'is-on' : ''}`}>
-      <button type="button" className="hit" onClick={onClick} aria-pressed={an}>
+      <label className="hit" htmlFor={id}>
+        <input id={id} type="checkbox" className="qb-sr" checked={an} onChange={umschalten} />
         <span className="bx" aria-hidden="true">{an ? '✓' : ''}</span>
         <span className="t">{name}</span>
         <span className="pr">{preisText}</span>
-      </button>
+      </label>
       <InfoButton note={note} label={name} />
     </div>
   );
 }
 
-function Feld({ label, wert, set, typ = 'text', breit = false, platzhalter = '' }) {
+function Feld({ id, label, wert, onChange, typ = 'text', breit = false, platzhalter = '',
+  auto, inputMode, pflicht = false, fehler = null, hinweis = null, mehrzeilig = false }) {
+  const fid = `wz-${id}`;
+  const beschrieben = [hinweis ? `${fid}-hinweis` : null, fehler ? `${fid}-fehler` : null].filter(Boolean).join(' ') || undefined;
+  const props = {
+    id: fid, name: id, value: wert, onChange, placeholder: platzhalter || undefined,
+    autoComplete: auto, required: pflicht || undefined,
+    'aria-invalid': fehler ? 'true' : undefined, 'aria-describedby': beschrieben,
+  };
   return (
-    <label className={`qb-cfg-book-field ${breit ? 'breit' : ''}`}>
-      <span>{label}</span>
-      <input type={typ} value={wert} placeholder={platzhalter} onChange={(e) => set(e.target.value)} />
-    </label>
+    <div className={`qb-cfg-book-field ${breit ? 'breit' : ''} ${fehler ? 'is-fehler' : ''}`}>
+      <label htmlFor={fid}>{label}</label>
+      {mehrzeilig ? <textarea rows={3} {...props} /> : <input type={typ} inputMode={inputMode} {...props} />}
+      {hinweis && <small id={`${fid}-hinweis`}>{hinweis}</small>}
+      {fehler && <small className="fehler" id={`${fid}-fehler`}>{fehler}</small>}
+    </div>
   );
 }
 
 function Zeile({ label, wert }) {
-  return <div className="row"><span>{label}</span><b>{wert}</b></div>;
+  return <div className="row"><dt>{label}</dt><dd>{wert}</dd></div>;
 }

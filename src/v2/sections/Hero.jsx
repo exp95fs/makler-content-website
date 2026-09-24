@@ -1,66 +1,57 @@
 import { useEffect } from 'react';
-import { Split, Magnetic, scrollToId, gsap, prefersReducedMotion } from '../fx.jsx';
-import { Arrow } from '../ui.jsx';
-import { images, fotoklassen, preisStern, preishinweisKurz } from '../../content/site.js';
+import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
+import { Arrow, Bild } from '../ui.jsx';
+import { SEITEN } from '../seiten.js';
+import { images, preisNetto, abPreis } from '../../content/site.js';
 
 /**
- * Die Headline spitzt allein auf die Bilder zu. Der Lead nennt den Nutzen,
- * nicht den Leistungsumfang: was enthalten ist, steht bei den Paketen, weil
- * der Umfang je nach Büro unterschiedlich abgerufen wird.
+ * Hero der Startseite. Texte wie freigegeben.
+ *
+ * Eyebrow, H1, Subheadline, CTAs und Preiszeile tragen bewusst KEINE
+ * Reveal-Animation: sie sind im vorgerenderten HTML sofort sichtbar und
+ * verzögern weder die Lesbarkeit noch den Largest Contentful Paint.
+ * Nur das Hintergrundbild zoomt beim Laden leicht aus.
  */
 export function Hero() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
     const tween = gsap.fromTo('.v2-hero-media img',
-      { scale: 1.14 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
+      { scale: 1.06 }, { scale: 1, duration: 2.2, ease: 'power2.out' });
     return () => tween.kill();
   }, []);
 
   return (
-    <section className="v2-hero" id="top">
+    <section className="v2-hero" id="top" aria-labelledby="hero-titel">
       <div className="v2-hero-media">
-        <img
-          src={images.hero}
-          alt="Außenaufnahme eines Wohnobjekts aus einer Produktion für ein Maklerbüro"
-          data-parallax="14"
-          fetchpriority="high"
-          width="2400"
-          height="1600"
-        />
+        <Bild src={images.hero} vorrang sizes="100vw"
+              alt="Wohnhaus mit heller Holzfassade und dunklem Sockel, Außenaufnahme" />
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark" data-reveal>Immobilienfotografie · Raum Bühl · Mittelbaden · Ortenau</p>
-        <Split as="h1" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
-          Bilder, die Ihre Objekte herausheben.
-        </Split>
-        <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
-          Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
-          Baden-Baden und Ortenau. Hochwertiger Content, der Ihre Objekte
-          schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
-          als Marke sichtbar macht.
+        <p className="v2-eyebrow on-dark">
+          Immobilienfotografie für Makler · Bühl · Baden-Baden · Achern
         </p>
-        <div className="v2-hero-ctas" data-reveal data-delay="0.5">
+        <h1 id="hero-titel" className="v2-h-display v2-h-xl v2-hero-h">
+          Professionelle Immobilien­fotos für Makler in Mittelbaden.
+        </h1>
+        <p className="v2-lead v2-hero-lead">
+          Natürliche Bildbearbeitung, klare Preise nach Objektklasse und persönliche
+          Abstimmung – für Makler und Immobilienprojekte in Bühl, Baden-Baden,
+          Achern und Umgebung.
+        </p>
+        <div className="v2-hero-ctas">
           <Magnetic>
-            <button type="button" className="v2-btn" onClick={() => scrollToId('booking')}>
-              Paket &amp; Termin anfragen <Arrow />
-            </button>
+            <a className="v2-btn" href={SEITEN.anfrage.pfad} data-event="cta_primary">
+              Verfügbarkeit prüfen <Arrow />
+            </a>
           </Magnetic>
           <Magnetic>
-            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('referenzen')}>
-              Arbeitsproben ansehen
-            </button>
+            <a className="v2-btn ghost on-dark" href={SEITEN.referenzen.pfad}>
+              Referenzprojekte ansehen
+            </a>
           </Magnetic>
         </div>
-        <p className="v2-hero-note" data-reveal data-delay="0.65">
-          Festpreis ab {preisStern(Math.min(...fotoklassen.map((k) => k.foto)))} je Objekt
-          {' · '}verbindlich vor dem Termin{' · '}Anfrage unverbindlich
-          <span className="fein">{preishinweisKurz}</span>
-        </p>
-      </div>
-      <div className="v2-hero-scroll" aria-hidden="true">
-        <span>Scroll</span>
-        <span className="line" />
+        <p className="v2-hero-note">Immobilienfotografie ab {preisNetto(abPreis())}</p>
       </div>
     </section>
   );

@@ -1,3 +1,8 @@
+/*
+ * DERZEIT NICHT EINGEBUNDEN. Social Content und Markenaufbau gehören nicht
+ * in den primären Website-Funnel (Freigabe Positionierung). Die Datei bleibt
+ * für eine spätere Verwendung bei Bestandskunden erhalten.
+ */
 import { Split, Magnetic, scrollToId } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
 

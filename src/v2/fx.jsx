@@ -30,8 +30,14 @@ export function useSmoothScroll() {
     gsap.ticker.lagSmoothing(0);
 
     const ctx = gsap.context(() => {
+      // Elemente, die beim Start schon im Bild sind, werden nicht animiert:
+      // sie stehen bereits sichtbar im vorgerenderten HTML und sollen nicht
+      // aus- und wieder eingeblendet werden.
+      const imBild = (el) => el.getBoundingClientRect().top < window.innerHeight * 0.9;
+
       // Standard-Reveals
       gsap.utils.toArray('[data-reveal]').forEach((el) => {
+        if (imBild(el)) { el.classList.add('is-in'); return; }
         gsap.fromTo(el,
           { opacity: 0, y: 34 },
           {
@@ -46,8 +52,9 @@ export function useSmoothScroll() {
 
       // Wort-Masken (kinetische Typo)
       gsap.utils.toArray('.v2-split[data-split-scroll]').forEach((el) => {
-        gsap.to(el.querySelectorAll('.wi'), {
-          y: 0, duration: 1.1, ease: 'power4.out', stagger: 0.05,
+        if (imBild(el)) { el.classList.add('is-done'); return; }
+        gsap.fromTo(el.querySelectorAll('.wi'), { yPercent: 115 }, {
+          yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.05,
           scrollTrigger: { trigger: el, start: 'top 86%', once: true },
           onComplete: () => el.classList.add('is-done'),
         });

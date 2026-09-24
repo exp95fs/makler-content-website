@@ -8,6 +8,17 @@
  */
 
 /* ------------------------------------------------------------------ *
+ * Basis-URL der Produktionsdomain
+ *
+ * Canonicals, Open Graph, Sitemap und JSON-LD bauen hierauf auf.
+ * Die Produktion läuft auf der Domain OHNE www: https://quadratblick.de/
+ * liefert 200, https://www.quadratblick.de/ leitet per 301 dorthin um.
+ * Canonicals müssen auf die tatsächlich ausgelieferte 200-URL zeigen.
+ * Wird die primäre Domain in Netlify auf www umgestellt, hier ändern.
+ * ------------------------------------------------------------------ */
+export const SITE_URL = 'https://quadratblick.de';
+
+/* ------------------------------------------------------------------ *
  * Bilder
  * Jeder Platzhalter mit erwartetem Format. Beim Austausch das
  * Seitenverhältnis einhalten, sonst springt das Layout.
@@ -17,12 +28,15 @@ export const images = {
   hero: '/images/hero/hero.jpg',
   // 4:5 Hochformat, min. 1200 px. PLATZHALTER: Porträt Fabian.
   portrait: '/images/portrait/portrait.jpg',
-  // Kundenlogos, PNG mit Transparenz, einheitlich 160 px hoch.
+  // Logos regionaler Immobilienanbieter, für die Aufnahmen entstanden sind.
+  // Alt-Texte entsprechen dem, was im Logo selbst steht.
+  // Nur Logos mit belegtem Namen. kunde-04.png bleibt als Datei erhalten,
+  // wird aber nicht gezeigt, solange der Name nicht bestätigt ist.
+  // TODO: Angabe durch Fabian bestätigen (Name zu kunde-04.png).
   logos: [
-    { src: '/images/logos/kunde-01.png', alt: 'Sparkasse ImmoCenter' },
+    { src: '/images/logos/kunde-01.png', alt: 'Sparkasse Bühl ImmobilienCenter' },
     { src: '/images/logos/kunde-02.png', alt: 'Bemmann Immobilien' },
-    { src: '/images/logos/kunde-03.png', alt: 'Manufakturhaus Kasbad' },
-    { src: '/images/logos/kunde-04.png', alt: 'Kundenlogo' },
+    { src: '/images/logos/kunde-03.png', alt: 'Kasper & Neininger Manufaktur-Haus' },
   ],
   // Bildstrecke für den Teaser in der Leistungssektion: ein Hauptbild und
   // zwei kleinere, versetzt darüber gelegt. Alle drei liegen Richtung
@@ -99,20 +113,6 @@ export const referenzGruppen = [
 ];
 
 /* ------------------------------------------------------------------ *
- * Kennzahlen unter dem Hero
- * Werte und Quellenhinweis wörtlich von der Live-Seite.
- * ------------------------------------------------------------------ */
-export const kennzahlen = [
-  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen mit Video' },
-  { wert: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
-  { wert: 73, prefix: '', suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
-  { wert: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
-];
-
-export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international). '
-  + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
-
-/* ------------------------------------------------------------------ *
  * Foto-Objektklassen
  *
  * Jede Klasse erhält dieselbe professionelle Qualitätszusage. Die Klasse
@@ -150,43 +150,25 @@ export const fotoklassen = [
 ];
 
 /**
- * Der Ablauf einer Produktion, von der Beauftragung bis zur Lieferung.
- * Steht als eigene Sektion, nicht bei den Paketen: dort machte die
- * Aufzählung die Preisübersicht unübersichtlich.
- *
- * Die Schritte benennen konkret, was passiert - das ist der Unterschied
- * zwischen "Bearbeitung" und einer Leistung, deren Wert erkennbar ist.
- *
- * TODO: Angabe durch Fabian bestätigen - die technischen Angaben in 04
- * und 05 (Belichtungsreihen, manuelles Blending, Ausblicksoptimierung)
- * beschreiben den dokumentierten HDR-Workflow. Bitte gegenprüfen, bevor
- * sie live gehen, damit nichts zugesagt wird, was nicht immer gilt.
+ * Freigegebener Ablauf in vier Schritten. Keine Lieferzeit, keine SLA,
+ * keine pauschale Eigentümerkoordination beim ersten Auftrag.
  */
-export const ablauf = [
-  {
-    t: 'Beauftragung',
-    x: 'Sie nennen uns das Objekt und den Kontakt zum Eigentümer. Das ist Ihr einziger Aufwand im gesamten Ablauf.',
-  },
-  {
-    t: 'Terminabstimmung mit dem Eigentümer',
-    x: 'Wir melden uns direkt beim Eigentümer, klären den Zugang und legen den Aufnahmetermin fest.',
-  },
-  {
-    t: 'Checkliste zur Objektvorbereitung',
-    x: 'Der Eigentümer erhält vorab eine verständliche Anleitung, worauf es ankommt. So hält vor Ort nichts auf.',
-  },
-  {
-    t: 'Aufnahmen vor Ort',
-    x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.',
-  },
-  {
-    t: 'High-End-Postproduktion',
-    x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung Bild für Bild.',
-  },
-  {
-    t: 'Bereitstellung zum vereinbarten Termin',
-    x: 'Die fertigen Aufnahmen liegen zum zugesagten Termin bei Ihnen, einsatzfertig für Exposé, Portale und Ihre Kanäle.',
-  },
+export const prozess = [
+  { t: 'Projekt anfragen', x: 'Objektklasse, Standort und gewünschten Zeitraum übermitteln.' },
+  { t: 'Umfang und Termin abstimmen', x: 'Quadratblick prüft die Angaben und bestätigt Leistungsumfang, Preis und Termin persönlich.' },
+  { t: 'Immobilie fotografieren', x: 'Die ersten Projekte werden eng mit dem Makler abgestimmt. Der konkrete Ablauf richtet sich nach Objekt und Zusammenarbeit.' },
+  { t: 'Bilder bearbeiten und bereitstellen', x: 'Die Aufnahmen werden professionell bearbeitet und zum vereinbarten Zeitpunkt digital bereitgestellt.' },
+];
+
+/**
+ * Leistungsumfang je Objektklasse, wie er bisher auf der Seite stand.
+ * Nicht erweitern ohne Freigabe.
+ */
+export const leistungsumfang = [
+  'Innen- und Außenaufnahmen',
+  '1 bis 2 Bilder je Raum, inklusive Nebenräume',
+  'Vollständig bearbeitete Bilder für Exposé und Immobilienportale',
+  'Checkliste zur Objektvorbereitung vorab',
 ];
 
 /** Objekte außerhalb der drei Klassen. Kein Listenpreis, individuelle Prüfung. */
@@ -199,48 +181,29 @@ export const sonderobjekt = {
 };
 
 /* ------------------------------------------------------------------ *
- * Ergänzungen
+ * Zusatzleistung
  *
- * Im Buchungsworkflow direkt wählbar sind Drohnenaufnahmen und das kurze
- * Objektreel. `note` ist der Text hinter dem Infobutton.
- *
- * KONFLIKT zur Knowledge Base: dort steht der Arbeitspreis für
- * Drohnenfotos bei +170 € (von historisch +140 € angehoben). Hier stehen
- * 130 € nach ausdrücklicher Vorgabe. Vor Live-Gang entscheiden.
- *
- * Alles Weitere unten steht nur als Aufzählung auf der Seite und wird im
- * Abstimmungstermin auf das Objekt zugeschnitten.
+ * Einzige fest bepreiste Zusatzleistung: Drohnenaufnahmen, 150 € netto.
+ * Kein fest bepreistes Video- oder Reel-Angebot. `note` ist der Text
+ * hinter dem Infobutton im Anfrage-Wizard.
  * ------------------------------------------------------------------ */
 export const ergaenzungen = [
   {
     key: 'drohne',
     name: 'Drohnenaufnahmen',
-    preis: 130,
-    preisLabel: '+ 130\u202F€\u202F*',
+    preis: 150,
     stunden: 1,
-    note: 'Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen '
-      + 'Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und '
-      + 'attraktiven Lagen. Möglich, sofern am Objekt rechtlich zulässig und witterungsbedingt '
-      + 'durchführbar - das klären wir vor dem Termin.',
-  },
-  {
-    key: 'reel',
-    name: 'Kurzes Objektreel',
-    preis: 390,
-    preisLabel: '+ 390\u202F€\u202F*',
-    stunden: 2,
-    note: 'Ein vertikaler Rundgang durch das Objekt, ca. 30 bis 45 Sekunden, für Instagram, '
-      + 'Facebook und Ihre Website. Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch.',
+    note: 'Luftaufnahmen von Immobilie, Grundstück und Umgebung. Möglich, sofern am Objekt '
+      + 'rechtlich zulässig und witterungsbedingt durchführbar – das klären wir vor dem Termin.',
   },
 ];
 
-/** Nur als Aufzählung auf der Seite, ohne Preise. */
-export const weitereErgaenzungen = [
-  'Objektfilm mit geführtem Rundgang',
-  'Ihr Auftritt vor der Kamera oder als Stimme im Film',
-  'Virtuelles Home Staging für leer stehende Räume',
-  'Vorgezogene Bearbeitung, wenn das Inserat kurzfristig online gehen muss',
-];
+/**
+ * Weitere Formate stehen nachgeordnet und ohne Preis. Keine aktiven
+ * Standardangebote, nicht im strukturierten Datenmodell.
+ */
+export const weitereMedien = 'Weitere Medienformate, etwa Video, sowie individuelle Leistungen '
+  + 'wie virtuelles Home Staging auf Anfrage.';
 
 /* ------------------------------------------------------------------ *
  * Kontakt
@@ -251,38 +214,28 @@ export const kontakt = {
   telefonHref: 'tel:+4915904692843',
   instagram: 'https://www.instagram.com/quadratblick_de',
   instagramHandle: '@quadratblick_de',
-  region: 'Bühl · Mittelbaden · Ortenau',
+  region: 'Bühl · Baden-Baden · Achern und Umgebung',
 };
 
 /* ------------------------------------------------------------------ *
  * Preisangaben
  *
- * Alle Beträge auf der Seite sind Nettopreise. Statt hinter jeden Betrag
- * "netto" zu schreiben, steht ein Sternchen am Preis und einmal je
- * Sektion der vollständige Hinweis.
+ * Alle Beträge sind Nettopreise. Sie werden als "350 € netto" angezeigt.
+ * Der vollständige Hinweis steht bei den Preisen, im Wizard und im Footer.
  *
- * Rechtlicher Hintergrund: die Preisangabenverordnung verlangt
- * Endpreise inklusive Umsatzsteuer nur gegenüber Verbrauchern. Reine
- * B2B-Angebote dürfen netto ausgezeichnet werden, wenn erkennbar ist,
- * dass sich das Angebot ausschließlich an Unternehmer richtet und diese
- * Eingrenzung auch durchgesetzt wird. Deshalb nennt der Hinweis beides,
- * und im Buchungsworkflow bestätigt der Anfragende seine
- * Unternehmereigenschaft.
- *
- * TODO: Angabe durch Fabian bestätigen - Formulierung vor dem Live-Gang
- * anwaltlich oder über die IHK gegenprüfen lassen.
+ * Hintergrund: Reine B2B-Angebote dürfen netto ausgezeichnet werden, wenn
+ * erkennbar ist, dass sie sich ausschließlich an Unternehmer richten.
+ * TODO: Formulierung vor dem Live-Gang fachlich prüfen lassen.
  * ------------------------------------------------------------------ */
 
-/** Preis für die Anzeige formatieren. Ohne Sternchen. */
-export const preis = (n) => n.toLocaleString('de-DE') + ' €';
+/** Betrag formatieren, ohne Zusatz. */
+export const preis = (n) => n.toLocaleString('de-DE') + '\u00A0€';
 
-/** Preis mit Sternchen, überall dort wo ein konkreter Betrag steht. */
-export const preisStern = (n) => preis(n) + '\u202F*';
+/** Betrag mit Nettozusatz, überall dort wo ein Preis genannt wird. */
+export const preisNetto = (n) => preis(n) + '\u00A0netto';
 
-/** Der vollständige Hinweis. Steht in jeder Sektion, die Preise zeigt. */
-export const preishinweis = '* Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
-  + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Unsere Leistungen richten sich '
-  + 'ausschließlich an Unternehmer im Sinne des § 14 BGB, nicht an Verbraucher.';
+/** Kleinste Objektklasse, für "ab"-Angaben. */
+export const abPreis = () => Math.min(...fotoklassen.map((k) => k.foto));
 
-/** Kurzform für enge Stellen, etwa unter dem Hero. */
-export const preishinweisKurz = 'Alle Preise netto zzgl. USt. · Angebot ausschließlich für Unternehmer';
+export const preishinweis = 'Alle Preise sind Nettopreise in Euro zuzüglich der gesetzlichen '
+  + 'Umsatzsteuer. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne des § 14 BGB.';
