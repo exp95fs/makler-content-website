@@ -24,6 +24,32 @@ export const images = {
     { src: '/images/logos/kunde-03.png', alt: 'Manufakturhaus Kasbad' },
     { src: '/images/logos/kunde-04.png', alt: 'Kundenlogo' },
   ],
+  // Bildstrecken für die Teaser in der Leistungssektion. Je Strecke drei
+  // Aufnahmen: ein Hauptbild und zwei kleinere, versetzt darüber gelegt.
+  //
+  // TODO: Angabe durch Fabian bestätigen - die drei Aufnahmen einer Strecke
+  // sind eine Auswahl, nicht nachweislich dasselbe Objekt. Für ein echtes
+  // Beispielinserat drei Bilder aus einer Produktion einsetzen.
+  inserate: [
+    {
+      key: 'inserat-1',
+      label: 'Beispiel-Bildstrecke',
+      bilder: [
+        { src: '/images/inserate/inserat-1-aussen.jpg', alt: 'Außenansicht eines Wohngebäudes mit Holzfassade' },
+        { src: '/images/inserate/inserat-1-kueche.jpg', alt: 'Helle Küche mit Kochinsel unter Dachfenstern' },
+        { src: '/images/inserate/inserat-1-bad.jpg', alt: 'Badezimmer mit Doppelwaschtisch und Badewanne' },
+      ],
+    },
+    {
+      key: 'inserat-2',
+      label: 'Beispiel-Bildstrecke',
+      bilder: [
+        { src: '/images/inserate/inserat-2-aussen.jpg', alt: 'Außenansicht eines Mehrfamilienhauses mit Stellplätzen' },
+        { src: '/images/inserate/inserat-2-wohnen-1.jpg', alt: 'Wohnbereich mit Essplatz und verglaster Zimmertür' },
+        { src: '/images/inserate/inserat-2-wohnen-2.jpg', alt: 'Heller Wohnraum im Dachgeschoss mit Fensterreihe' },
+      ],
+    },
+  ],
   // Referenzaufnahmen, 3:2, 1800 px. Reihenfolge wie in `referenzGruppen`.
   referenzen: [
     { src: '/images/referenzen/ref-01.jpg', alt: 'Wohnküche mit Kochinsel und dunkler Küchenfront' },
@@ -135,8 +161,10 @@ export const fotoklassen = [
 ];
 
 /**
- * Was in jeder Klasse gleichermaßen enthalten ist. Steht bei den Paketen,
- * nicht im Buchungsworkflow: dort unterbricht die Aufzählung den Ablauf.
+ * Was in jeder Klasse gleichermaßen enthalten ist. Steht als horizontaler
+ * Ablauf unter den Paketen, nicht im Buchungsworkflow: dort unterbricht die
+ * Aufzählung den Ablauf, und in den Kacheln macht sie die Klassen
+ * ununterscheidbar.
  */
 export const enthalten = [
   { t: 'Terminabstimmung mit dem Eigentümer', x: 'Wir melden uns direkt und vereinbaren den Termin.' },
@@ -158,24 +186,41 @@ export const sonderobjekt = {
 /* ------------------------------------------------------------------ *
  * Ergänzungen
  *
- * Auf der Seite stehen sie nur als Hinweis, ohne Preisliste. Buchbar ist
- * im Workflow aktuell allein das Launch-Reel; alles Weitere wird im
+ * Im Buchungsworkflow direkt wählbar sind Drohnenaufnahmen und das kurze
+ * Objektreel. `note` ist der Text hinter dem Infobutton.
+ *
+ * KONFLIKT zur Knowledge Base: dort steht der Arbeitspreis für
+ * Drohnenfotos bei +170 € (von historisch +140 € angehoben). Hier stehen
+ * 130 € nach ausdrücklicher Vorgabe. Vor Live-Gang entscheiden.
+ *
+ * Alles Weitere unten steht nur als Aufzählung auf der Seite und wird im
  * Abstimmungstermin auf das Objekt zugeschnitten.
  * ------------------------------------------------------------------ */
-export const buchbareErgaenzung = {
-  key: 'launchreel',
-  name: 'Launch-Reel',
-  zusatz: 'vertikaler Rundgang, ca. 30 bis 45 Sekunden',
-  preis: 390,
-  preisLabel: '390 €',
-  stunden: 2,
-  note: 'Ein vertikaler Clip durch das Objekt für Instagram, Facebook und Ihre Website. '
-    + 'Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch.',
-};
+export const ergaenzungen = [
+  {
+    key: 'drohne',
+    name: 'Drohnenaufnahmen',
+    preis: 130,
+    preisLabel: '+ 130 €',
+    stunden: 1,
+    note: 'Präsentieren Sie Immobilie, Grundstück und Umgebung aus einer eindrucksvollen '
+      + 'Perspektive. Besonders empfehlenswert bei Häusern, großzügigen Grundstücken und '
+      + 'attraktiven Lagen. Möglich, sofern am Objekt rechtlich zulässig und witterungsbedingt '
+      + 'durchführbar - das klären wir vor dem Termin.',
+  },
+  {
+    key: 'reel',
+    name: 'Kurzes Objektreel',
+    preis: 390,
+    preisLabel: '+ 390 €',
+    stunden: 2,
+    note: 'Ein vertikaler Rundgang durch das Objekt, ca. 30 bis 45 Sekunden, für Instagram, '
+      + 'Facebook und Ihre Website. Entsteht im selben Termin, ohne zweiten Vor-Ort-Besuch.',
+  },
+];
 
 /** Nur als Aufzählung auf der Seite, ohne Preise. */
 export const weitereErgaenzungen = [
-  'Drohnenaufnahmen von Gebäude, Grundstück und Lage',
   'Objektfilm mit geführtem Rundgang',
   'Ihr Auftritt vor der Kamera oder als Stimme im Film',
   'Virtuelles Home Staging für leer stehende Räume',

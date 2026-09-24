@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { fotoklassen, sonderobjekt, buchbareErgaenzung, kontakt, preis } from '../../content/site.js';
+import { fotoklassen, sonderobjekt, ergaenzungen, kontakt, preis } from '../../content/site.js';
 
 /**
  * Buchungsworkflow für genau ein Objekt.
  *
  * Bewusst reduziert: keine Mehrfachobjekt-Auswahl, keine Rabattlogik, keine
- * Videopakete. Buchbar sind die drei Fotoklassen und das Launch-Reel als
- * Ergänzung. Alles Weitere wird im Abstimmungstermin geklärt, nicht hier
+ * Videopakete. Buchbar sind die drei Fotoklassen und zwei Ergänzungen.
+ * Alles Weitere wird im Abstimmungstermin geklärt, nicht hier
  * durchkonfiguriert.
+ *
+ * Die Ergänzungen tragen wie auf der Live-Seite einen Infobutton: ein
+ * kleines Fragezeichen, das die Erklärung bei Hover, Fokus oder Klick
+ * einblendet.
  */
 const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen', 'Fertig'];
 const MIN_VORLAUF_TAGE = 3;
@@ -64,7 +68,7 @@ export function Booking() {
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
   const [klasse, setKlasse] = useState('');
-  const [reel, setReel] = useState(false);
+  const [addons, setAddons] = useState({});
   const [slot, setSlot] = useState(null);
   const [fallback, setFallback] = useState(false);
   const [offenerTag, setOffenerTag] = useState(null);
@@ -76,17 +80,22 @@ export function Booking() {
 
   const dauer = useMemo(() => {
     if (!gewaehlt) return 0;
-    return (gewaehlt.stunden || 0) + (reel ? buchbareErgaenzung.stunden : 0);
-  }, [gewaehlt, reel]);
+    return (gewaehlt.stunden || 0)
+      + ergaenzungen.reduce((h, e) => h + (addons[e.key] ? e.stunden : 0), 0);
+  }, [gewaehlt, addons]);
 
   const rechnung = useMemo(() => {
     if (!gewaehlt) return { zeilen: [], summe: 0, sonder: false };
     const zeilen = [];
     if (sonder) zeilen.push({ name: `Fotografie · ${sonderobjekt.name}`, betrag: null, hinweis: sonderobjekt.preisLabel });
     else zeilen.push({ name: `Fotografie · ${gewaehlt.name}`, betrag: gewaehlt.foto });
-    if (reel) zeilen.push({ name: buchbareErgaenzung.name, betrag: buchbareErgaenzung.preis });
+    ergaenzungen.forEach((e) => {
+      if (addons[e.key]) zeilen.push({ name: e.name, betrag: e.preis });
+    });
     return { zeilen, summe: zeilen.reduce((s, z) => s + (z.betrag || 0), 0), sonder };
-  }, [gewaehlt, sonder, reel]);
+  }, [gewaehlt, sonder, addons]);
+
+  const gewaehlteErgaenzungen = ergaenzungen.filter((e) => addons[e.key]);
 
   const terminReset = () => { setSlot(null); setFallback(false); setOffenerTag(null); };
 
@@ -129,7 +138,7 @@ export function Booking() {
   function zusammenfassung() {
     return [
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
-      `Ergänzung: ${reel ? buchbareErgaenzung.name : 'keine'}`,
+      `Ergänzungen: ${gewaehlteErgaenzungen.length ? gewaehlteErgaenzungen.map((e) => e.name).join(', ') : 'keine'}`,
       `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage (persönliche Abstimmung)'}`,
       sonder
         ? 'Preis: Festpreis nach Objektprüfung'
@@ -206,11 +215,16 @@ export function Booking() {
 
               {step === 2 && (
                 <Panel titel="Möchten Sie etwas ergänzen?"
-                       text="Optional. Weitere Ergänzungen wie Drohnenaufnahmen oder ein Objektfilm stimmen wir im Gespräch auf das Objekt ab.">
-                  <Haken an={reel} name={buchbareErgaenzung.name}
-                         preisText={buchbareErgaenzung.preisLabel}
-                         note={buchbareErgaenzung.note}
-                         onClick={() => { setReel((v) => !v); terminReset(); }} />
+                       text="Optional und im selben Termin produziert. Weitere Ergänzungen wie ein Objektfilm stimmen wir im Gespräch auf das Objekt ab.">
+                  {ergaenzungen.map((e) => (
+                    <Haken key={e.key} an={!!addons[e.key]} name={e.name}
+                           preisText={`${e.preisLabel} netto`}
+                           note={e.note}
+                           onClick={() => {
+                             setAddons((a) => ({ ...a, [e.key]: !a[e.key] }));
+                             terminReset();
+                           }} />
+                  ))}
                   <p className="qb-cfg-book-note">
                     Nichts davon ist Pflicht. Was für Ihr Objekt wirklich sinnvoll ist,
                     besprechen wir vor der Produktion.
@@ -288,7 +302,7 @@ export function Booking() {
                        text="Die Anfrage ist unverbindlich, verbindlich wird sie mit unserer Bestätigung.">
                   <div className="qb-cfg-recap">
                     <Zeile label="Objektklasse" wert={gewaehlt ? gewaehlt.name : 'offen'} />
-                    <Zeile label="Ergänzung" wert={reel ? buchbareErgaenzung.name : '–'} />
+                    <Zeile label="Ergänzungen" wert={gewaehlteErgaenzungen.length ? gewaehlteErgaenzungen.map((e) => e.name).join(', ') : '–'} />
                     <Zeile label="Wunschtermin" wert={slot ? slot.label : 'Individuelle Terminanfrage'} />
                     <Zeile label="Kontakt" wert={`${kontaktDaten.vorname} ${kontaktDaten.nachname} · ${kontaktDaten.email}`} />
                     <Zeile label="Objektadresse" wert={kontaktDaten.adresse} />
@@ -388,16 +402,60 @@ function Wahl({ an, name, preisText, text, onClick }) {
   );
 }
 
+/**
+ * Infobutton wie auf der Live-Seite: ein Fragezeichen neben dem Namen, das
+ * die Erklärung einblendet. Öffnet bei Hover, Fokus und Klick, schließt bei
+ * Klick daneben, mit Escape oder wenn der Zeiger die Fläche verlässt.
+ *
+ * Der Klick öffnet nur, er schaltet nicht um: ein Tap löst auf vielen
+ * Geräten zuerst ein mouseenter aus, ein Umschalten würde die Blase damit
+ * sofort wieder schließen.
+ *
+ * Der Button liegt bewusst nicht im Haken-Button verschachtelt - ein
+ * <button> in einem <button> ist ungültiges Markup. Haken und Infobutton
+ * stehen deshalb nebeneinander in einer Zeile.
+ */
+function InfoButton({ note, label }) {
+  const [offen, setOffen] = useState(false);
+  const huelle = useRef(null);
+
+  useEffect(() => {
+    if (!offen) return undefined;
+    const daneben = (e) => { if (huelle.current && !huelle.current.contains(e.target)) setOffen(false); };
+    const taste = (e) => { if (e.key === 'Escape') setOffen(false); };
+    document.addEventListener('pointerdown', daneben, true);
+    document.addEventListener('keydown', taste);
+    return () => {
+      document.removeEventListener('pointerdown', daneben, true);
+      document.removeEventListener('keydown', taste);
+    };
+  }, [offen]);
+
+  if (!note) return null;
+  return (
+    <span className="qb-cfg-info" ref={huelle}
+          onMouseEnter={() => setOffen(true)} onMouseLeave={() => setOffen(false)}>
+      <button type="button" className="qb-cfg-info-btn"
+              aria-expanded={offen}
+              aria-label={`Erklärung zu ${label}`}
+              onFocus={() => setOffen(true)}
+              onBlur={() => setOffen(false)}
+              onClick={(e) => { e.stopPropagation(); setOffen(true); }}>?</button>
+      {offen && <span className="qb-cfg-info-bubble" role="tooltip">{note}</span>}
+    </span>
+  );
+}
+
 function Haken({ an, name, preisText, note, onClick }) {
   return (
-    <button type="button" className={`qb-cfg-checkbox ${an ? 'is-on' : ''}`} onClick={onClick} aria-pressed={an}>
-      <span className="in">
+    <div className={`qb-cfg-checkbox ${an ? 'is-on' : ''}`}>
+      <button type="button" className="hit" onClick={onClick} aria-pressed={an}>
         <span className="bx" aria-hidden="true">{an ? '✓' : ''}</span>
         <span className="t">{name}</span>
         <span className="pr">{preisText}</span>
-        <span className="p">{note}</span>
-      </span>
-    </button>
+      </button>
+      <InfoButton note={note} label={name} />
+    </div>
   );
 }
 

@@ -7,6 +7,10 @@ import { fotoklassen, sonderobjekt, enthalten, weitereErgaenzungen, preis } from
  * einer Klasse: es wird nicht zwischen Optionen gewählt, die Objektgröße
  * entscheidet. Preise stehen über subgrid auf gleicher Höhe, auch wenn
  * Namen oder Beschreibungen unterschiedlich lang umbrechen.
+ *
+ * In der Kachel steht nur, was sich zwischen den Klassen unterscheidet:
+ * Name, Objektbeschreibung, Preis und die Bildanzahl. Alles Gemeinsame
+ * steht darunter im Ablauf, sonst lesen sich die drei Kacheln gleich.
  */
 export function Preise() {
   return (
@@ -35,11 +39,7 @@ export function Preise() {
                 <b>{preis(k.foto)}</b>
                 <small>netto · Festpreis</small>
               </div>
-              <ul className="merkmale">
-                <li><span className="tick">→</span>{k.bilder}</li>
-                <li><span className="tick">→</span>1 bis 2 Bilder je Raum</li>
-                <li><span className="tick">→</span>Innen, außen und Nebenräume</li>
-              </ul>
+              <p className="menge">{k.bilder}</p>
               <Magnetic strength={0.18}>
                 <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
                   Diese Klasse anfragen <Arrow size={15} />
@@ -60,13 +60,12 @@ export function Preise() {
         <div className="qb-enthalten" data-reveal>
           <div className="kopf">
             <span className="k">In jeder Klasse enthalten</span>
-            <h3>Ein Preis, ein Termin, ein fertiges Ergebnis.</h3>
             <p>
-              Sie müssen weder vor Ort sein noch etwas koordinieren. Ihr Aufwand
-              beschränkt sich auf die Anfrage, alles Weitere läuft über uns.
+              Jedes Paket enthält 1 bis 2 Bilder je Raum, innen, außen und
+              Nebenräume. Ihr Aufwand beschränkt sich auf die Anfrage.
             </p>
           </div>
-          <ol className="liste">
+          <ol className="ablauf">
             {enthalten.map((e, i) => (
               <li key={e.t}>
                 <span className="n">{String(i + 1).padStart(2, '0')}</span>

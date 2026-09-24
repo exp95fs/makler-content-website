@@ -4,9 +4,9 @@ import { Arrow } from '../ui.jsx';
 import { images } from '../../content/site.js';
 
 /**
- * Text wörtlich von der Live-Seite. Zwei Eingriffe:
- * der Bindestrich in der H1 ist ein Gedankenstrich geworden, und die
- * Trust-Zeile trägt zusätzlich den Preisanker.
+ * Die Headline spitzt allein auf die Bilder zu. Der Lead nennt den Nutzen,
+ * nicht den Leistungsumfang: was enthalten ist, steht bei den Paketen, weil
+ * der Umfang je nach Büro unterschiedlich abgerufen wird.
  */
 export function Hero() {
   useEffect(() => {
@@ -36,18 +36,18 @@ export function Hero() {
         </Split>
         <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
           Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
-          Baden-Baden und Ortenau. Zum Festpreis, und ohne Aufwand für Ihr Büro:
-          Terminabstimmung mit dem Eigentümer, Aufnahme vor Ort und Bearbeitung
-          übernehmen wir.
+          Baden-Baden und Ortenau. Hochwertiger Content, der Ihre Objekte
+          schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
+          als Marke sichtbar macht.
         </p>
         <div className="v2-hero-ctas" data-reveal data-delay="0.5">
           <Magnetic>
-            <button type="button" className="v2-btn" onClick={() => scrollToId('start')}>
+            <button type="button" className="v2-btn" onClick={() => scrollToId('booking')}>
               Paket &amp; Termin anfragen <Arrow />
             </button>
           </Magnetic>
           <Magnetic>
-            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('portfolio')}>
+            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('referenzen')}>
               Arbeitsproben ansehen
             </button>
           </Magnetic>

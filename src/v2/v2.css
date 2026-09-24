@@ -361,7 +361,7 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 }
 
 /* ---------- Stats ---------- */
-.v2-stats { border-top: 1px solid var(--line-dark); padding: clamp(28px, 3.2vw, 44px) 0 clamp(24px, 2.8vw, 36px); }
+.v2-stats { border-top: 1px solid var(--line-dark); padding: clamp(18px, 2vw, 26px) 0 clamp(16px, 1.8vw, 22px); }
 /* Subgrid synchronisiert die Zeilen über alle vier Spalten: Zahlen liegen
    gemeinsam in Zeile 1, Labels in Zeile 2. Dadurch stehen sie exakt auf
    gleicher Höhe, egal ob ein Label ein- oder zweizeilig bricht. */
@@ -374,31 +374,31 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
    Deshalb Grid mit fester Zeilenaufteilung statt reinem Textfluss. */
 .v2-stat {
   border-right: 1px solid var(--line-dark);
-  padding: clamp(20px, 2.4vw, 32px) clamp(18px, 2.4vw, 40px);
+  padding: clamp(14px, 1.6vw, 22px) clamp(16px, 2vw, 30px);
   grid-row: span 2;
-  display: grid; grid-template-rows: subgrid; gap: 14px;
+  display: grid; grid-template-rows: subgrid; gap: 7px;
 }
 .v2-stat-num {
   font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(2.4rem, 4.6vw, 4.4rem); letter-spacing: -0.03em; line-height: 1;
+  font-size: clamp(1.8rem, 3vw, 2.7rem); letter-spacing: -0.03em; line-height: 1;
   color: var(--linen);
 }
 .v2-stat-num .unit { color: var(--terra-soft); font-size: 0.6em; font-weight: 500; margin-left: 2px; }
 .v2-stat-label {
-  align-self: start; max-width: 24ch;
-  font-size: 13.5px; line-height: 1.55; color: var(--text-inv-soft);
+  align-self: start; max-width: 26ch;
+  font-size: 12.5px; line-height: 1.5; color: var(--text-inv-soft);
 }
 /* Die Quellenzeile hing weit unter dem Band und ließ die Zahlen versetzt
    wirken. Sie steht jetzt eng als Fußnote darunter, klar abgesetzt. */
 .v2-stats-src {
-  margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line-dark);
-  font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.06em;
-  line-height: 1.7; color: rgba(243, 238, 229, 0.34);
+  margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line-dark);
+  font-family: var(--font-body); font-size: 10px; letter-spacing: 0.05em;
+  line-height: 1.6; color: rgba(243, 238, 229, 0.34);
   max-width: 82ch;
 }
 @media (max-width: 960px) {
   .v2-stats-grid { grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line-dark); }
-  .v2-stat { padding: 24px; border-bottom: 1px solid var(--line-dark); }
+  .v2-stat { padding: 18px; border-bottom: 1px solid var(--line-dark); }
 }
 @media (max-width: 520px) { .v2-stats-grid { grid-template-columns: 1fr; } }
 
@@ -1826,15 +1826,23 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 }
 .qb-cfg-choice.line { margin-bottom: 10px; }
 
+/* Der Haken ist eine Zeile aus zwei Bedienelementen: die Fläche schaltet
+   die Option, das Fragezeichen öffnet die Erklärung. Deshalb ein Container
+   mit zwei Buttons statt eines verschachtelten Buttons. */
 .qb-cfg-checkbox {
-  display: block; width: 100%; text-align: left; cursor: pointer; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 10px;
   background: rgba(243, 238, 229, 0.04); border: 1px solid var(--line-dark);
-  border-radius: 6px; padding: 15px 17px;
+  border-radius: 6px; padding: 13px 15px;
   transition: border-color 0.35s var(--ease-soft), background 0.35s var(--ease-soft);
 }
 .qb-cfg-checkbox:hover { border-color: var(--line-dark-2); }
 .qb-cfg-checkbox.is-on { border-color: var(--terra-soft); background: rgba(208, 138, 103, 0.1); }
-.qb-cfg-checkbox .in { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; }
+.qb-cfg-checkbox .hit {
+  flex: 1; min-width: 0; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 6px 12px; align-items: center;
+  background: none; border: 0; padding: 0; text-align: left; cursor: pointer;
+}
+.qb-cfg-checkbox .hit:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 4px; border-radius: 4px; }
 .qb-cfg-checkbox .bx {
   width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center;
   border: 1px solid var(--line-dark-2); font-size: 12px; color: var(--linen);
@@ -1842,7 +1850,30 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 .qb-cfg-checkbox.is-on .bx { background: var(--terra-deep); border-color: var(--terra-deep); }
 .qb-cfg-checkbox .t { font-family: var(--font-display); font-weight: 600; font-size: 14.5px; color: var(--linen); }
 .qb-cfg-checkbox .pr { font-family: var(--font-body); font-weight: 700; font-size: 13px; color: var(--terra-soft); white-space: nowrap; }
-.qb-cfg-checkbox .p { grid-column: 2 / -1; margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-inv-soft); }
+
+/* Infobutton. Die Blase klappt über dem Fragezeichen auf und ist so breit,
+   dass sie in der Spalte bleibt. */
+.qb-cfg-info { position: relative; display: inline-flex; flex: none; }
+.qb-cfg-info-btn {
+  width: 20px; height: 20px; border-radius: 50%; cursor: help;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1.5px solid var(--line-dark-2); color: var(--text-inv-soft);
+  font-family: var(--font-body); font-weight: 700; font-size: 11px; line-height: 1;
+  transition: border-color 0.3s var(--ease-soft), color 0.3s var(--ease-soft);
+}
+.qb-cfg-info-btn:hover, .qb-cfg-info-btn[aria-expanded="true"] { border-color: var(--terra-soft); color: var(--terra-soft); }
+.qb-cfg-info-btn:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 2px; }
+.qb-cfg-info-bubble {
+  position: absolute; bottom: calc(100% + 9px); right: -6px; z-index: 20;
+  width: min(270px, 68vw); padding: 11px 14px; border-radius: 6px;
+  background: var(--linen); color: var(--text);
+  font-family: var(--font-body); font-size: 12px; line-height: 1.55; text-align: left;
+  box-shadow: 0 24px 50px -22px rgba(0, 0, 0, 0.55);
+}
+.qb-cfg-info-bubble::after {
+  content: ''; position: absolute; top: 100%; right: 11px;
+  border: 6px solid transparent; border-top-color: var(--linen);
+}
 
 .qb-cfg-book-cols { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(18px, 2.4vw, 32px); }
 .qb-cfg-book-group { margin-bottom: 22px; }
@@ -1955,9 +1986,8 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 }
 @media (max-width: 720px) {
   .qb-cfg-choices.two, .qb-cfg-choices.three, .qb-cfg-book-cols, .qb-cfg-book-grid { grid-template-columns: 1fr; }
-  .qb-cfg-checkbox .in { grid-template-columns: 22px minmax(0, 1fr); }
+  .qb-cfg-checkbox .hit { grid-template-columns: 22px minmax(0, 1fr); }
   .qb-cfg-checkbox .pr { grid-column: 2; }
-  .qb-cfg-checkbox .p { grid-column: 2; }
   .qb-cfg-book-nav { flex-direction: column-reverse; align-items: stretch; }
   .qb-cfg-book-nav .v2-btn { justify-content: center; }
 }
@@ -2163,6 +2193,7 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   gap: clamp(30px, 5vw, 76px); align-items: center;
 }
 .qb-einstieg .text h2 { margin: 18px 0 0; max-width: 17ch; }
+.qb-einstieg .text .v2-lead { margin: 20px 0 0; max-width: 48ch; }
 .qb-einstieg .punkte { list-style: none; margin: clamp(28px, 3.2vw, 40px) 0 0; padding: 0; }
 .qb-einstieg .punkte li {
   display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 3px 14px;
@@ -2180,30 +2211,65 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
 }
 .qb-einstieg .ab { font-family: var(--font-body); font-size: 13px; color: var(--text-soft); }
-.qb-einstieg .bild { position: relative; }
-.qb-einstieg .frame {
-  border-radius: 8px; overflow: clip; background: var(--sage-deep);
-  box-shadow: 0 44px 90px -50px rgba(42, 42, 34, 0.5);
+.qb-einstieg .bild { display: grid; align-content: center; gap: 18px; }
+
+/* Zwei Bildstrecken als Teaser. Jede besteht aus einem Hauptbild und zwei
+   kleineren, die versetzt darüber liegen. Alle Maße sind prozentual zur
+   Spaltenbreite, damit die Komposition über alle Breiten gleich bleibt.
+   Die beiden Strecken sind gegeneinander eingerückt. */
+.qb-strecken { display: grid; gap: clamp(30px, 3.6vw, 52px); }
+.qb-strecke { position: relative; margin: 0; padding: 22px 0 15%; }
+.qb-strecke.hoch { margin-right: 6%; }
+.qb-strecke.tief { margin-left: 10%; }
+.qb-strecke > span {
+  display: block; border-radius: 7px; overflow: clip; background: var(--sage-deep);
 }
-.qb-einstieg .frame img {
-  width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; display: block;
+.qb-strecke img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
   transition: transform 1s var(--ease-out);
 }
-.qb-einstieg .bild:hover .frame img { transform: scale(1.03); }
+.qb-strecke .a {
+  width: 76%; aspect-ratio: 3 / 2;
+  box-shadow: 0 40px 80px -46px rgba(42, 42, 34, 0.55);
+}
+.qb-strecke .b {
+  position: absolute; right: 0; top: 24%; width: 34%; aspect-ratio: 1 / 1; z-index: 2;
+  border: 5px solid var(--linen);
+  box-shadow: 0 24px 50px -30px rgba(42, 42, 34, 0.5);
+}
+.qb-strecke .c {
+  position: absolute; left: 21%; bottom: 0; width: 29%; aspect-ratio: 3 / 4; z-index: 3;
+  border: 5px solid var(--linen);
+  box-shadow: 0 24px 50px -30px rgba(42, 42, 34, 0.5);
+}
+.qb-strecke:hover img { transform: scale(1.04); }
+.qb-strecke figcaption {
+  position: absolute; left: 0; top: 0; z-index: 4;
+  font-family: var(--font-body); font-weight: 700; font-size: 10.5px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-soft);
+}
 .qb-einstieg .mehr {
-  position: absolute; right: 18px; bottom: 18px;
+  justify-self: end;
   display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
   font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
-  color: var(--linen); background: rgba(34, 30, 25, 0.66);
-  backdrop-filter: blur(8px); border: 1px solid rgba(243, 238, 229, 0.22);
-  border-radius: 999px; padding: 10px 18px;
-  transition: background 0.35s var(--ease-soft), border-color 0.35s var(--ease-soft);
+  color: var(--text); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 10px 18px;
+  transition: background 0.35s var(--ease-soft), border-color 0.35s var(--ease-soft), color 0.35s var(--ease-soft);
 }
-.qb-einstieg .mehr:hover { background: var(--terra-deep); border-color: var(--terra-deep); }
-.qb-einstieg .mehr:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 3px; }
+.qb-einstieg .mehr:hover { background: var(--terra-deep); border-color: var(--terra-deep); color: var(--linen); }
+.qb-einstieg .mehr:focus-visible { outline: 2px solid var(--terra-deep); outline-offset: 3px; }
 @media (max-width: 900px) {
   .qb-einstieg { grid-template-columns: 1fr; }
   .qb-einstieg .bild { order: -1; }
+  .qb-strecke.hoch { margin-right: 4%; }
+  .qb-strecke.tief { margin-left: 6%; }
+}
+@media (max-width: 560px) {
+  .qb-strecke { padding-bottom: 19%; }
+  .qb-strecke .a { width: 78%; }
+  .qb-strecke .b { width: 36%; }
+  .qb-strecke .c { width: 32%; left: 18%; }
+  .qb-strecke figcaption { font-size: 9.5px; letter-spacing: 0.1em; }
 }
 
 /* ---------- Drei Fotopakete ---------- */
@@ -2214,13 +2280,13 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 .qb-pakete {
   display: grid; grid-template-columns: repeat(3, 1fr);
   grid-template-rows: auto auto auto auto;
-  gap: clamp(14px, 1.8vw, 24px); margin-top: clamp(36px, 4.4vw, 56px);
+  gap: clamp(12px, 1.5vw, 20px); margin-top: clamp(30px, 3.6vw, 44px);
 }
 .qb-paket {
   grid-row: span 4; display: grid; grid-template-rows: subgrid;
   position: relative; overflow: clip;
   background: var(--linen-2); border: 1px solid var(--line); border-radius: 10px;
-  padding: clamp(26px, 3vw, 38px);
+  padding: clamp(22px, 2.4vw, 30px);
   transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), border-color 0.35s var(--ease-soft);
 }
 .qb-paket::after {
@@ -2233,34 +2299,36 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 .qb-paket:hover::after { transform: scaleX(1); }
 .qb-paket h3 {
   font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.2rem, 1.9vw, 1.45rem); letter-spacing: -0.02em; margin: 0; color: var(--text);
+  font-size: clamp(1.1rem, 1.7vw, 1.3rem); letter-spacing: -0.02em; margin: 0; color: var(--text);
 }
-.qb-paket .was { margin: 9px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--text-soft); }
+.qb-paket .was { margin: 8px 0 0; font-size: 13px; line-height: 1.55; color: var(--text-soft); }
 .qb-paket .preis {
-  align-self: end; margin-top: 22px; padding: 20px 0;
-  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  align-self: end; margin-top: 18px; padding: 16px 0 0;
+  border-top: 1px solid var(--line);
 }
 .qb-paket .preis b {
   display: block; font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(2rem, 3.2vw, 2.7rem); letter-spacing: -0.03em; line-height: 1;
+  font-size: clamp(1.7rem, 2.6vw, 2.2rem); letter-spacing: -0.03em; line-height: 1;
   color: var(--terra-deep);
 }
 .qb-paket .preis small {
-  display: block; margin-top: 10px;
-  font-family: var(--font-body); font-size: 11px; letter-spacing: 0.1em;
+  display: block; margin-top: 8px;
+  font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--text-soft);
 }
-.qb-paket .merkmale { list-style: none; margin: 20px 0 26px; padding: 0; align-self: start; }
-.qb-paket .merkmale li {
-  display: flex; gap: 11px; align-items: baseline; padding: 9px 0;
-  font-size: 14px; line-height: 1.55; color: var(--text);
+/* Einziges Unterscheidungsmerkmal in der Kachel: die Bildanzahl. Alles
+   Gemeinsame steht im Ablauf darunter. */
+.qb-paket .menge {
+  align-self: start; margin: 14px 0 20px; padding: 9px 13px;
+  border: 1px solid var(--line); border-radius: 999px; justify-self: start;
+  font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
+  color: var(--terra-deep); background: rgba(188, 107, 73, 0.07);
 }
-.qb-paket .merkmale .tick { color: var(--terra); flex: none; font-size: 12px; }
 .qb-paket .v2-btn { align-self: end; justify-self: start; }
 @media (max-width: 900px) {
   .qb-pakete { grid-template-columns: 1fr; grid-template-rows: none; max-width: 560px; }
   .qb-paket { grid-row: auto; grid-template-rows: none; display: block; }
-  .qb-paket .preis, .qb-paket .merkmale, .qb-paket .v2-btn { align-self: auto; }
+  .qb-paket .preis, .qb-paket .menge, .qb-paket .v2-btn { align-self: auto; }
 }
 
 .qb-sonder {
@@ -2313,32 +2381,53 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
 }
 
 /* ---------- Was in jeder Klasse enthalten ist ---------- */
+/* Horizontaler Ablauf statt zweispaltiger Liste: fünf Schritte nebeneinander,
+   verbunden durch eine durchgehende Linie. Braucht deutlich weniger Höhe und
+   zeigt zugleich, dass es eine Reihenfolge ist. */
 .qb-enthalten {
-  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr);
-  gap: clamp(24px, 3.4vw, 56px); align-items: start;
-  margin-top: clamp(40px, 4.6vw, 64px); padding-top: clamp(30px, 3.4vw, 44px);
+  margin-top: clamp(34px, 4vw, 52px); padding-top: clamp(24px, 2.8vw, 34px);
   border-top: 1px solid var(--line);
+}
+.qb-enthalten .kopf {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 24px;
 }
 .qb-enthalten .k {
   font-family: var(--font-body); font-weight: 700; font-size: 10.5px;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-deep);
+  flex: none;
 }
-.qb-enthalten h3 {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.2rem, 2vw, 1.55rem); letter-spacing: -0.02em;
-  color: var(--text); margin: 12px 0 12px; max-width: 22ch; text-wrap: balance;
+.qb-enthalten .kopf p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
+.qb-enthalten .ablauf {
+  list-style: none; margin: clamp(22px, 2.6vw, 32px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 22px);
 }
-.qb-enthalten .kopf p { margin: 0; font-size: 14.5px; line-height: 1.75; color: var(--text-soft); max-width: 42ch; }
-.qb-enthalten .liste { list-style: none; margin: 0; padding: 0; counter-reset: schritt; }
-.qb-enthalten .liste li {
-  display: grid; grid-template-columns: 38px minmax(0, 1fr);
-  gap: 4px 14px; padding: 16px 0; border-top: 1px solid var(--line);
+.qb-enthalten .ablauf li {
+  position: relative; padding-top: 26px;
+  display: grid; grid-template-rows: auto auto; align-content: start; gap: 5px;
 }
-.qb-enthalten .liste li:last-child { border-bottom: 1px solid var(--line); }
-.qb-enthalten .liste .n {
-  grid-row: span 2; font-family: var(--font-display); font-weight: 600;
-  font-size: 13px; color: var(--terra-deep); padding-top: 2px;
+/* Die Linie verbindet die Schritte und endet beim letzten. */
+.qb-enthalten .ablauf li::before {
+  content: ''; position: absolute; left: 0; right: calc(-1 * clamp(12px, 1.6vw, 22px)); top: 5px;
+  height: 1px; background: var(--line);
 }
-.qb-enthalten .liste b { font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--text); }
-.qb-enthalten .liste .x { font-size: 13.5px; line-height: 1.6; color: var(--text-soft); }
-@media (max-width: 860px) { .qb-enthalten { grid-template-columns: 1fr; } }
+.qb-enthalten .ablauf li:last-child::before { right: 0; }
+.qb-enthalten .ablauf li::after {
+  content: ''; position: absolute; left: 0; top: 2px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--terra);
+}
+.qb-enthalten .ablauf .n {
+  font-family: var(--font-display); font-weight: 600; font-size: 11.5px;
+  letter-spacing: 0.08em; color: var(--terra-deep);
+}
+.qb-enthalten .ablauf b { font-family: var(--font-display); font-weight: 600; font-size: 14px; line-height: 1.35; color: var(--text); }
+.qb-enthalten .ablauf .x { font-size: 12.5px; line-height: 1.55; color: var(--text-soft); }
+@media (max-width: 1080px) {
+  .qb-enthalten .ablauf { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: clamp(20px, 2.4vw, 28px); }
+  .qb-enthalten .ablauf li:nth-child(3)::before { right: 0; }
+}
+@media (max-width: 620px) {
+  .qb-enthalten .ablauf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .qb-enthalten .ablauf li:nth-child(3)::before { right: calc(-1 * clamp(12px, 1.6vw, 22px)); }
+  .qb-enthalten .ablauf li:nth-child(2n)::before { right: 0; }
+}
