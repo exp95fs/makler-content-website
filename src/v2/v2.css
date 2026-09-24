@@ -2224,7 +2224,7 @@ button.v2-link-inline {
 /* ---------- Einstiegssektion: Aussage links, Bildbeleg rechts ---------- */
 .qb-einstieg {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: clamp(30px, 5vw, 76px); align-items: center;
+  gap: clamp(28px, 3.6vw, 56px); align-items: center;
 }
 .qb-einstieg .text h2 { margin: 18px 0 0; max-width: 17ch; }
 .qb-einstieg .text .v2-lead { margin: 20px 0 0; max-width: 48ch; }
@@ -2252,7 +2252,7 @@ button.v2-link-inline {
    Komposition über alle Breiten gleich bleibt. Die Seitenverhältnisse
    liegen bewusst Richtung Querformat - bei Hochformat schneidet der
    Zuschnitt zu viel vom Raum weg. */
-.qb-strecke { position: relative; margin: 0; padding: 22px 0 17%; }
+.qb-strecke { position: relative; margin: 0; padding: 22px 0 20%; }
 .qb-strecke > span {
   display: block; border-radius: 7px; overflow: clip; background: var(--sage-deep);
 }
@@ -2261,20 +2261,20 @@ button.v2-link-inline {
   transition: transform 1s var(--ease-out);
 }
 .qb-strecke .a {
-  width: 74%; aspect-ratio: 3 / 2;
+  width: 82%; aspect-ratio: 3 / 2;
   box-shadow: 0 40px 80px -46px rgba(42, 42, 34, 0.55);
 }
 .qb-strecke .b {
-  position: absolute; right: 0; top: 19%; width: 40%; aspect-ratio: 4 / 3; z-index: 2;
+  position: absolute; right: 0; top: 17%; width: 44%; aspect-ratio: 4 / 3; z-index: 2;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
 .qb-strecke .c {
-  position: absolute; left: 11%; bottom: 0; width: 46%; aspect-ratio: 16 / 10; z-index: 3;
+  position: absolute; left: 10%; bottom: 0; width: 52%; aspect-ratio: 16 / 10; z-index: 3;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
-.qb-strecke:hover img { transform: scale(1.04); }
+.qb-strecke > span:hover img { transform: scale(1.05); }
 .qb-strecke figcaption {
   position: absolute; left: 0; top: 0; z-index: 4;
   font-family: var(--font-body); font-weight: 700; font-size: 10.5px;
@@ -2294,10 +2294,10 @@ button.v2-link-inline {
   .qb-einstieg { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .qb-strecke { padding-bottom: 20%; }
-  .qb-strecke .a { width: 76%; }
-  .qb-strecke .b { width: 42%; border-width: 4px; }
-  .qb-strecke .c { width: 48%; left: 9%; border-width: 4px; }
+  .qb-strecke { padding-bottom: 23%; }
+  .qb-strecke .a { width: 82%; }
+  .qb-strecke .b { width: 45%; border-width: 4px; }
+  .qb-strecke .c { width: 54%; left: 7%; border-width: 4px; }
   .qb-strecke figcaption { font-size: 9.5px; letter-spacing: 0.1em; }
 }
 
@@ -2314,7 +2314,7 @@ button.v2-link-inline {
 .qb-paket {
   grid-row: span 3; display: grid; grid-template-rows: subgrid;
   position: relative; overflow: clip;
-  background: #fff; border: 1px solid var(--taupe); border-radius: 10px;
+  background: #EBE3D5; border: 1px solid var(--taupe); border-radius: 10px;
   padding: clamp(18px, 2vw, 26px);
   box-shadow: 0 18px 44px -32px rgba(42, 42, 34, 0.4);
   transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out), border-color 0.35s var(--ease-soft);
@@ -2352,7 +2352,7 @@ button.v2-link-inline {
   align-self: start; margin: 12px 0 0; padding: 8px 12px;
   border: 1px solid var(--terra-soft); border-radius: 999px; justify-self: start;
   font-family: var(--font-body); font-weight: 700; font-size: 12px;
-  color: var(--terra-deep); background: rgba(188, 107, 73, 0.09);
+  color: #8E4A2F; background: rgba(188, 107, 73, 0.09);
 }
 @media (max-width: 900px) {
   .qb-pakete { grid-template-columns: 1fr; grid-template-rows: none; max-width: 560px; }
@@ -2524,9 +2524,8 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-soft);
 }
 .qb-logos.on-dark .qb-logos-titel { color: rgba(243, 238, 229, 0.74); }
-.qb-logos .qb-kunden { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 900px; margin-top: 22px; }
+.qb-logos .qb-kunden { margin-top: 22px; }
 .qb-logos.on-dark .qb-kunden li { background: var(--linen); border-color: transparent; }
-@media (max-width: 560px) { .qb-logos .qb-kunden { grid-template-columns: 1fr 1fr; } }
 .v2-sec.tight .qb-logos:first-child { margin-top: 0; }
 
 /* ---------- Referenzen ---------- */
@@ -2764,32 +2763,14 @@ h1, h2, h3, .v2-h-display { overflow-wrap: break-word; hyphens: manual; }
 main section[id] { scroll-margin-top: 84px; }
 main section[tabindex="-1"]:focus { outline: none; }
 
-/* Band unter dem Hero: drei Aussagen im Stil des Kennzahlenbands */
+/* Kennzahlenband: dunkler Grund wie im Onepager; Quellenzeile heller
+   als früher (0,34 lag unter 4,5:1). */
 .qb-signale { background: var(--ink); color: var(--text-inv); }
-.qb-signale .v2-stats-grid { list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(3, 1fr); }
-.qb-signale .v2-stat-num { font-size: clamp(1.45rem, 2.4vw, 2.1rem); letter-spacing: -0.025em; }
-@media (max-width: 960px) {
-  .qb-signale .v2-stats-grid { grid-template-columns: repeat(3, 1fr); border-top: 0; border-left: 1px solid var(--line-dark); }
-  .qb-signale .v2-stat { border-bottom: 0; border-right: 1px solid var(--line-dark); padding: 16px; }
-}
-@media (max-width: 760px) {
-  .qb-signale .v2-stats-grid { grid-template-columns: 1fr; border-left: 0; }
-  .qb-signale .v2-stat { border-right: 0; border-bottom: 1px solid var(--line-dark); padding: 14px 0; grid-row: auto; grid-template-rows: auto auto; }
-  .qb-signale .v2-stat:last-child { border-bottom: 0; }
-  .qb-signale .v2-stat-num { font-size: clamp(1.3rem, 6vw, 1.6rem); }
-  .qb-signale .v2-stat-label { font-size: 12px; }
-}
+.v2-stats-src { color: var(--text-inv-soft); }
 
 /* Leistungsversprechen: Links statt Buttons */
 .qb-einstieg a.mehr { text-decoration: none; }
 .qb-mehr-link { margin: 18px 0 0; }
-
-/* Logos: drei Boxen */
-.qb-kunden.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 900px; }
-@media (max-width: 560px) {
-  .qb-kunden.drei { grid-template-columns: 1fr 1fr; }
-  .qb-kunden.drei li:last-child { grid-column: 1 / -1; justify-self: center; width: calc(50% - 7px); }
-}
 
 /* Arbeitsproben: Gruppentitel als h3 */
 .qb-refgruppe > .titel h3 {
@@ -2810,3 +2791,30 @@ main section[tabindex="-1"]:focus { outline: none; }
 
 /* Porträtfläche: Beschriftung unten links wie die übrigen Bildbeschriftungen */
 .qb-portrait .cap { position: absolute; left: 0; bottom: 0; }
+
+/* Referenzbild als Sektionshintergrund, überlagert mit der Sektionsfarbe */
+.mit-hg { position: relative; isolation: isolate; overflow: clip; }
+.qb-hg { position: absolute; inset: 0; z-index: -1; overflow: clip; }
+.qb-hg img { position: absolute; left: 0; top: -6%; width: 100%; height: 112%; object-fit: cover; }
+.qb-hg::after { content: ''; position: absolute; inset: 0; background: var(--hg-deckung); }
+.bg-linen-2.mit-hg { --hg-deckung: rgba(251, 248, 241, 0.88); }
+.bg-sage.mit-hg { --hg-deckung: rgba(67, 74, 54, 0.88); }
+/* Kleine Eyebrows über dem Bild brauchen mehr Kontrast als auf Vollfläche */
+.bg-linen-2.mit-hg .v2-eyebrow { color: #8E4A2F; }
+.bg-sage.mit-hg .v2-eyebrow.on-dark { color: #F4CFB8; }
+
+/* Arbeitsproben auf der Startseite: kompaktes Mosaik, ein großes Bild
+   (2 × 2) und kleine Kacheln im Querformat. */
+.qb-versatz.qb-mosaik { margin-top: clamp(30px, 3.6vw, 48px); grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); }
+.qb-versatz.qb-mosaik > li { grid-column: auto; align-self: stretch; }
+.qb-versatz.qb-mosaik > li:first-child { grid-column: span 2; grid-row: span 2; }
+.qb-versatz.qb-mosaik > li .box { aspect-ratio: 3 / 2; }
+.qb-versatz.qb-mosaik > li:first-child figure, .qb-versatz.qb-mosaik > li:first-child .box { height: 100%; }
+.qb-versatz.qb-mosaik > li:first-child .box { aspect-ratio: auto; }
+.qb-versatz.qb-mosaik .lupe { right: 10px; bottom: 10px; width: 34px; height: 34px; }
+@media (max-width: 760px) {
+  .qb-versatz.qb-mosaik { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .qb-versatz.qb-mosaik > li { grid-column: auto !important; }
+  .qb-versatz.qb-mosaik > li:first-child { grid-column: span 2 !important; grid-row: auto; }
+  .qb-versatz.qb-mosaik > li:first-child .box { aspect-ratio: 3 / 2 !important; }
+}

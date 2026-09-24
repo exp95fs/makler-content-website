@@ -29,14 +29,13 @@ export const images = {
   // 4:5 Hochformat, min. 1200 px. PLATZHALTER: Porträt Fabian.
   portrait: '/images/portrait/portrait.jpg',
   // Logos regionaler Immobilienanbieter, für die Aufnahmen entstanden sind.
-  // Alt-Texte entsprechen dem, was im Logo selbst steht.
-  // Nur Logos mit belegtem Namen. kunde-04.png bleibt als Datei erhalten,
-  // wird aber nicht gezeigt, solange der Name nicht bestätigt ist.
-  // TODO: Angabe durch Fabian bestätigen (Name zu kunde-04.png).
+  // Alt-Texte entsprechen dem, was im Logo selbst steht. Alle vier Logos
+  // von Fabian zur Anzeige freigegeben.
   logos: [
     { src: '/images/logos/kunde-01.png', alt: 'Sparkasse Bühl ImmobilienCenter' },
     { src: '/images/logos/kunde-02.png', alt: 'Bemmann Immobilien' },
     { src: '/images/logos/kunde-03.png', alt: 'Kasper & Neininger Manufaktur-Haus' },
+    { src: '/images/logos/kunde-04.png', alt: 'Arkade-Immobilien Baden-Baden' },
   ],
   // Bildstrecke für den Teaser in der Leistungssektion: ein Hauptbild und
   // zwei kleinere, versetzt darüber gelegt. Alle drei liegen Richtung
@@ -111,6 +110,37 @@ export const referenzGruppen = [
   { titel: 'Objekt 4', label: 'Wohnen, Schlafen, Bad',
     bilder: [13, 12, 11] },
 ];
+
+/**
+ * Auswahl für die Arbeitsproben auf der Startseite: nicht nach Objekt
+ * gruppiert, sondern abwechselnd aus allen vier Objekten, damit schon die
+ * ersten Aufnahmen unterschiedliche Räume und Stile zeigen. Indizes in
+ * `images.referenzen`; die erste Aufnahme steht im Mosaik groß.
+ */
+export const referenzAuswahl = [
+  17, 4, 10, 13,
+  15, 0, 12, 9,
+  2, 14, 6, 11,
+  3, 5, 16, 8,
+  1, 19, 18, 7,
+];
+
+/* ------------------------------------------------------------------ *
+ * Kennzahlen unter dem Hero
+ * Werte und Quellenhinweis wörtlich wie im bisherigen Onepager, auf
+ * ausdrücklichen Wunsch von Fabian wieder eingesetzt.
+ * TODO: Angabe durch Fabian bestätigen - Primärquellen der Werte
+ * dokumentieren (KB: keine Wirkungsclaims ohne verifizierbare Quelle).
+ * ------------------------------------------------------------------ */
+export const kennzahlen = [
+  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen mit Video' },
+  { wert: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
+  { wert: 73, prefix: '', suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
+  { wert: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
+];
+
+export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international). '
+  + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
 
 /* ------------------------------------------------------------------ *
  * Foto-Objektklassen

@@ -8,22 +8,19 @@ import { images, abPreis, preisStern } from '../../content/site.js';
  * Leistungsversprechen mit drei Vorteilen und einer versetzten
  * Bildstrecke.
  *
- * Korrigiert gegenüber der früheren Fassung: kein "nachweislich schneller
- * vermittelt", keine Eigentümerkoordination als Standard (erst bei
- * eingespielter Zusammenarbeit und auf Wunsch), "begleiten" statt
+ * Eigentümerabstimmung als Option, nicht als Standard; "begleiten" statt
  * "übernehmen den gesamten Prozess".
  */
 const vorteile = [
   {
-    t: 'Ein Inserat, das heraussticht',
-    x: 'Hochwertige Bilder heben Ihr Inserat aus der Masse der Portale heraus und zeigen '
-      + 'das Objekt so, wie es sich am besten präsentiert.',
+    t: 'Nachweislich schneller vermittelt',
+    x: 'Ein Inserat, das aus der Masse heraussticht, wird häufiger geöffnet, bringt '
+      + 'qualifiziertere Anfragen und wird nachweislich schneller vermittelt.',
   },
   {
     t: 'Zeit, die in Ihrem Büro bleibt',
-    x: 'Vorbereitung, Aufnahme und Bearbeitung liegen bei uns. Ist die Zusammenarbeit '
-      + 'eingespielt, stimmen wir auf Wunsch auch den Termin direkt mit dem Eigentümer ab. '
-      + 'So bleibt Ihre Zeit dort, wo sie Umsatz macht: beim Verkaufen.',
+    x: 'Optional schicken Sie uns den Kontakt zum Eigentümer, wir liefern die fertigen '
+      + 'Bilder. So bleibt Ihre Zeit beim Verkaufen.',
   },
   {
     t: 'Sichtbar für den nächsten Eigentümer',
@@ -32,7 +29,7 @@ const vorteile = [
   },
 ];
 
-const STRECKE = '(max-width: 900px) 76vw, 36vw';
+const STRECKE = '(max-width: 900px) 80vw, 42vw';
 
 export function LeistungenVorschau() {
   const [haupt, zwei, drei] = images.inserat.bilder;
@@ -75,8 +72,8 @@ export function LeistungenVorschau() {
           <div className="bild">
             <figure className="qb-strecke" data-reveal data-delay="0.12">
               <span className="a"><Bild src={haupt.src} alt={haupt.alt} sizes={STRECKE} /></span>
-              <span className="b"><Bild src={zwei.src} alt={zwei.alt} sizes="(max-width: 900px) 42vw, 20vw" /></span>
-              <span className="c"><Bild src={drei.src} alt={drei.alt} sizes="(max-width: 900px) 48vw, 23vw" /></span>
+              <span className="b"><Bild src={zwei.src} alt={zwei.alt} sizes="(max-width: 900px) 44vw, 24vw" /></span>
+              <span className="c"><Bild src={drei.src} alt={drei.alt} sizes="(max-width: 900px) 50vw, 26vw" /></span>
               <figcaption>{images.inserat.label}</figcaption>
             </figure>
             <a className="mehr" href="#referenzen" data-event="referenzen_aufruf">

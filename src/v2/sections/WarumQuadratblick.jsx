@@ -1,4 +1,6 @@
 import { Split } from '../fx.jsx';
+import { HintergrundBild } from '../ui.jsx';
+import { images } from '../../content/site.js';
 
 /**
  * Sechs Gründe, Gestaltung wie im bisherigen Onepager.
@@ -37,7 +39,8 @@ const punkte = [
 
 export function WarumQuadratblick() {
   return (
-    <section className="v2-sec bg-linen-2" id="warum" aria-labelledby="warum-titel">
+    <section className="v2-sec bg-linen-2 mit-hg" id="warum" aria-labelledby="warum-titel">
+      <HintergrundBild src={images.referenzen[2].src} />
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Was uns auszeichnet</p>

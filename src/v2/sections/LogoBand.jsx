@@ -26,9 +26,8 @@ export function LogoBand({ dunkel = false }) {
  * Gestaltung des bisherigen Onepagers (Überschrift, Luft, feste Box je
  * Logo).
  *
- * Korrigiert: Überschrift ohne "die mit uns arbeiten" bzw. "Setzen auf",
- * weil eine laufende Zusammenarbeit nicht für alle gezeigten Logos belegt
- * ist. Nur die drei Logos mit bestätigtem Namen.
+ * Überschrift ohne "die mit uns arbeiten" bzw. "Setzen auf", weil eine
+ * laufende Zusammenarbeit nicht für alle gezeigten Logos belegt ist.
  */
 export function LogoSektion() {
   return (
@@ -41,7 +40,7 @@ export function LogoSektion() {
           </Split>
         </div>
 
-        <ul className="qb-kunden drei">
+        <ul className="qb-kunden">
           {images.logos.map((l, i) => (
             <li key={l.src} data-reveal data-delay={Math.min(i * 0.08, 0.3)}>
               <img src={l.src} alt={l.alt} loading="lazy" decoding="async" width="420" height="180" />

@@ -1,35 +1,63 @@
-import { fotoklassen, preis } from '../../content/site.js';
+import { useEffect, useRef, useState } from 'react';
+import { prefersReducedMotion } from '../fx.jsx';
+import { kennzahlen, kennzahlenQuelle } from '../../content/site.js';
 
 /**
- * Band unter dem Hero in der Gestaltung des früheren Kennzahlenbands.
+ * Kennzahlenband unter dem Hero, wie im bisherigen Onepager.
  *
- * Die früheren internationalen Prozentwerte (Anfragen mit Video,
- * Vermittlungsdauer, Verkäuferpräferenzen) sind nicht belegt und werden
- * nicht mehr gezeigt. Stattdessen stehen hier drei überprüfbare Aussagen
- * zu Region, Ansprechpartner und Preis - ohne Zählanimation, ohne
- * Wirkungsversprechen.
+ * Der Zielwert ist der Ausgangszustand: im vorgerenderten HTML, ohne
+ * JavaScript und bei reduzierter Bewegung steht der richtige Wert. Die
+ * Animation zählt nur dann hoch, wenn sie tatsächlich starten kann.
  */
-const preise = fotoklassen.map((k) => k.foto);
-const spanne = `${Math.min(...preise)}–${preis(Math.max(...preise))} *`;
+function Stat({ wert, prefix = '', suffix = '', label }) {
+  const [anzeige, setAnzeige] = useState(wert);
+  const ref = useRef(null);
 
-const signale = [
-  { wert: 'Mittelbaden', label: 'Standort Bühl, im Einsatz in Baden-Baden, Achern und Umgebung' },
-  { wert: '1 Ansprechpartner', label: 'Von der Anfrage bis zur fertigen Bildauswahl: Fabian Schneebiegl' },
-  { wert: spanne, label: 'Festpreis je Objektklasse, vor dem Termin bestätigt' },
-];
+  useEffect(() => {
+    if (prefersReducedMotion()) return undefined;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+
+    let frame = null;
+    const beobachter = new IntersectionObserver((eintraege) => {
+      eintraege.forEach((e) => {
+        if (!e.isIntersecting) return;
+        beobachter.unobserve(el);
+        const dauer = 1200;
+        const start = performance.now();
+        const tick = (jetzt) => {
+          // rAF liefert den Frame-Zeitstempel, der vor `start` liegen kann.
+          const p = Math.min(Math.max((jetzt - start) / dauer, 0), 1);
+          setAnzeige(Math.round(wert * (1 - Math.pow(1 - p, 3))));
+          if (p < 1) frame = requestAnimationFrame(tick);
+        };
+        setAnzeige(0);
+        frame = requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.4 });
+
+    beobachter.observe(el);
+    return () => { beobachter.disconnect(); if (frame) cancelAnimationFrame(frame); };
+  }, [wert]);
+
+  return (
+    <div className="v2-stat" ref={ref}>
+      <div className="v2-stat-num">{prefix}{anzeige}{suffix}</div>
+      <div className="v2-stat-label">{label}</div>
+    </div>
+  );
+}
 
 export function StatBar() {
   return (
-    <section className="v2-stats qb-signale" aria-label="Auf einen Blick">
+    <section className="v2-stats qb-signale" aria-label="Kennzahlen">
       <div className="v2-wrap">
-        <ul className="v2-stats-grid">
-          {signale.map((s) => (
-            <li className="v2-stat" key={s.label}>
-              <span className="v2-stat-num">{s.wert}</span>
-              <span className="v2-stat-label">{s.label}</span>
-            </li>
+        <div className="v2-stats-grid">
+          {kennzahlen.map((k) => (
+            <Stat key={k.label} wert={k.wert} prefix={k.prefix} suffix={k.suffix} label={k.label} />
           ))}
-        </ul>
+        </div>
+        <p className="v2-stats-src">{kennzahlenQuelle}</p>
       </div>
     </section>
   );

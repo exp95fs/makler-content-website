@@ -47,3 +47,17 @@ export function Bild({ src, alt, sizes = '100vw', vorrang = false, className, ..
     </picture>
   );
 }
+
+/**
+ * Referenzaufnahme als ganzflächiger Hintergrund einer Sektion, mit einer
+ * halbtransparenten Fläche in der Sektionsfarbe darüber (siehe .qb-hg in
+ * v2.css). Rein dekorativ: leerer Alt-Text, für Screenreader verborgen,
+ * lädt lazy und läuft mit leichtem Parallax.
+ */
+export function HintergrundBild({ src }) {
+  return (
+    <div className="qb-hg" aria-hidden="true">
+      <Bild src={src} alt="" sizes="100vw" data-parallax="8" />
+    </div>
+  );
+}

@@ -6,9 +6,8 @@ import { images, abPreis, preisStern, preishinweisKurz } from '../../content/sit
 /**
  * Hero des Onepagers. Gestaltung und Texte wie im bisherigen Onepager.
  *
- * Korrigiert gegenüber der früheren Fassung: keine Wirkungsversprechen
- * ("schneller vermittelt", "qualifiziertere Anfragen"), Region Bühl,
- * Baden-Baden, Achern statt Ortenau.
+ * Subline wie im bisherigen Onepager (auf Wunsch von Fabian), Region
+ * Bühl, Baden-Baden, Achern statt Ortenau.
  *
  * Eyebrow, H1, Lead, CTAs und Preiszeile tragen bewusst KEINE
  * Reveal-Animation: sie sind im vorgerenderten HTML sofort sichtbar und
@@ -37,8 +36,9 @@ export function Hero() {
         </h1>
         <p className="v2-lead v2-hero-lead">
           Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
-          Baden-Baden, Achern und Umgebung. Hochwertige Bilder, die Ihre Objekte
-          professionell präsentieren und Ihr Büro als Marke sichtbar machen.
+          Baden-Baden, Achern und Umgebung. Hochwertiger Content, der Ihre Objekte
+          schneller vermittelt, qualifiziertere Anfragen bringt und Ihr Büro
+          als Marke sichtbar macht.
         </p>
         <div className="v2-hero-ctas">
           <Magnetic>

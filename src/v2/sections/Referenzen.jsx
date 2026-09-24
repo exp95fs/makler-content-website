@@ -3,7 +3,7 @@ import { Split, revealNachgeladen } from '../fx.jsx';
 import { Arrow, Bild, InstagramGlyph } from '../ui.jsx';
 import { SEITEN } from '../seiten.js';
 import { track } from '../tracking.js';
-import { images, referenzGruppen, kontakt } from '../../content/site.js';
+import { images, referenzGruppen, referenzAuswahl, kontakt } from '../../content/site.js';
 
 /**
  * Referenzgalerie, nach Objekt gruppiert in einem versetzten Raster.
@@ -11,10 +11,11 @@ import { images, referenzGruppen, kontakt } from '../../content/site.js';
  * `variante="seite"` (/referenzen/): alle Aufnahmen mit Bildunterschrift,
  * je Gruppe der CTA "Ähnliches Objekt anfragen".
  *
- * `variante="start"` (Onepager): Gestaltung und Texte der früheren
- * Arbeitsproben-Sektion. Im Ausgangszustand nur die markierten Gruppen mit
- * je vier Aufnahmen, der Rest hinter "Weitere Aufnahmen anzeigen". Die
- * Großansicht läuft über alle Aufnahmen.
+ * `variante="start"` (Onepager): Gestaltung der früheren Arbeitsproben-
+ * Sektion, aber nicht nach Objekt gruppiert: eine gemischte Auswahl aus
+ * allen Objekten (`referenzAuswahl`) als kompaktes Mosaik. Zunächst ein
+ * großes und vier kleine Bilder, "Weitere einblenden" ergänzt jeweils
+ * eine Reihe. Die Großansicht läuft über die ganze Auswahl.
  *
  * Bildunterschriften beschreiben nur, was auf der Aufnahme zu sehen ist.
  * Objektart, Ort und Auftraggeber sind nicht belegt und werden nicht
@@ -23,19 +24,27 @@ import { images, referenzGruppen, kontakt } from '../../content/site.js';
  * Großansicht: vollständig per Tastatur bedienbar, Pfeiltasten blättern,
  * Escape schließt, der Fokus kehrt auf die auslösende Kachel zurück.
  */
+// Startseite: ein großes und vier kleine Bilder, danach je eine Reihe.
+const ANFANG = 5;
 const TAKT = 4;
 
 export function Referenzen({ variante = 'seite' }) {
   const start = variante === 'start';
   const [offen, setOffen] = useState(-1);
-  const [alleZeigen, setAlleZeigen] = useState(!start);
+  const [anzahl, setAnzahl] = useState(ANFANG);
   const ausloeser = useRef(null);
   const dialog = useRef(null);
   const liste = useRef(null);
 
+  // Seite: nach Objekt gruppiert. Start: eine Gruppe ohne Titel mit der
+  // gemischten Auswahl. Die flache Reihenfolge ist zugleich die der
+  // Großansicht.
   const { gruppen, reihenfolge } = useMemo(() => {
     const flach = [];
-    const g = referenzGruppen.map((gr) => ({
+    const quelle = start
+      ? [{ titel: 'Auswahl', bilder: referenzAuswahl }]
+      : referenzGruppen;
+    const g = quelle.map((gr) => ({
       ...gr,
       bilder: gr.bilder.map((i) => {
         const bild = images.referenzen[i];
@@ -44,17 +53,17 @@ export function Referenzen({ variante = 'seite' }) {
       }),
     }));
     return { gruppen: g, reihenfolge: flach };
-  }, []);
+  }, [start]);
 
-  const sichtbareGruppen = alleZeigen
-    ? gruppen
-    : gruppen.filter((g) => g.sichtbar).map((g) => ({ ...g, bilder: g.bilder.slice(0, TAKT) }));
-  const versteckt = reihenfolge.length - sichtbareGruppen.reduce((n, g) => n + g.bilder.length, 0);
+  const sichtbareGruppen = start
+    ? gruppen.map((g) => ({ ...g, bilder: g.bilder.slice(0, anzahl) }))
+    : gruppen;
+  const rest = reihenfolge.length - anzahl;
 
-  // Nachgeladene Gruppen bekommen ihren Reveal nachträglich.
+  // Nachgeladene Aufnahmen bekommen ihren Reveal nachträglich.
   useEffect(() => {
-    if (start && alleZeigen) revealNachgeladen(liste.current);
-  }, [start, alleZeigen]);
+    if (start && anzahl > ANFANG) revealNachgeladen(liste.current);
+  }, [start, anzahl]);
 
   const schliessen = useCallback(() => {
     setOffen(-1);
@@ -92,8 +101,6 @@ export function Referenzen({ variante = 'seite' }) {
 
   const aktuell = offen >= 0 ? reihenfolge[offen] : null;
 
-  const Titel = start ? 'h3' : 'h2';
-
   return (
     <section className="v2-sec bg-ink" id={start ? 'referenzen' : 'galerie'}
              {...(start ? { 'aria-labelledby': 'referenzen-titel' } : { 'aria-label': 'Referenzgalerie' })}>
@@ -114,13 +121,15 @@ export function Referenzen({ variante = 'seite' }) {
         <ul className="qb-refgruppen" ref={liste}>
           {sichtbareGruppen.map((g) => (
             <li className="qb-refgruppe" key={g.titel}>
-              <div className="titel" {...(start ? { 'data-reveal': '' } : {})}>
-                <Titel>{g.titel}</Titel>
-                <span>{g.label}</span>
-              </div>
-              <ul className="qb-versatz">
+              {!start && (
+                <div className="titel">
+                  <h2>{g.titel}</h2>
+                  <span>{g.label}</span>
+                </div>
+              )}
+              <ul className={start ? 'qb-versatz qb-mosaik' : 'qb-versatz'}>
                 {g.bilder.map((b, i) => (
-                  <li key={b.src} {...(start ? { 'data-reveal': '', 'data-delay': i * 0.07 } : {})}>
+                  <li key={b.src} {...(start ? { 'data-reveal': '', 'data-delay': (i % TAKT) * 0.07 } : {})}>
                     <figure>
                       <button
                         type="button"
@@ -155,11 +164,11 @@ export function Referenzen({ variante = 'seite' }) {
           ))}
         </ul>
 
-        {start && !alleZeigen && versteckt > 0 && (
+        {start && rest > 0 && (
           <div className="v2-mosaik-mehr" data-reveal>
             <button type="button" className="v2-btn ghost on-dark"
-                    onClick={() => { setAlleZeigen(true); track('referenzen_aufruf', { ansicht: 'alle' }); }}>
-              Weitere {versteckt} Aufnahmen anzeigen <Arrow size={15} />
+                    onClick={() => { setAnzahl((n) => n + TAKT); track('referenzen_aufruf', { ansicht: 'mehr' }); }}>
+              Weitere einblenden <Arrow size={15} />
             </button>
           </div>
         )}
@@ -172,7 +181,7 @@ export function Referenzen({ variante = 'seite' }) {
             <a className="v2-link-inline" href={SEITEN.referenzen.pfad}>
               Alle Referenzen ansehen <Arrow size={14} />
             </a>
-            <span className="v2-idx">{reihenfolge.length} Aufnahmen · {gruppen.length} Objekte</span>
+            <span className="v2-idx">{reihenfolge.length} Aufnahmen · {referenzGruppen.length} Objekte</span>
           </div>
         )}
       </div>
