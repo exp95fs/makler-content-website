@@ -83,6 +83,38 @@ export function useSmoothScroll() {
   }, []);
 }
 
+/**
+ * Reveal für Elemente, die erst nach dem Mount dazukommen, etwa nach
+ * "weitere Aufnahmen anzeigen".
+ *
+ * Die globalen ScrollTrigger werden einmalig beim Mount registriert. Alles,
+ * was danach in den DOM kommt, trägt zwar `data-reveal`, bekommt aber keinen
+ * Tween mehr - und `[data-reveal]` steht per CSS auf `opacity: 0`. Ohne
+ * diesen Nachzug bliebe der nachgeladene Inhalt unsichtbar.
+ */
+export function revealNachgeladen(wurzel) {
+  if (!wurzel) return;
+  const neu = wurzel.querySelectorAll('[data-reveal]:not(.is-in)');
+  if (!neu.length) return;
+  if (prefersReducedMotion()) {
+    neu.forEach((el) => el.classList.add('is-in'));
+    return;
+  }
+  neu.forEach((el) => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 34 },
+      {
+        opacity: 1, y: 0,
+        duration: 1.15,
+        ease: 'power3.out',
+        delay: parseFloat(el.dataset.delay || 0),
+        scrollTrigger: { trigger: el, start: 'top 95%', once: true },
+        onComplete: () => el.classList.add('is-in'),
+      });
+  });
+  ScrollTrigger.refresh();
+}
+
 export function scrollToId(id) {
   const el = document.getElementById(id);
   if (!el) return;

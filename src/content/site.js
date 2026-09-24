@@ -24,34 +24,64 @@ export const images = {
     { src: '/images/logos/kunde-03.png', alt: 'Manufakturhaus Kasbad' },
     { src: '/images/logos/kunde-04.png', alt: 'Kundenlogo' },
   ],
-  // Referenzaufnahmen, 3:2, 1800 px.
-  // Das Mosaik läuft in Bändern aus je einer großen (2x2 Zellen) und vier
-  // kleinen Kacheln. Ein Band füllt bei vier Spalten genau zwei Zeilen,
-  // deshalb steht `gross` auf jeder fünften Position und die Liste umfasst
-  // ein Vielfaches von fünf Aufnahmen.
+  // Referenzaufnahmen, 3:2, 1800 px. Reihenfolge wie in `referenzGruppen`.
   referenzen: [
-    { src: '/images/referenzen/ref-01.jpg', alt: 'Küche im Erdgeschoss mit Kochinsel', gross: true },
-    { src: '/images/referenzen/ref-02.jpg', alt: 'Küchenzeile mit Blick in den angrenzenden Raum' },
-    { src: '/images/referenzen/ref-03.jpg', alt: 'Wohnbereich im Erdgeschoss mit Sitzgruppe' },
-    { src: '/images/referenzen/ref-04.jpg', alt: 'Küche im Obergeschoss' },
-    { src: '/images/referenzen/ref-05.jpg', alt: 'Essbereich im Obergeschoss' },
-    { src: '/images/referenzen/ref-06.jpg', alt: 'Wohnbereich mit Blick zum Fenster', gross: true },
-    { src: '/images/referenzen/ref-07.jpg', alt: 'Essbereich mit Esstisch und Tageslicht' },
-    { src: '/images/referenzen/ref-08.jpg', alt: 'Badezimmer mit Waschtisch' },
-    { src: '/images/referenzen/ref-09.jpg', alt: 'Wohnbereich mit Sofa und Tageslicht' },
-    { src: '/images/referenzen/ref-10.jpg', alt: 'Wohnbereich aus einer zweiten Perspektive' },
-    { src: '/images/referenzen/ref-11.jpg', alt: 'Schlafzimmer mit Bett und Fensterfront', gross: true },
-    { src: '/images/referenzen/ref-12.jpg', alt: 'Gästezimmer im Haus' },
-    { src: '/images/referenzen/ref-13.jpg', alt: 'Badezimmer im Dachgeschoss' },
-    { src: '/images/referenzen/ref-14.jpg', alt: 'Wohnbereich im Dachgeschoss mit Dachschräge' },
-    { src: '/images/referenzen/ref-15.jpg', alt: 'Balkon mit Ausblick' },
-    { src: '/images/referenzen/ref-16.jpg', alt: 'Küche mit Arbeitsfläche und Oberschränken', gross: true },
-    { src: '/images/referenzen/ref-17.jpg', alt: 'Schlafzimmer mit Kleiderschrank' },
-    { src: '/images/referenzen/ref-18.jpg', alt: 'Wohnbereich mit offener Raumaufteilung' },
-    { src: '/images/referenzen/ref-19.jpg', alt: 'Badezimmer im Obergeschoss mit Dusche' },
-    { src: '/images/referenzen/ref-20.jpg', alt: 'Wohnzimmer mit Sitzecke' },
+    { src: '/images/referenzen/ref-01.jpg', alt: 'Wohnküche mit Kochinsel und dunkler Küchenfront' },
+    { src: '/images/referenzen/ref-02.jpg', alt: 'Küchenzeile mit Barhockern und Blick in den Wohnbereich' },
+    { src: '/images/referenzen/ref-03.jpg', alt: 'Offener Wohn- und Essbereich mit angrenzender Küche' },
+    { src: '/images/referenzen/ref-04.jpg', alt: 'Küche im Obergeschoss mit Dachfenstern' },
+    { src: '/images/referenzen/ref-05.jpg', alt: 'Essbereich im Obergeschoss mit Holzbalkendecke' },
+    { src: '/images/referenzen/ref-06.jpg', alt: 'Leerer Wohnraum im Dachgeschoss mit offener Küchenzeile' },
+    { src: '/images/referenzen/ref-07.jpg', alt: 'Essplatz vor einer verglasten Zimmertür' },
+    { src: '/images/referenzen/ref-08.jpg', alt: 'Badezimmer mit Doppelwaschtisch und Badewanne' },
+    { src: '/images/referenzen/ref-09.jpg', alt: 'Küchenzeile in einem leeren Dachgeschossraum' },
+    { src: '/images/referenzen/ref-10.jpg', alt: 'Leerer Dachgeschossraum mit freigelegtem Dachstuhl' },
+    { src: '/images/referenzen/ref-11.jpg', alt: 'Dachgeschossraum mit Sprossenfenster und weißem Dachstuhl' },
+    { src: '/images/referenzen/ref-12.jpg', alt: 'Schlafzimmer mit Fenster, Gardinen und Schreibtisch' },
+    { src: '/images/referenzen/ref-13.jpg', alt: 'Badezimmer mit Badewanne und Dachfenster' },
+    { src: '/images/referenzen/ref-14.jpg', alt: 'Zimmer mit Bett, Essplatz und Dachschräge' },
+    { src: '/images/referenzen/ref-15.jpg', alt: 'Überdachte Terrasse mit Sitzbank und Blick ins Grüne' },
+    { src: '/images/referenzen/ref-16.jpg', alt: 'Küche mit grünen Fronten und Holzverkleidung' },
+    { src: '/images/referenzen/ref-17.jpg', alt: 'Schlafzimmer mit Einbauschrank und Holzwand' },
+    { src: '/images/referenzen/ref-18.jpg', alt: 'Wohnbereich mit Sofa, Essplatz und Terrassenzugang' },
+    { src: '/images/referenzen/ref-19.jpg', alt: 'Badezimmer mit Dusche, WC und dunklem Fliesenboden' },
+    { src: '/images/referenzen/ref-20.jpg', alt: 'Leerer Wohnraum mit Küchenblock und Fenster' },
   ],
 };
+
+/* ------------------------------------------------------------------ *
+ * Referenzgruppen
+ *
+ * Die Aufnahmen stehen nach Objekt gruppiert in einem versetzten Raster.
+ * Welche Aufnahme zu welchem Objekt gehört, ist an den Bildern selbst
+ * ablesbar; die Zuordnung ist also belegt.
+ *
+ * Nicht belegt sind Objektart, Ort und Auftraggeber. Deshalb heißen die
+ * Gruppen neutral "Objekt 1" bis "Objekt 4", und das Label nennt nur die
+ * Räume, die tatsächlich zu sehen sind. Nichts davon ist erfunden.
+ *
+ * TODO: Angabe durch Fabian bestätigen - sobald Objektart, Ort und die
+ * Freigabe der Auftraggeber geklärt sind, können die Gruppen auf echte
+ * Bezeichnungen umgestellt werden ("Mehrfamilienhaus, Bühl" o. ä.) und
+ * das Label auf die erbrachte Leistung ("Fotografie · Drohne").
+ *
+ * Die Reihenfolge innerhalb einer Gruppe ist die Reihenfolge im Raster:
+ * breit, quadratisch, hochkant, breit - danach wiederholt sich das Muster.
+ *
+ * `sichtbar: true` markiert die Gruppen, die ohne Klick zu sehen sind.
+ * Von ihnen stehen zunächst nur die ersten vier Aufnahmen; alles Weitere
+ * liegt hinter "Weitere Aufnahmen anzeigen".
+ * ------------------------------------------------------------------ */
+export const referenzGruppen = [
+  { titel: 'Objekt 1', label: 'Küche, Wohnen, Essen', sichtbar: true,
+    bilder: [2, 0, 3, 1, 4] },
+  { titel: 'Objekt 2', label: 'Wohnen, Küche, Schlafen, Terrasse', sichtbar: true,
+    bilder: [17, 15, 16, 14] },
+  { titel: 'Objekt 3', label: 'Dachgeschosswohnung, unmöbliert',
+    bilder: [9, 7, 10, 5, 6, 8, 18, 19] },
+  { titel: 'Objekt 4', label: 'Wohnen, Schlafen, Bad',
+    bilder: [13, 12, 11] },
+];
 
 /* ------------------------------------------------------------------ *
  * Kennzahlen unter dem Hero
@@ -81,7 +111,7 @@ export const fotoklassen = [
     key: 'wohnung',
     name: 'Wohnung',
     beschreibung: 'Eine Wohnung innerhalb eines Mehrparteiengebäudes.',
-    umfang: 'Innenräume, Gemeinschaftsbereiche und die Außenansicht des Gebäudes.',
+    bilder: 'ca. 15 bis 20 Bilder',
     foto: 350,
     stunden: 2,
   },
@@ -89,9 +119,8 @@ export const fotoklassen = [
     key: 'einfamilienhaus',
     name: 'Einfamilienhaus',
     beschreibung: 'Eigenständiges Wohngebäude mit einer Wohneinheit und den üblichen Außenbereichen.',
-    umfang: 'Innenräume, Neben- und Technikräume, Außenansichten und Grundstück.',
+    bilder: 'ca. 20 bis 30 Bilder',
     foto: 450,
-    empfohlen: true,
     stunden: 3,
   },
   {
@@ -99,10 +128,22 @@ export const fotoklassen = [
     name: 'Mehrfamilienhaus',
     kurz: 'Mehrfamilienhaus',
     beschreibung: 'Typischerweise zwei bis drei Wohneinheiten mit Gemeinschafts- und Außenbereichen.',
-    umfang: 'Alle Einheiten, Gemeinschaftsflächen, Neben- und Technikräume, Außenbereiche.',
+    bilder: 'ca. 30 bis 45 Bilder',
     foto: 550,
     stunden: 4,
   },
+];
+
+/**
+ * Was in jeder Klasse gleichermaßen enthalten ist. Steht bei den Paketen,
+ * nicht im Buchungsworkflow: dort unterbricht die Aufzählung den Ablauf.
+ */
+export const enthalten = [
+  { t: 'Terminabstimmung mit dem Eigentümer', x: 'Wir melden uns direkt und vereinbaren den Termin.' },
+  { t: 'Checkliste zur Objektvorbereitung', x: 'Vorab und verständlich, damit vor Ort nichts aufhält.' },
+  { t: 'Aufnahme vor Ort', x: 'Innen, außen und die Bereiche, die ins Exposé gehören.' },
+  { t: 'Vollständige Bearbeitung', x: 'Einsatzfertig für Exposé, Portale und Ihre Website.' },
+  { t: 'Zugesagter Liefertermin', x: 'Sie wissen vor dem Termin, wann die Bilder bei Ihnen sind.' },
 ];
 
 /** Objekte außerhalb der drei Klassen. Kein Listenpreis, individuelle Prüfung. */

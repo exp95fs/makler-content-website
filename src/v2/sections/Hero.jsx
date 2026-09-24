@@ -32,13 +32,13 @@ export function Hero() {
       <div className="v2-hero-content">
         <p className="v2-eyebrow on-dark" data-reveal>Immobilienfotografie · Raum Bühl · Mittelbaden · Ortenau</p>
         <Split as="h1" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
-          Professionelle Immobilienfotografie, ohne Aufwand für Ihr Büro.
+          Bilder, die Ihre Objekte herausheben.
         </Split>
         <p className="v2-lead v2-hero-lead" data-reveal data-delay="0.35">
-          Für Maklerbüros im Raum Bühl, Baden-Baden und Ortenau. Wir übernehmen den
-          gesamten Ablauf: Terminabstimmung mit dem Eigentümer, Aufnahme vor Ort und
-          Bearbeitung bis zur fertigen Bildauswahl. Sie müssen weder dabei sein noch
-          etwas koordinieren.
+          Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
+          Baden-Baden und Ortenau. Zum Festpreis, und ohne Aufwand für Ihr Büro:
+          Terminabstimmung mit dem Eigentümer, Aufnahme vor Ort und Bearbeitung
+          übernehmen wir.
         </p>
         <div className="v2-hero-ctas" data-reveal data-delay="0.5">
           <Magnetic>

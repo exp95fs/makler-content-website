@@ -1,11 +1,12 @@
 import { Split, Magnetic, scrollToId } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
-import { fotoklassen, sonderobjekt, weitereErgaenzungen, preis } from '../../content/site.js';
+import { fotoklassen, sonderobjekt, enthalten, weitereErgaenzungen, preis } from '../../content/site.js';
 
 /**
- * Drei Fotopakete als Kacheln, keine vollständige Preisliste. Ergänzungen
- * stehen nur als Aufzählung ohne Preise: sie werden im Buchungsprozess
- * ausgewählt oder im Abstimmungstermin auf das Objekt zugeschnitten.
+ * Drei Fotopakete als gleichwertige Kacheln. Bewusst keine Hervorhebung
+ * einer Klasse: es wird nicht zwischen Optionen gewählt, die Objektgröße
+ * entscheidet. Preise stehen über subgrid auf gleicher Höhe, auch wenn
+ * Namen oder Beschreibungen unterschiedlich lang umbrechen.
  */
 export function Preise() {
   return (
@@ -17,26 +18,30 @@ export function Preise() {
             Ein Festpreis je Objektklasse. Keine Überraschungen.
           </Split>
           <p className="v2-lead" data-reveal>
-            Jede Klasse erhält dieselbe professionelle Qualität. Der Preis richtet
-            sich nach dem Produktionsumfang des Objekts, nicht nach einer Basis-
-            oder Premiumstufe. Was Ihr Objekt kostet, steht vor dem Termin fest.
+            In jeder Klasse steckt dasselbe Vermarktungspaket: derselbe Ablauf,
+            dieselbe Bearbeitung, dieselbe Qualität. Was sich unterscheidet, ist
+            allein die Größe des Objekts und damit die Anzahl der Bilder.
           </p>
         </div>
 
         <div className="qb-pakete">
           {fotoklassen.map((k, i) => (
-            <article className={`qb-paket ${k.empfohlen ? 'is-rec' : ''}`} key={k.key}
-                     data-reveal data-delay={i * 0.08}>
-              {k.empfohlen && <span className="flag">Häufigste Klasse</span>}
-              <h3>{k.name}</h3>
-              <p className="was">{k.beschreibung}</p>
-              <div className="preis">
-                {preis(k.foto)}<small>netto, Festpreis</small>
+            <article className="qb-paket" key={k.key} data-reveal data-delay={i * 0.08}>
+              <div className="kopf">
+                <h3>{k.name}</h3>
+                <p className="was">{k.beschreibung}</p>
               </div>
-              <p className="umfang">{k.umfang}</p>
+              <div className="preis">
+                <b>{preis(k.foto)}</b>
+                <small>netto · Festpreis</small>
+              </div>
+              <ul className="merkmale">
+                <li><span className="tick">→</span>{k.bilder}</li>
+                <li><span className="tick">→</span>1 bis 2 Bilder je Raum</li>
+                <li><span className="tick">→</span>Innen, außen und Nebenräume</li>
+              </ul>
               <Magnetic strength={0.18}>
-                <button type="button" className={`v2-btn ${k.empfohlen ? '' : 'ghost'} sm`}
-                        onClick={() => scrollToId('booking')}>
+                <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
                   Diese Klasse anfragen <Arrow size={15} />
                 </button>
               </Magnetic>
@@ -52,6 +57,26 @@ export function Preise() {
           <span className="label">{sonderobjekt.preisLabel}</span>
         </div>
 
+        <div className="qb-enthalten" data-reveal>
+          <div className="kopf">
+            <span className="k">In jeder Klasse enthalten</span>
+            <h3>Ein Preis, ein Termin, ein fertiges Ergebnis.</h3>
+            <p>
+              Sie müssen weder vor Ort sein noch etwas koordinieren. Ihr Aufwand
+              beschränkt sich auf die Anfrage, alles Weitere läuft über uns.
+            </p>
+          </div>
+          <ol className="liste">
+            {enthalten.map((e, i) => (
+              <li key={e.t}>
+                <span className="n">{String(i + 1).padStart(2, '0')}</span>
+                <b>{e.t}</b>
+                <span className="x">{e.x}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+
         <div className="qb-ergaenzung" data-reveal>
           <div className="text">
             <span className="k">Dazu buchbar</span>
@@ -60,8 +85,7 @@ export function Preise() {
               Nicht jedes Objekt braucht dasselbe. Deshalb gibt es hier keine
               Preisliste zum Abhaken, sondern eine Auswahl, die zum Objekt passt.
               Im Buchungsprozess wählen Sie direkt aus, alles Weitere stimmen wir
-              in einem kurzen Gespräch ab und stellen ein Vermarktungspaket
-              zusammen, das zur Immobilie passt.
+              in einem kurzen Gespräch ab.
             </p>
             <div className="ctas">
               <button type="button" className="v2-btn ghost sm" onClick={() => scrollToId('booking')}>
@@ -77,7 +101,10 @@ export function Preise() {
           </ul>
         </div>
 
-        <p className="v2-fine is-text" data-reveal>Alle Preise netto, zzgl. gesetzl. MwSt.</p>
+        <p className="v2-fine is-text" data-reveal>
+          Alle Preise netto, zzgl. gesetzl. MwSt. Die Bildanzahl ist eine
+          Orientierung nach Objektgröße, keine feste Stückzahl.
+        </p>
       </div>
     </section>
   );

@@ -12,9 +12,9 @@ export function LogoBand() {
     <section className="v2-sec tight bg-linen-2" id="kunden">
       <div className="v2-wrap">
         <div className="v2-sec-head center">
-          <p className="v2-eyebrow" data-reveal>Unsere Auftraggeber</p>
+          <p className="v2-eyebrow" data-reveal>Setzen auf Quadratblick</p>
           <Split as="h2" className="v2-h-display v2-h-lg">
-            Maklerbüros und Immobilienabteilungen, die mit uns arbeiten.
+            Maklerbüros und Immobilienmakler, die mit uns arbeiten.
           </Split>
         </div>
 

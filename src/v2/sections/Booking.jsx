@@ -11,7 +11,7 @@ import { fotoklassen, sonderobjekt, buchbareErgaenzung, kontakt, preis } from '.
  * Ergänzung. Alles Weitere wird im Abstimmungstermin geklärt, nicht hier
  * durchkonfiguriert.
  */
-const SCHRITTE = ['Objekt', 'Umfang', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen', 'Fertig'];
+const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen', 'Fertig'];
 const MIN_VORLAUF_TAGE = 3;
 const MAX_FENSTER = 8;
 const WOCHENTAG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
@@ -96,9 +96,9 @@ export function Booking() {
 
   function schrittGueltig(s) {
     if (s === 1) return !!klasse;
-    if (s === 4) return terminOk;
-    if (s === 5) return !!kontaktOk;
-    if (s === 6) return agb;
+    if (s === 3) return terminOk;
+    if (s === 4) return !!kontaktOk;
+    if (s === 5) return agb;
     return true;
   }
   const weiterMoeglich = schrittGueltig(step);
@@ -111,19 +111,19 @@ export function Booking() {
   const keineTage = !ueberlauf && dauer > 0 && kandidaten.length === 0;
 
   useEffect(() => {
-    if (step === 4 && (ueberlauf || keineTage) && !slot) setFallback(true);
+    if (step === 3 && (ueberlauf || keineTage) && !slot) setFallback(true);
   }, [step, ueberlauf, keineTage, slot]);
 
   function geheZu(n) { setStep(n); setMaxStep((m) => Math.max(m, n)); }
   function weiter() {
-    if (step === 6) { senden(); geheZu(7); return; }
-    if (step < 7 && weiterMoeglich) geheZu(step + 1);
+    if (step === 5) { senden(); geheZu(6); return; }
+    if (step < 6 && weiterMoeglich) geheZu(step + 1);
   }
   function zurueck() { if (step > 1) geheZu(step - 1); }
 
   const weiterLabel = {
-    1: 'Umfang ansehen', 2: 'Ergänzung wählen', 3: 'Termin auswählen',
-    4: 'Kontaktdaten eingeben', 5: 'Angaben prüfen', 6: 'Anfrage senden',
+    1: 'Ergänzung wählen', 2: 'Termin auswählen',
+    3: 'Kontaktdaten eingeben', 4: 'Angaben prüfen', 5: 'Anfrage senden',
   };
 
   function zusammenfassung() {
@@ -205,22 +205,6 @@ export function Booking() {
               )}
 
               {step === 2 && (
-                <Panel titel="Das ist enthalten"
-                       text="Ein Festpreis, ein Termin, ein fertiges Ergebnis. Sie müssen weder vor Ort sein noch etwas koordinieren.">
-                  <ul className="qb-cfg-enthalten">
-                    <li><b>Terminabstimmung mit dem Eigentümer</b>Wir melden uns direkt und stimmen den Termin ab.</li>
-                    <li><b>Checkliste zur Objektvorbereitung</b>Vorab und verständlich, damit vor Ort nichts aufhält.</li>
-                    <li><b>Aufnahme vor Ort</b>Innen, außen und die Bereiche, die ins Exposé gehören.</li>
-                    <li><b>Vollständige Bearbeitung</b>Einsatzfertig für Exposé, Portale und Ihre Website.</li>
-                    <li><b>Zugesagter Liefertermin</b>Sie wissen vor dem Termin, wann die Bilder bei Ihnen sind.</li>
-                  </ul>
-                  <p className="qb-cfg-book-note">
-                    Ihr Aufwand beschränkt sich auf diese Anfrage. Alles Weitere läuft über uns.
-                  </p>
-                </Panel>
-              )}
-
-              {step === 3 && (
                 <Panel titel="Möchten Sie etwas ergänzen?"
                        text="Optional. Weitere Ergänzungen wie Drohnenaufnahmen oder ein Objektfilm stimmen wir im Gespräch auf das Objekt ab.">
                   <Haken an={reel} name={buchbareErgaenzung.name}
@@ -234,7 +218,7 @@ export function Booking() {
                 </Panel>
               )}
 
-              {step === 4 && (
+              {step === 3 && (
                 <Panel titel="Wann passt es Ihnen?"
                        text="Wir planen ausreichend Zeit für eine reibungslose Produktion ein.">
                   <p className="qb-cfg-book-note"><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std.</p>
@@ -281,7 +265,7 @@ export function Booking() {
                 </Panel>
               )}
 
-              {step === 5 && (
+              {step === 4 && (
                 <Panel titel="Ihre Kontaktdaten" text="Damit wir Ihre Anfrage zuordnen und bestätigen können.">
                   <div className="qb-cfg-book-grid">
                     <Feld label="Vorname *" wert={kontaktDaten.vorname} set={(v) => setKontaktDaten((c) => ({ ...c, vorname: v }))} />
@@ -299,7 +283,7 @@ export function Booking() {
                 </Panel>
               )}
 
-              {step === 6 && (
+              {step === 5 && (
                 <Panel titel="Angaben prüfen und senden"
                        text="Die Anfrage ist unverbindlich, verbindlich wird sie mit unserer Bestätigung.">
                   <div className="qb-cfg-recap">
@@ -321,7 +305,7 @@ export function Booking() {
                 </Panel>
               )}
 
-              {step === 7 && (
+              {step === 6 && (
                 <div className="qb-cfg-sent">
                   <span className="ok" aria-hidden="true">✓</span>
                   <h3>Anfrage gesendet</h3>
@@ -333,9 +317,9 @@ export function Booking() {
                 </div>
               )}
 
-              {step !== 7 && (
+              {step !== 6 && (
                 <div className="qb-cfg-book-nav">
-                  <button type="button" className="v2-btn ghost sm" onClick={zurueck}
+                  <button type="button" className="v2-btn ghost on-dark sm" onClick={zurueck}
                           style={{ visibility: step === 1 ? 'hidden' : 'visible' }}>
                     Zurück
                   </button>
