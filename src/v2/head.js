@@ -144,7 +144,7 @@ export function headHtml(key) {
     `<title>${esc(s.title)}</title>`,
     `<meta name="description" content="${esc(s.description)}">`,
     indexierbar
-      ? `<meta name="robots" content="index, follow, max-image-preview:large">`
+      ? `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">`
       : `<meta name="robots" content="noindex, follow">`,
     indexierbar ? `<link rel="canonical" href="${url}">` : '',
     `<meta property="og:type" content="website">`,
