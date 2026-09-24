@@ -2252,7 +2252,7 @@ button.v2-link-inline {
    Komposition über alle Breiten gleich bleibt. Die Seitenverhältnisse
    liegen bewusst Richtung Querformat - bei Hochformat schneidet der
    Zuschnitt zu viel vom Raum weg. */
-.qb-strecke { position: relative; margin: 0; padding: 22px 0 20%; }
+.qb-strecke { position: relative; margin: 0; padding: 22px 0 24%; }
 .qb-strecke > span {
   display: block; border-radius: 7px; overflow: clip; background: var(--sage-deep);
 }
@@ -2261,16 +2261,16 @@ button.v2-link-inline {
   transition: transform 1s var(--ease-out);
 }
 .qb-strecke .a {
-  width: 82%; aspect-ratio: 3 / 2;
+  width: 84%; aspect-ratio: 3 / 2;
   box-shadow: 0 40px 80px -46px rgba(42, 42, 34, 0.55);
 }
 .qb-strecke .b {
-  position: absolute; right: 0; top: 17%; width: 44%; aspect-ratio: 4 / 3; z-index: 2;
+  position: absolute; right: 0; top: 16%; width: 48%; aspect-ratio: 3 / 2; z-index: 2;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
 .qb-strecke .c {
-  position: absolute; left: 10%; bottom: 0; width: 52%; aspect-ratio: 16 / 10; z-index: 3;
+  position: absolute; left: 8%; bottom: 0; width: 56%; aspect-ratio: 3 / 2; z-index: 3;
   border: 6px solid var(--linen);
   box-shadow: 0 26px 54px -30px rgba(42, 42, 34, 0.5);
 }
@@ -2294,10 +2294,10 @@ button.v2-link-inline {
   .qb-einstieg { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .qb-strecke { padding-bottom: 23%; }
-  .qb-strecke .a { width: 82%; }
-  .qb-strecke .b { width: 45%; border-width: 4px; }
-  .qb-strecke .c { width: 54%; left: 7%; border-width: 4px; }
+  .qb-strecke { padding-bottom: 27%; }
+  .qb-strecke .a { width: 84%; }
+  .qb-strecke .b { width: 48%; border-width: 4px; }
+  .qb-strecke .c { width: 58%; left: 5%; border-width: 4px; }
   .qb-strecke figcaption { font-size: 9.5px; letter-spacing: 0.1em; }
 }
 
@@ -2792,17 +2792,6 @@ main section[tabindex="-1"]:focus { outline: none; }
 /* Porträtfläche: Beschriftung unten links wie die übrigen Bildbeschriftungen */
 .qb-portrait .cap { position: absolute; left: 0; bottom: 0; }
 
-/* Referenzbild als Sektionshintergrund, überlagert mit der Sektionsfarbe */
-.mit-hg { position: relative; isolation: isolate; overflow: clip; }
-.qb-hg { position: absolute; inset: 0; z-index: -1; overflow: clip; }
-.qb-hg img { position: absolute; left: 0; top: -6%; width: 100%; height: 112%; object-fit: cover; }
-.qb-hg::after { content: ''; position: absolute; inset: 0; background: var(--hg-deckung); }
-.bg-linen-2.mit-hg { --hg-deckung: rgba(251, 248, 241, 0.88); }
-.bg-sage.mit-hg { --hg-deckung: rgba(67, 74, 54, 0.88); }
-/* Kleine Eyebrows über dem Bild brauchen mehr Kontrast als auf Vollfläche */
-.bg-linen-2.mit-hg .v2-eyebrow { color: #8E4A2F; }
-.bg-sage.mit-hg .v2-eyebrow.on-dark { color: #F4CFB8; }
-
 /* Arbeitsproben auf der Startseite: kompaktes Mosaik, ein großes Bild
    (2 × 2) und kleine Kacheln im Querformat. */
 .qb-versatz.qb-mosaik { margin-top: clamp(30px, 3.6vw, 48px); grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); }
@@ -2818,3 +2807,14 @@ main section[tabindex="-1"]:focus { outline: none; }
   .qb-versatz.qb-mosaik > li:first-child { grid-column: span 2 !important; grid-row: auto; }
   .qb-versatz.qb-mosaik > li:first-child .box { aspect-ratio: 3 / 2 !important; }
 }
+
+/* Preise: "netto" klein hinter dem Betrag */
+.qb-netto { font-size: 0.72em; font-weight: 500; }
+.qb-paket .preis .qb-netto {
+  font-family: var(--font-body); font-size: 0.42em; font-weight: 600;
+  letter-spacing: 0; color: var(--text-soft);
+}
+.v2-hero-note .qb-netto, .qb-einstieg .ab .qb-netto { font-size: inherit; font-weight: inherit; }
+
+/* Kennzahlen: Zeilenumbrüche aus den Daten übernehmen (siehe site.js) */
+.v2-stat-label { white-space: pre-line; }

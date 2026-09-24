@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Split } from '../fx.jsx';
-import { Arrow } from '../ui.jsx';
+import { Arrow, PreisNetto } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { fotoklassen, ergaenzungen, kontakt, preis, preisStern, preishinweisStern } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, kontakt, preis, preisNetto, preishinweis } from '../../content/site.js';
 
 /**
  * Anfrage-Wizard für genau ein Objekt.
@@ -23,7 +23,8 @@ import { fotoklassen, ergaenzungen, kontakt, preis, preisStern, preishinweisSter
  *
  * Texte und Gestaltung wie im bisherigen Onepager. Korrigiert: keine
  * Antwortzeit ("1 bis 2 Werktage"), keine Eigentümerabstimmung als
- * Standard, kein Objektreel, keine AGB-Bestätigung ohne AGB-Seite.
+ * Standard, keine AGB-Bestätigung ohne AGB-Seite. Zusatzleistungen:
+ * Drohnenaufnahmen und Objekt-Kurzvideo (Daten in site.js).
  *
  * `kopf`: Sektionskopf des Onepagers ("Objekt anfragen", id "booking").
  * Ohne Kopf (auf /projekt-anfragen/) trägt die Sektion die id "wizard".
@@ -304,7 +305,7 @@ export function Booking({ kopf = false }) {
                                checked={klasse === k.key}
                                onChange={() => { starten(); setKlasse(k.key); terminReset(); }} />
                         <span className="t">{k.name}</span>
-                        <span className="pr">{preisStern(k.foto)}</span>
+                        <span className="pr"><PreisNetto n={k.foto} /></span>
                         <span className="p">{k.beschreibung}</span>
                       </label>
                     ))}
@@ -319,12 +320,11 @@ export function Booking({ kopf = false }) {
                 <fieldset className="qb-schritt">
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Möchten Sie etwas ergänzen?</legend>
                   <p className="qb-cfg-book-desc">
-                    Optional und im selben Termin produziert. Video und weitere Formate stimmen wir
-                    bei Bedarf individuell auf das Objekt ab.
+                    Optional und im selben Termin produziert.
                   </p>
                   {ergaenzungen.map((e) => (
                     <Haken key={e.key} id={`wz-${e.key}`} an={!!addons[e.key]} name={e.name}
-                           preisText={`+ ${preisStern(e.preis)}`} note={e.note}
+                           preisText={<>+ <PreisNetto n={e.preis} /></>} note={e.note}
                            umschalten={() => { setAddons((a) => ({ ...a, [e.key]: !a[e.key] })); terminReset(); }} />
                   ))}
                   <p className="qb-cfg-book-note">
@@ -435,7 +435,7 @@ export function Booking({ kopf = false }) {
                     <Zeile label="Kontakt" wert={`${daten.vorname} ${daten.nachname} · ${daten.email}`} />
                     <Zeile label="Objektadresse" wert={daten.adresse} />
                     {daten.eigentuemer && <Zeile label="Eigentümerkontakt" wert={daten.eigentuemer} />}
-                    <Zeile label="Festpreis" wert={preisStern(summe)} />
+                    <Zeile label="Festpreis" wert={preisNetto(summe)} />
                   </dl>
                   <div className={`qb-cfg-einwilligung ${versucht[5] && !unternehmer ? 'is-fehler' : ''}`}>
                     <input id="wz-unternehmer" type="checkbox" checked={unternehmer}
@@ -505,7 +505,7 @@ export function Booking({ kopf = false }) {
             )}
             <div className="gesamt">
               <span>Festpreis</span>
-              <b>{gewaehlt ? preisStern(summe) : '–'}</b>
+              <b>{gewaehlt ? <PreisNetto n={summe} /> : '–'}</b>
             </div>
             {dauer > 0 && (
               <div className="hinweis">
@@ -515,7 +515,7 @@ export function Booking({ kopf = false }) {
               </div>
             )}
             <p className="fuss">
-              {preishinweisStern} Der Preis steht mit unserer Bestätigung fest.
+              {preishinweis} Der Preis steht mit unserer Bestätigung fest.
               Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
             </p>
           </aside>

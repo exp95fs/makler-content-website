@@ -1,4 +1,5 @@
 import bilder from '../content/bilder.json';
+import { preis } from '../content/site.js';
 
 /* Kleine geteilte UI-Bausteine, die von mehreren Seiten genutzt werden. */
 
@@ -48,16 +49,11 @@ export function Bild({ src, alt, sizes = '100vw', vorrang = false, className, ..
   );
 }
 
+
 /**
- * Referenzaufnahme als ganzflächiger Hintergrund einer Sektion, mit einer
- * halbtransparenten Fläche in der Sektionsfarbe darüber (siehe .qb-hg in
- * v2.css). Rein dekorativ: leerer Alt-Text, für Screenreader verborgen,
- * lädt lazy und läuft mit leichtem Parallax.
+ * Betrag mit kleinem Nettozusatz, wie auf der bisherigen Live-Seite:
+ * "350 €" groß, "netto" klein dahinter.
  */
-export function HintergrundBild({ src }) {
-  return (
-    <div className="qb-hg" aria-hidden="true">
-      <Bild src={src} alt="" sizes="100vw" data-parallax="8" />
-    </div>
-  );
+export function PreisNetto({ n }) {
+  return <>{preis(n)}<span className="qb-netto">{"\u00A0"}netto</span></>;
 }

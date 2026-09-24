@@ -18,9 +18,6 @@ MANIFEST = 'src/content/bilder.json'
 # Original -> beschreibender Dateiname, Zielbreiten
 BILDER = {
     '/images/hero/hero.jpg': ('immobilienfoto-wohnhaus-holzfassade', [640, 960, 1280, 1920]),
-    '/images/inserate/inserat-2-aussen.jpg': ('immobilienfoto-mehrfamilienhaus-aussenansicht', [480, 960, 1400]),
-    '/images/inserate/inserat-2-wohnen-1.jpg': ('immobilienfoto-essplatz-verglaste-tuer', [480, 960, 1400]),
-    '/images/inserate/inserat-2-wohnen-2.jpg': ('immobilienfoto-dachgeschoss-fensterreihe', [480, 960, 1400]),
 }
 REF = {
     1: 'wohnkueche-kochinsel', 2: 'kuechenzeile-barhocker', 3: 'wohn-essbereich-offene-kueche',
@@ -30,6 +27,7 @@ REF = {
     13: 'badezimmer-badewanne-dachfenster', 14: 'zimmer-dachschraege-essplatz', 15: 'terrasse-sitzbank',
     16: 'kueche-gruene-fronten', 17: 'schlafzimmer-einbauschrank', 18: 'wohnbereich-terrassenzugang',
     19: 'badezimmer-dusche', 20: 'wohnraum-kuechenblock',
+    21: 'mehrfamilienhaus-aussenansicht', 22: 'holzhaus-wohn-essbereich', 23: 'essplatz-eckbank',
 }
 for n, slug in REF.items():
     BILDER[f'/images/referenzen/ref-{n:02d}.jpg'] = (f'immobilienfoto-{slug}', [480, 960, 1440])

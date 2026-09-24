@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
-import { Arrow, Bild } from '../ui.jsx';
-import { images, abPreis, preisStern, preishinweisKurz } from '../../content/site.js';
+import { Arrow, Bild, PreisNetto } from '../ui.jsx';
+import { images, abPreis, preishinweisKurz } from '../../content/site.js';
 
 /**
  * Hero des Onepagers. Gestaltung und Texte wie im bisherigen Onepager.
@@ -53,7 +53,7 @@ export function Hero() {
           </Magnetic>
         </div>
         <p className="v2-hero-note">
-          Festpreis ab {preisStern(abPreis())} je Objekt
+          Festpreis ab <PreisNetto n={abPreis()} /> je Objekt
           {' · '}verbindlich vor dem Termin{' · '}Anfrage unverbindlich
           <span className="fein">{preishinweisKurz}</span>
         </p>

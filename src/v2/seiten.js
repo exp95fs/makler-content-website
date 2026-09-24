@@ -28,7 +28,7 @@ export const SEITEN = {
     pfad: '/preise/',
     name: 'Preise',
     title: 'Preise für Immobilienfotografie | Quadratblick',
-    description: 'Transparente Preise für professionelle Immobilienfotografie: drei Objektklassen ab 350 € netto und Drohnenaufnahmen als optionales Add-on.',
+    description: 'Transparente Preise für professionelle Immobilienfotografie: drei Objektklassen ab 350 € netto, Drohnenaufnahmen und Objekt-Kurzvideo als optionale Add-ons.',
   },
   ueber: {
     pfad: '/ueber-quadratblick/',

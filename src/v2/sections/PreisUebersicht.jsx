@@ -9,7 +9,7 @@ import {
 } from '../../content/site.js';
 
 /**
- * Preise der drei Objektklassen und Drohnenaufnahmen als Zusatzleistung.
+ * Preise der drei Objektklassen und die Zusatzleistungen (Drohne, Kurzvideo).
  * Paketnamen, Beschreibungen und Bildumfänge unverändert aus site.js.
  *
  * variante="teaser": Startseite, kompakt mit Link auf /preise/.
@@ -21,7 +21,6 @@ export function PreisUebersicht({ variante = 'teaser', bg = 'bg-linen' }) {
   const seite = variante === 'seite';
   const ref = useRef(null);
   useSichtbarTracking(ref, 'preisbereich');
-  const drohne = ergaenzungen.find((e) => e.key === 'drohne');
 
   return (
     <section className={`v2-sec ${bg}`} id="preise" ref={ref} aria-labelledby="preise-titel">
@@ -50,13 +49,15 @@ export function PreisUebersicht({ variante = 'teaser', bg = 'bg-linen' }) {
           ))}
         </div>
 
-        <div className="qb-zusatz" data-reveal>
-          <div>
-            <h3>{drohne.name}</h3>
-            <p>{drohne.note}</p>
+        {ergaenzungen.map((e) => (
+          <div className="qb-zusatz" data-reveal key={e.key}>
+            <div>
+              <h3>{e.name}</h3>
+              <p>{e.note}</p>
+            </div>
+            <p className="betrag"><b>{preisNetto(e.preis)}</b> <span>als Add-on</span></p>
           </div>
-          <p className="betrag"><b>{preisNetto(drohne.preis)}</b> <span>als Add-on</span></p>
-        </div>
+        ))}
 
         {seite && (
           <div className="qb-preis-details" data-reveal>

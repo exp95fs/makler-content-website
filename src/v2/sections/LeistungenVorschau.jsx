@@ -1,7 +1,7 @@
 import { Split } from '../fx.jsx';
-import { Arrow, Bild } from '../ui.jsx';
+import { Arrow, Bild, PreisNetto } from '../ui.jsx';
 import { SEITEN } from '../seiten.js';
-import { images, abPreis, preisStern } from '../../content/site.js';
+import { images, abPreis } from '../../content/site.js';
 
 /**
  * Erste Sektion nach dem Hero, wie im bisherigen Onepager: das
@@ -29,10 +29,10 @@ const vorteile = [
   },
 ];
 
-const STRECKE = '(max-width: 900px) 80vw, 42vw';
+const STRECKE = '(max-width: 900px) 86vw, 46vw';
 
 export function LeistungenVorschau() {
-  const [haupt, zwei, drei] = images.inserat.bilder;
+  const [haupt, zwei, drei] = images.strecke.bilder.map((i) => images.referenzen[i]);
 
   return (
     <section className="v2-sec bg-linen" id="leistungen" aria-labelledby="leistungen-titel">
@@ -60,7 +60,7 @@ export function LeistungenVorschau() {
               <a className="v2-btn" href="#preise">
                 Pakete und Preise <Arrow size={16} />
               </a>
-              <span className="ab">Festpreis ab {preisStern(abPreis())}</span>
+              <span className="ab">Festpreis ab <PreisNetto n={abPreis()} /></span>
             </div>
             <p className="qb-mehr-link" data-reveal>
               <a className="v2-link-inline on-light" href={SEITEN.immobilienfotografie.pfad}>
@@ -72,9 +72,9 @@ export function LeistungenVorschau() {
           <div className="bild">
             <figure className="qb-strecke" data-reveal data-delay="0.12">
               <span className="a"><Bild src={haupt.src} alt={haupt.alt} sizes={STRECKE} /></span>
-              <span className="b"><Bild src={zwei.src} alt={zwei.alt} sizes="(max-width: 900px) 44vw, 24vw" /></span>
-              <span className="c"><Bild src={drei.src} alt={drei.alt} sizes="(max-width: 900px) 50vw, 26vw" /></span>
-              <figcaption>{images.inserat.label}</figcaption>
+              <span className="b"><Bild src={zwei.src} alt={zwei.alt} sizes="(max-width: 900px) 50vw, 27vw" /></span>
+              <span className="c"><Bild src={drei.src} alt={drei.alt} sizes="(max-width: 900px) 58vw, 31vw" /></span>
+              <figcaption>{images.strecke.label}</figcaption>
             </figure>
             <a className="mehr" href="#referenzen" data-event="referenzen_aufruf">
               Mehr Arbeitsproben <Arrow size={15} />

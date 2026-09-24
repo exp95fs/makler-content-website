@@ -1,6 +1,4 @@
 import { Split } from '../fx.jsx';
-import { HintergrundBild } from '../ui.jsx';
-import { images } from '../../content/site.js';
 
 /**
  * Sechs Gründe, Gestaltung wie im bisherigen Onepager.
@@ -13,7 +11,7 @@ import { images } from '../../content/site.js';
 const punkte = [
   {
     title: 'Spezialisiert auf Immobilien',
-    text: 'Wir verbinden Immobilienfotografie und Drohnenaufnahmen mit einem klaren Verständnis für professionelle Immobilienvermarktung. So entstehen Bilder, die Objekt und Maklerbüro überzeugend präsentieren.',
+    text: 'Wir verbinden Fotografie, Drohne und Video mit einem klaren Verständnis für professionelle Immobilienvermarktung. So entstehen Medien, die Objekt und Maklerbüro überzeugend präsentieren.',
   },
   {
     title: 'Fester Preis, keine Überraschung',
@@ -32,15 +30,14 @@ const punkte = [
     text: 'Beim Termin vor Ort begegnen wir dem Eigentümer als Teil Ihrer Vermarktung. Wir verstehen uns nicht als unabhängige Dienstleister, sondern als Vertretung Ihres Büros in einem sensiblen Moment.',
   },
   {
-    title: 'Ein Termin, mehrere Perspektiven',
-    text: 'Fotos und Drohnenaufnahmen können an einem gemeinsamen Termin entstehen. Das spart Abstimmung und einen zweiten Vor-Ort-Termin. Video stimmen wir bei Bedarf individuell ab.',
+    title: 'Ein Termin, mehrere Formate',
+    text: 'Fotos, Drohnenaufnahmen und ein Objekt-Kurzvideo können an einem gemeinsamen Termin entstehen. Das spart Abstimmung und einen zweiten Vor-Ort-Termin.',
   },
 ];
 
 export function WarumQuadratblick() {
   return (
-    <section className="v2-sec bg-linen-2 mit-hg" id="warum" aria-labelledby="warum-titel">
-      <HintergrundBild src={images.referenzen[2].src} />
+    <section className="v2-sec bg-linen-2" id="warum" aria-labelledby="warum-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Was uns auszeichnet</p>

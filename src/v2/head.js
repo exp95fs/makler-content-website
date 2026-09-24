@@ -4,9 +4,9 @@
  *
  * Das JSON-LD ist ein @graph mit stabilen @id-Werten. Es enthält nur
  * Angaben, die auch sichtbar auf der Seite stehen: Unternehmen, Person,
- * die Leistung Immobilienfotografie mit den drei Objektklassen und
- * Drohnenaufnahmen als Zusatzleistung. Keine Video-, Social- oder
- * Staging-Angebote.
+ * die Leistung Immobilienfotografie mit den drei Objektklassen und den
+ * Zusatzleistungen (Drohnenaufnahmen, Objekt-Kurzvideo). Keine Social-
+ * oder Staging-Angebote.
  */
 import { SEITEN } from './seiten.js';
 import { SITE_URL, fotoklassen, ergaenzungen, kontakt } from '../content/site.js';
@@ -18,6 +18,7 @@ const ID = {
   website: `${SITE_URL}/#website`,
   foto: `${SITE_URL}/immobilienfotografie/#leistung`,
   drohne: `${SITE_URL}/preise/#drohnenaufnahmen`,
+  kurzvideo: `${SITE_URL}/preise/#objekt-kurzvideo`,
 };
 
 const esc = (s) => String(s)
@@ -34,7 +35,6 @@ function netto(betrag) {
 
 function graph(key) {
   const seite = SEITEN[key];
-  const drohne = ergaenzungen.find((e) => e.key === 'drohne');
   const knoten = [
     {
       '@type': 'ProfessionalService',
@@ -63,7 +63,7 @@ function graph(key) {
       ],
       founder: { '@id': ID.person },
       sameAs: [kontakt.instagram],
-      makesOffer: [{ '@id': `${ID.foto}-angebote` }, { '@id': `${ID.drohne}-angebot` }],
+      makesOffer: [{ '@id': `${ID.foto}-angebote` }, ...ergaenzungen.map((e) => ({ '@id': `${ID[e.key]}-angebot` }))],
     },
     {
       '@type': 'Person',
@@ -104,23 +104,23 @@ function graph(key) {
         })),
       },
     },
-    {
+    ...ergaenzungen.map((e) => ({
       '@type': 'Service',
-      '@id': ID.drohne,
-      name: drohne.name,
-      serviceType: 'Drohnenaufnahmen',
+      '@id': ID[e.key],
+      name: e.name,
+      serviceType: e.name,
       description: 'Optionale Zusatzleistung zur Immobilienfotografie.',
       provider: { '@id': ID.business },
       offers: {
         '@type': 'Offer',
-        '@id': `${ID.drohne}-angebot`,
-        name: `${drohne.name} als Zusatzleistung`,
-        price: drohne.preis,
+        '@id': `${ID[e.key]}-angebot`,
+        name: `${e.name} als Zusatzleistung`,
+        price: e.preis,
         priceCurrency: 'EUR',
-        priceSpecification: netto(drohne.preis),
+        priceSpecification: netto(e.preis),
         url: `${SITE_URL}/preise/`,
       },
-    },
+    })),
   ];
 
   if (seite.pfad !== '/') {

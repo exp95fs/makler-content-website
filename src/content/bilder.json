@@ -11,39 +11,6 @@
   "width": 2400,
   "height": 1350
  },
- "/images/inserate/inserat-2-aussen.jpg": {
-  "basis": "/images/opt/immobilienfoto-mehrfamilienhaus-aussenansicht",
-  "breiten": [
-   480,
-   960,
-   1400
-  ],
-  "fallback": 960,
-  "width": 1400,
-  "height": 933
- },
- "/images/inserate/inserat-2-wohnen-1.jpg": {
-  "basis": "/images/opt/immobilienfoto-essplatz-verglaste-tuer",
-  "breiten": [
-   480,
-   960,
-   1400
-  ],
-  "fallback": 960,
-  "width": 1400,
-  "height": 933
- },
- "/images/inserate/inserat-2-wohnen-2.jpg": {
-  "basis": "/images/opt/immobilienfoto-dachgeschoss-fensterreihe",
-  "breiten": [
-   480,
-   960,
-   1400
-  ],
-  "fallback": 960,
-  "width": 1400,
-  "height": 933
- },
  "/images/referenzen/ref-01.jpg": {
   "basis": "/images/opt/immobilienfoto-wohnkueche-kochinsel",
   "breiten": [
@@ -263,5 +230,38 @@
   "fallback": 960,
   "width": 1800,
   "height": 1199
+ },
+ "/images/referenzen/ref-21.jpg": {
+  "basis": "/images/opt/immobilienfoto-mehrfamilienhaus-aussenansicht",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-22.jpg": {
+  "basis": "/images/opt/immobilienfoto-holzhaus-wohn-essbereich",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1200
+ },
+ "/images/referenzen/ref-23.jpg": {
+  "basis": "/images/opt/immobilienfoto-essplatz-eckbank",
+  "breiten": [
+   480,
+   960,
+   1440
+  ],
+  "fallback": 960,
+  "width": 1800,
+  "height": 1198
  }
 }

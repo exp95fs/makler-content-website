@@ -1,6 +1,5 @@
 import { Split, Magnetic } from '../fx.jsx';
-import { Arrow, HintergrundBild } from '../ui.jsx';
-import { images } from '../../content/site.js';
+import { Arrow } from '../ui.jsx';
 
 /**
  * Kurzer, nachgeordneter Teaser für Bestandskunden, wie im bisherigen
@@ -17,8 +16,7 @@ const punkte = [
 
 export function Marke() {
   return (
-    <section className="v2-sec tight bg-sage mit-hg" id="marke" aria-labelledby="marke-titel">
-      <HintergrundBild src={images.referenzen[14].src} />
+    <section className="v2-sec tight bg-sage" id="marke" aria-labelledby="marke-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow on-dark" data-reveal>Marke &amp; Social</p>

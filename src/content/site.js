@@ -37,20 +37,12 @@ export const images = {
     { src: '/images/logos/kunde-03.png', alt: 'Kasper & Neininger Manufaktur-Haus' },
     { src: '/images/logos/kunde-04.png', alt: 'Arkade-Immobilien Baden-Baden' },
   ],
-  // Bildstrecke für den Teaser in der Leistungssektion: ein Hauptbild und
-  // zwei kleinere, versetzt darüber gelegt. Alle drei liegen Richtung
-  // Querformat, damit beim Zuschnitt möglichst wenig verloren geht.
-  //
-  // TODO: Angabe durch Fabian bestätigen - die drei Aufnahmen sind eine
-  // Auswahl. Für ein echtes Beispielinserat drei Bilder aus derselben
-  // Produktion einsetzen.
-  inserat: {
+  // Bildstrecke im Leistungsversprechen: ein Hauptbild und zwei kleinere,
+  // versetzt darüber gelegt. Indizes in `referenzen`, von Fabian gewählt
+  // (Bild 1 groß, Bild 2 rechts, Bild 3 unten), alle aus Objekt 2.
+  strecke: {
     label: 'Beispiel-Bildstrecke',
-    bilder: [
-      { src: '/images/inserate/inserat-2-aussen.jpg', alt: 'Außenansicht eines Mehrfamilienhauses mit Stellplätzen' },
-      { src: '/images/inserate/inserat-2-wohnen-1.jpg', alt: 'Wohnbereich mit Essplatz und verglaster Zimmertür' },
-      { src: '/images/inserate/inserat-2-wohnen-2.jpg', alt: 'Heller Wohnraum im Dachgeschoss mit Fensterreihe' },
-    ],
+    bilder: [22, 16, 15],
   },
   // Referenzaufnahmen, 3:2, 1800 px. Reihenfolge wie in `referenzGruppen`.
   referenzen: [
@@ -74,6 +66,9 @@ export const images = {
     { src: '/images/referenzen/ref-18.jpg', alt: 'Wohnbereich mit Sofa, Essplatz und Terrassenzugang' },
     { src: '/images/referenzen/ref-19.jpg', alt: 'Badezimmer mit Dusche, WC und dunklem Fliesenboden' },
     { src: '/images/referenzen/ref-20.jpg', alt: 'Leerer Wohnraum mit Küchenblock und Fenster' },
+    { src: '/images/referenzen/ref-21.jpg', alt: 'Mehrfamilienhaus mit Carport und begrüntem Außenbereich' },
+    { src: '/images/referenzen/ref-22.jpg', alt: 'Wohn- und Essbereich in einem Holzhaus mit Galerie und Fensterfront' },
+    { src: '/images/referenzen/ref-23.jpg', alt: 'Essplatz mit Eckbank, Wurzelholzkonsole und Balkontür' },
   ],
 };
 
@@ -103,12 +98,17 @@ export const images = {
 export const referenzGruppen = [
   { titel: 'Objekt 1', label: 'Küche, Wohnen, Essen', sichtbar: true,
     bilder: [2, 0, 3, 1, 4] },
-  { titel: 'Objekt 2', label: 'Wohnen, Küche, Schlafen, Terrasse', sichtbar: true,
-    bilder: [17, 15, 16, 14] },
-  { titel: 'Objekt 3', label: 'Dachgeschosswohnung, unmöbliert',
-    bilder: [9, 7, 10, 5, 6, 8, 18, 19] },
+  { titel: 'Objekt 2', label: 'Wohnen, Essen, Küche, Schlafen, Terrasse', sichtbar: true,
+    bilder: [17, 15, 16, 14, 22] },
+  // TODO: Angabe durch Fabian bestätigen - die Außenansicht (20) stammt aus
+  // derselben Bildstrecke wie die Dachgeschossaufnahmen und ist deshalb
+  // Objekt 3 zugeordnet.
+  { titel: 'Objekt 3', label: 'Außenansicht, Dachgeschosswohnung',
+    bilder: [20, 9, 7, 10, 5, 6, 8, 18, 19] },
   { titel: 'Objekt 4', label: 'Wohnen, Schlafen, Bad',
     bilder: [13, 12, 11] },
+  { titel: 'Objekt 5', label: 'Wohn- und Essbereich',
+    bilder: [21] },
 ];
 
 /**
@@ -118,22 +118,26 @@ export const referenzGruppen = [
  * `images.referenzen`; die erste Aufnahme steht im Mosaik groß.
  */
 export const referenzAuswahl = [
+  // Erste Ansicht, von Fabian gewählt: groß die Außenansicht, dazu vier klein
+  20, 11, 21, 6, 3,
   17, 4, 10, 13,
   15, 0, 12, 9,
-  2, 14, 6, 11,
-  3, 5, 16, 8,
-  1, 19, 18, 7,
+  2, 14, 22, 5,
+  16, 8, 1, 19,
+  18, 7,
 ];
 
 /* ------------------------------------------------------------------ *
  * Kennzahlen unter dem Hero
  * Werte und Quellenhinweis wörtlich wie im bisherigen Onepager, auf
- * ausdrücklichen Wunsch von Fabian wieder eingesetzt.
+ * ausdrücklichen Wunsch von Fabian wieder eingesetzt. Das kurze erste
+ * Label ist bewusst zweizeilig (\n), damit alle vier Zellen gleich
+ * gefüllt sind und Zahl und Label in jeder Zelle mittig sitzen.
  * TODO: Angabe durch Fabian bestätigen - Primärquellen der Werte
  * dokumentieren (KB: keine Wirkungsclaims ohne verifizierbare Quelle).
  * ------------------------------------------------------------------ */
 export const kennzahlen = [
-  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen mit Video' },
+  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen\nmit Video' },
   { wert: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
   { wert: 73, prefix: '', suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
   { wert: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
@@ -192,7 +196,8 @@ export const prozess = [
 
 /**
  * Der Ablauf einer Produktion in sechs Schritten, wie im bisherigen
- * Onepager. Gegenüber der früheren Fassung korrigiert: keine
+ * Onepager. Alle Texte bewusst gleich lang (Überschrift und zwei Zeilen
+ * auf dem Desktop), damit die Abstände gleich bleiben. Korrigiert: keine
  * Eigentümerkoordination als Standard (erst bei eingespielter
  * Zusammenarbeit und auf Wunsch), kein zugesagter Liefertermin.
  *
@@ -202,30 +207,12 @@ export const prozess = [
  * nichts zugesagt wird, was nicht immer gilt.
  */
 export const ablauf = [
-  {
-    t: 'Anfrage',
-    x: 'Sie nennen uns Objekt, Objektklasse und Ihren Wunschtermin. Wir prüfen die Angaben und bestätigen Umfang, Preis und Termin persönlich.',
-  },
-  {
-    t: 'Terminabstimmung',
-    x: 'Den Aufnahmetermin stimmen wir mit Ihnen ab. Ist die Zusammenarbeit eingespielt, übernehmen wir auf Wunsch auch die Abstimmung direkt mit dem Eigentümer.',
-  },
-  {
-    t: 'Checkliste zur Objektvorbereitung',
-    x: 'Vorab erhalten Sie eine verständliche Anleitung, worauf es ankommt, auf Wunsch auch zur Weitergabe an den Eigentümer. So hält vor Ort nichts auf.',
-  },
-  {
-    t: 'Aufnahmen vor Ort',
-    x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.',
-  },
-  {
-    t: 'High-End-Postproduktion',
-    x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung Bild für Bild.',
-  },
-  {
-    t: 'Bereitstellung zum vereinbarten Zeitpunkt',
-    x: 'Die fertigen Aufnahmen werden zum vereinbarten Zeitpunkt digital bereitgestellt, einsatzfertig für Exposé, Portale und Ihre Kanäle.',
-  },
+  { t: 'Anfrage', x: 'Sie nennen uns Objekt, Objektklasse und Ihren Wunschtermin. Wir bestätigen Umfang, Preis und Termin persönlich.' },
+  { t: 'Terminabstimmung', x: 'Den Aufnahmetermin stimmen wir mit Ihnen ab. Optional übernehmen wir die Abstimmung direkt mit dem Eigentümer.' },
+  { t: 'Checkliste zur Vorbereitung', x: 'Vorab erhalten Sie eine verständliche Anleitung, auf Wunsch auch für den Eigentümer. So hält vor Ort nichts auf.' },
+  { t: 'Aufnahmen vor Ort', x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.' },
+  { t: 'High-End-Postproduktion', x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung je Bild.' },
+  { t: 'Digitale Bereitstellung', x: 'Die fertigen Aufnahmen erhalten Sie zum vereinbarten Zeitpunkt, einsatzfertig für Exposé, Portale und Ihre Kanäle.' },
 ];
 
 /**
@@ -249,20 +236,31 @@ export const sonderobjekt = {
 };
 
 /* ------------------------------------------------------------------ *
- * Zusatzleistung
+ * Zusatzleistungen
  *
- * Einzige fest bepreiste Zusatzleistung: Drohnenaufnahmen, 150 € netto.
- * Kein fest bepreistes Video- oder Reel-Angebot. `note` ist der Text
- * hinter dem Infobutton im Anfrage-Wizard.
+ * Im Anfrage-Wizard direkt wählbar: Drohnenaufnahmen (130 € netto) und
+ * das Objekt-Kurzvideo (390 € netto), Preise nach Vorgabe von Fabian.
+ * `note` ist der Text hinter dem Infobutton.
+ *
+ * KONFLIKT zur Knowledge Base: dort steht der Arbeitspreis für
+ * Drohnenfotos bei +170 €. Hier 130 € nach ausdrücklicher Vorgabe.
  * ------------------------------------------------------------------ */
 export const ergaenzungen = [
   {
     key: 'drohne',
     name: 'Drohnenaufnahmen',
-    preis: 150,
+    preis: 130,
     stunden: 1,
     note: 'Luftaufnahmen von Immobilie, Grundstück und Umgebung. Möglich, sofern am Objekt '
       + 'rechtlich zulässig und witterungsbedingt durchführbar – das klären wir vor dem Termin.',
+  },
+  {
+    key: 'kurzvideo',
+    name: 'Objekt-Kurzvideo',
+    preis: 390,
+    stunden: 2,
+    note: 'Ein professionell produzierter Rundgang, der Raumgefühl und Atmosphäre authentisch '
+      + 'vermittelt. Ideal für Exposé, Website und Social Media – in 4K sowie im Hoch- oder Querformat.',
   },
 ];
 
@@ -270,17 +268,14 @@ export const ergaenzungen = [
  * Weitere Formate stehen nachgeordnet und ohne Preis. Keine aktiven
  * Standardangebote, nicht im strukturierten Datenmodell.
  */
-export const weitereMedien = 'Weitere Medienformate, etwa Video, auf Anfrage.';
+export const weitereMedien = 'Weitere Medienformate auf Anfrage.';
 
 /**
- * Aufzählung "Dazu buchbar" in der Preissektion der Startseite. Nur, was
- * tatsächlich angeboten wird: Drohne mit festem Preis, Video ohne Preis
- * und nur nach individueller Abstimmung. Kein Objektreel, kein Home
- * Staging, keine vorgezogene Bearbeitung.
+ * Aufzählung "Dazu buchbar" in der Preissektion der Startseite.
  */
 export const weitereErgaenzungen = [
   'Drohnenaufnahmen von Objekt, Grundstück und Umgebung, sofern am Objekt zulässig und witterungsbedingt möglich',
-  'Video nach individueller Abstimmung',
+  'Objekt-Kurzvideo: Rundgang in 4K, im Hoch- oder Querformat, für Exposé, Website und Social Media',
 ];
 
 /* ------------------------------------------------------------------ *
@@ -315,18 +310,11 @@ export const preisNetto = (n) => preis(n) + '\u00A0netto';
 /** Kleinste Objektklasse, für "ab"-Angaben. */
 export const abPreis = () => Math.min(...fotoklassen.map((k) => k.foto));
 
-/**
- * Preis mit Sternchen, wie im bisherigen Onepager. Der Stern verweist auf
- * den vollständigen Hinweis `preishinweisStern`, der in jeder Sektion mit
- * Sternchenpreisen und im Footer steht.
- */
-export const preisStern = (n) => preis(n) + '\u202F*';
-
 export const preishinweis = 'Alle Preise sind Nettopreise in Euro zuzüglich der gesetzlichen '
   + 'Umsatzsteuer. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne des § 14 BGB.';
 
-/** Vollständiger Hinweis zu den Sternchenpreisen. */
-export const preishinweisStern = '* Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
+/** Vollständiger Hinweis, steht im Footer. */
+export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
   + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Unsere Leistungen richten sich '
   + 'ausschließlich an Unternehmer im Sinne des § 14 BGB, nicht an Verbraucher.';
 

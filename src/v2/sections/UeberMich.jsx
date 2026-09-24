@@ -1,3 +1,9 @@
+/*
+ * DERZEIT NICHT EINGEBUNDEN. Auf Wunsch von Fabian entfernt, bis ein
+ * passendes Porträt oder Video vorliegt. Zum Einbinden in
+ * pages/Startseite.jsx vor der FAQ einsetzen und in Shell.jsx den Anker
+ * { id: 'ueber', label: 'Über uns' } wieder aufnehmen.
+ */
 import { Split } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
 import { SEITEN } from '../seiten.js';

@@ -9,11 +9,12 @@ import { fotoklassen, ergaenzungen, preisNetto } from '../../content/site.js';
  */
 const [wohnung, efh, mfh] = fotoklassen;
 const drohne = ergaenzungen.find((e) => e.key === 'drohne');
+const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 
 export const FRAGEN = {
   kosten: {
     q: 'Was kostet die Immobilienfotografie?',
-    a: `Der Preis richtet sich nach der Objektklasse: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus und ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen Festpreis.`,
+    a: `Der Preis richtet sich nach der Objektklasse: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus und ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisNetto(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen Festpreis.`,
   },
   anwesenheit: {
     q: 'Muss ich beim Fototermin dabei sein?',
@@ -25,7 +26,7 @@ export const FRAGEN = {
   },
   video: {
     q: 'Bieten Sie auch Video an?',
-    a: 'Der Schwerpunkt liegt auf Immobilienfotografie. Weitere Medienformate, etwa Video, sind auf Anfrage möglich.',
+    a: `Ja. Ein Objekt-Kurzvideo, ein Rundgang in 4K im Hoch- oder Querformat, lässt sich für ${preisNetto(kurzvideo.preis)} dazubuchen und entsteht im selben Termin wie die Fotos. Weitere Videoformate auf Anfrage.`,
   },
   bilder: {
     q: 'Wie viele Bilder erhalte ich?',
@@ -51,13 +52,13 @@ export const FRAGEN = {
  * Korrigiert: keine Zusage "Sie müssen nicht dabei sein", Eigentümer-
  * abstimmung nur bei eingespielter Zusammenarbeit und auf Wunsch, keine
  * Nachberechnungs- oder Expresszusage, keine kostenlose Nachholung von
- * Außenaufnahmen, kein Launch-Reel, Nutzungsrechte in der freigegebenen,
+ * Außenaufnahmen, Nutzungsrechte in der freigegebenen,
  * neutralen Fassung.
  */
 export const FRAGEN_START = {
   produktion: {
     q: 'Was kostet die Produktion?',
-    a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus, ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus, jeweils zzgl. der gesetzlichen Umsatzsteuer. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Stunden.`,
+    a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus, ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus, jeweils zzgl. der gesetzlichen Umsatzsteuer. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisNetto(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Stunden.`,
   },
   zeit: {
     q: 'Wie viel Zeit kostet mich das?',
@@ -81,7 +82,7 @@ export const FRAGEN_START = {
   },
   ergaenzen: {
     q: 'Was lässt sich ergänzen?',
-    a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisNetto(drohne.preis)} direkt dazubuchen. Video ist nach individueller Abstimmung möglich. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
+    a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisNetto(drohne.preis)} und ein Objekt-Kurzvideo für ${preisNetto(kurzvideo.preis)} direkt dazubuchen. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
   },
   rechte: FRAGEN.rechte,
 };

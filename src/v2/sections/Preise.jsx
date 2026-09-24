@@ -1,19 +1,19 @@
 import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
-import { Arrow } from '../ui.jsx';
-import { SEITEN } from '../seiten.js';
+import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
-import { fotoklassen, sonderobjekt, weitereErgaenzungen, ergaenzungen, preisStern, preishinweisStern } from '../../content/site.js';
+import { fotoklassen, sonderobjekt, weitereErgaenzungen, ergaenzungen, preisNetto } from '../../content/site.js';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
  * drei gleichwertige Kacheln, ein CTA darunter, Sonderobjekte, Ergänzungen.
  *
- * Korrigiert: kein Objektreel, kein Home Staging, keine vorgezogene
- * Bearbeitung, kein Auftritt vor der Kamera. Buchbar ist allein die
- * Drohne zum festen Preis, Video nur nach individueller Abstimmung.
+ * Buchbar sind Drohnenaufnahmen und das Objekt-Kurzvideo zum festen
+ * Preis. Preise mit kleinem "netto"; der vollständige Hinweis zur
+ * Umsatzsteuer steht im Footer.
  */
 const drohne = ergaenzungen.find((e) => e.key === 'drohne');
+const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 
 export function Preise() {
   const ref = useRef(null);
@@ -42,7 +42,7 @@ export function Preise() {
                 <p className="was">{k.beschreibung}</p>
               </div>
               <p className="preis">
-                <b>{preisStern(k.foto)}</b>
+                <b><PreisNetto n={k.foto} /></b>
                 <small>Festpreis je Objekt</small>
               </p>
               <p className="menge">{k.bilder}</p>
@@ -77,9 +77,10 @@ export function Preise() {
             <span className="k">Dazu buchbar</span>
             <h3>Was sich sinnvoll ergänzen lässt</h3>
             <p>
-              Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen für {preisStern(drohne.preis)} wählen
-              Sie direkt im Buchungsprozess aus, alles Weitere stimmen wir in einem kurzen Gespräch
-              auf das Objekt ab.
+              Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen ({preisNetto(drohne.preis)}) und
+              ein Objekt-Kurzvideo ({preisNetto(kurzvideo.preis)}) wählen Sie direkt im
+              Buchungsprozess aus, alles Weitere stimmen wir in einem kurzen Gespräch auf das
+              Objekt ab.
             </p>
             <div className="ctas">
               <a className="v2-btn ghost sm" href="#booking">
@@ -95,11 +96,6 @@ export function Preise() {
           </ul>
         </div>
 
-        <p className="v2-fine is-text" data-reveal>
-          {preishinweisStern} Die Bildanzahl ist eine Orientierung nach Objektgröße,
-          keine feste Stückzahl.{' '}
-          <a href={SEITEN.preise.pfad}>Alle Details zu den Preisen</a>
-        </p>
       </div>
     </section>
   );
