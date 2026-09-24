@@ -51,9 +51,6 @@ export const SEITEN = {
   },
 };
 
-/** Hauptnavigation, Reihenfolge wie freigegeben. */
-export const NAVIGATION = ['immobilienfotografie', 'referenzen', 'preise', 'ueber'];
-
 /** Pfad aus der Adresszeile auf eine Seite abbilden. */
 export function seiteZuPfad(pfad) {
   const norm = pfad.endsWith('/') || pfad.endsWith('.html') ? pfad : `${pfad}/`;

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Split } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { fotoklassen, ergaenzungen, weitereMedien, kontakt, preis, preisNetto, preishinweis } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, kontakt, preis, preisStern, preishinweisStern } from '../../content/site.js';
 
 /**
  * Anfrage-Wizard für genau ein Objekt.
@@ -19,8 +20,18 @@ import { fotoklassen, ergaenzungen, weitereMedien, kontakt, preis, preisNetto, p
  *
  * Die Anfrage ist unverbindlich. Termin, Umfang und Preis bestätigt
  * Quadratblick persönlich; es gibt keine Sofortbuchung.
+ *
+ * Texte und Gestaltung wie im bisherigen Onepager. Korrigiert: keine
+ * Antwortzeit ("1 bis 2 Werktage"), keine Eigentümerabstimmung als
+ * Standard, kein Objektreel, keine AGB-Bestätigung ohne AGB-Seite.
+ *
+ * `kopf`: Sektionskopf des Onepagers ("Objekt anfragen", id "booking").
+ * Ohne Kopf (auf /projekt-anfragen/) trägt die Sektion die id "wizard".
  */
-const SCHRITTE = ['Objekt', 'Zusatzleistung', 'Wunschtermin', 'Kontakt', 'Prüfen'];
+const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen'];
+const WEITER = {
+  1: 'Ergänzung wählen', 2: 'Termin auswählen', 3: 'Kontaktdaten eingeben', 4: 'Angaben prüfen',
+};
 const MIN_VORLAUF_TAGE = 3;
 const MAX_FENSTER = 8;
 const WOCHENTAG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
@@ -74,7 +85,7 @@ const PFLICHT = {
   adresse: 'Bitte geben Sie die Adresse des Objekts an.',
 };
 
-export function Booking() {
+export function Booking({ kopf = false }) {
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
   const [klasse, setKlasse] = useState('');
@@ -170,7 +181,7 @@ export function Booking() {
     return [
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
       `Zusatzleistung: ${gewaehlteZusatz.length ? gewaehlteZusatz.map((e) => e.name).join(', ') : 'keine'}`,
-      `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminabstimmung'}`,
+      `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage'}`,
       `Preisorientierung: ${preis(summe)} netto zzgl. USt.`,
     ].join('\n');
   }
@@ -188,7 +199,7 @@ export function Booking() {
       'bot-field': e.target.elements['bot-field']?.value || '',
       objektklasse: gewaehlt ? gewaehlt.name : '',
       zusatzleistung: gewaehlteZusatz.map((z) => z.name).join(', ') || 'keine',
-      wunschtermin: slot ? slot.label : 'Individuelle Terminabstimmung',
+      wunschtermin: slot ? slot.label : 'Individuelle Terminanfrage',
       ...daten,
       unternehmer: unternehmer ? 'ja' : 'nein',
       zusammenfassung: zusammenfassung(),
@@ -210,26 +221,46 @@ export function Booking() {
 
   const setFeld = (feld) => (e) => { starten(); setDaten((d) => ({ ...d, [feld]: e.target.value })); };
 
-  if (status === 'erfolg') {
-    return (
-      <section className="v2-sec bg-ink qb-wizard" id="wizard" aria-label="Projektanfrage">
-        <div className="v2-wrap">
-          <div className="qb-cfg-sent" role="status">
-            <span className="ok" aria-hidden="true">✓</span>
-            <h2 ref={erfolg} tabIndex={-1}>Vielen Dank – Ihre Anfrage ist eingegangen.</h2>
-            <p>Wir prüfen die Angaben und melden uns persönlich bei Ihnen.</p>
-            <button type="button" className="v2-btn ghost on-dark sm" onClick={() => setStatus('bereit')}>
-              Weiteres Objekt anfragen
-            </button>
+  const H = kopf ? 'h3' : 'h2';
+  const huelle = (inhalt) => (
+    <section className={`v2-sec bg-ink qb-wizard ${kopf ? 'mit-kopf' : ''}`} id={kopf ? 'booking' : 'wizard'}
+             {...(kopf ? { 'aria-labelledby': 'booking-titel' } : { 'aria-label': 'Projektanfrage' })}>
+      <div className="v2-wrap">
+        {kopf && (
+          <div className="v2-sec-head">
+            <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
+            <Split as="h2" id="booking-titel" className="v2-h-display v2-h-lg">
+              In wenigen Schritten zum festen Termin.
+            </Split>
+            <p className="v2-lead on-dark" data-reveal>
+              Sie wählen die Objektklasse und einen Wunschtermin, wir kümmern uns um
+              Vorbereitung, Aufnahme und Bearbeitung. Die Anfrage ist unverbindlich,
+              verbindlich wird sie mit unserer Bestätigung.
+            </p>
           </div>
-        </div>
-      </section>
+        )}
+        {inhalt}
+      </div>
+    </section>
+  );
+
+  if (status === 'erfolg') {
+    return huelle(
+      <div className="qb-cfg-sent" role="status">
+        <span className="ok" aria-hidden="true">✓</span>
+        <H ref={erfolg} tabIndex={-1}>Anfrage gesendet</H>
+        <p>
+          Vielen Dank. Wir prüfen Ihre Angaben und melden uns persönlich mit der Bestätigung
+          von Termin, Leistungsumfang und Preis.
+        </p>
+        <button type="button" className="v2-btn ghost on-dark sm" onClick={() => setStatus('bereit')}>
+          Weiteres Objekt anfragen
+        </button>
+      </div>,
     );
   }
 
-  return (
-    <section className="v2-sec bg-ink qb-wizard" id="wizard" aria-label="Projektanfrage">
-      <div className="v2-wrap">
+  return huelle(
         <div className="qb-cfg-book-shell">
           <div className="qb-cfg-book-main">
             <ol className="qb-cfg-stepper" aria-label="Schritte der Anfrage">
@@ -263,8 +294,8 @@ export function Booking() {
                 <fieldset className="qb-schritt">
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Um welches Objekt geht es?</legend>
                   <p className="qb-cfg-book-desc">
-                    Die Objektklasse bestimmt Preis und Bildumfang. Aufnahme und Bearbeitung sind in
-                    jeder Klasse gleich.
+                    Die Klasse bestimmt den Festpreis. Die Qualität der Aufnahmen und der Bearbeitung
+                    ist in jeder Klasse dieselbe.
                   </p>
                   <div className="qb-cfg-book-group">
                     {fotoklassen.map((k) => (
@@ -273,13 +304,13 @@ export function Booking() {
                                checked={klasse === k.key}
                                onChange={() => { starten(); setKlasse(k.key); terminReset(); }} />
                         <span className="t">{k.name}</span>
-                        <span className="pr">{preisNetto(k.foto)}</span>
-                        <span className="p">{k.beschreibung} {k.bilder}.</span>
+                        <span className="pr">{preisStern(k.foto)}</span>
+                        <span className="p">{k.beschreibung}</span>
                       </label>
                     ))}
                   </div>
                   {versucht[1] && !klasse && (
-                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie eine Objektklasse.</p>
+                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie eine Objektklasse, um fortzufahren.</p>
                   )}
                 </fieldset>
               )}
@@ -287,22 +318,30 @@ export function Booking() {
               {step === 2 && (
                 <fieldset className="qb-schritt">
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Möchten Sie etwas ergänzen?</legend>
-                  <p className="qb-cfg-book-desc">Optional und im selben Termin.</p>
+                  <p className="qb-cfg-book-desc">
+                    Optional und im selben Termin produziert. Video und weitere Formate stimmen wir
+                    bei Bedarf individuell auf das Objekt ab.
+                  </p>
                   {ergaenzungen.map((e) => (
                     <Haken key={e.key} id={`wz-${e.key}`} an={!!addons[e.key]} name={e.name}
-                           preisText={`+ ${preisNetto(e.preis)}`} note={e.note}
+                           preisText={`+ ${preisStern(e.preis)}`} note={e.note}
                            umschalten={() => { setAddons((a) => ({ ...a, [e.key]: !a[e.key] })); terminReset(); }} />
                   ))}
-                  <p className="qb-cfg-book-note">{weitereMedien}</p>
+                  <p className="qb-cfg-book-note">
+                    Nichts davon ist Pflicht. Was für Ihr Objekt wirklich sinnvoll ist,
+                    besprechen wir vor der Produktion.
+                  </p>
                 </fieldset>
               )}
 
               {step === 3 && (
                 <fieldset className="qb-schritt">
-                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Welcher Termin wäre Ihnen recht?</legend>
+                  <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Wann passt es Ihnen?</legend>
                   <p className="qb-cfg-book-desc">
-                    Ihr Terminwunsch ist unverbindlich. Den Termin bestätigen wir persönlich.
+                    Wir planen ausreichend Zeit für eine reibungslose Produktion ein. Ihr Terminwunsch
+                    ist unverbindlich, den Termin bestätigen wir persönlich.
                   </p>
+                  <p className="qb-cfg-book-note"><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std.</p>
                   {persoenlich ? (
                     <div className="qb-cfg-warnbox">
                       <b>Persönliche Terminabstimmung</b>
@@ -344,11 +383,11 @@ export function Booking() {
                   <button type="button" aria-pressed={fallback}
                           className={`qb-cfg-choice wide ${fallback ? 'is-on' : ''}`}
                           onClick={() => { setFallback(true); setSlot(null); }}>
-                    <span className="t">Individuelle Terminabstimmung</span>
+                    <span className="t">Individuelle Terminanfrage</span>
                     <span className="p">Kein passender Tag dabei? Wir stimmen den Termin persönlich mit Ihnen ab.</span>
                   </button>
                   {versucht[3] && !slot && !fallback && (
-                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie einen Terminwunsch oder die individuelle Abstimmung.</p>
+                    <p className="qb-cfg-book-hint" role="alert">Bitte wählen Sie einen Termin oder die individuelle Terminanfrage.</p>
                   )}
                   {slot && <p className="qb-cfg-book-note" aria-live="polite"><b>Ihr Terminwunsch:</b> {slot.label}</p>}
                 </fieldset>
@@ -357,7 +396,9 @@ export function Booking() {
               {step === 4 && (
                 <fieldset className="qb-schritt">
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Ihre Kontaktdaten</legend>
-                  <p className="qb-cfg-book-desc">Pflichtfelder sind mit * markiert.</p>
+                  <p className="qb-cfg-book-desc">
+                    Damit wir Ihre Anfrage zuordnen und bestätigen können. Pflichtfelder sind mit * markiert.
+                  </p>
                   <div className="qb-cfg-book-grid">
                     <Feld id="vorname" label="Vorname *" wert={daten.vorname} onChange={setFeld('vorname')}
                           auto="given-name" pflicht fehler={versucht[4] && fehlerFeld('vorname')} />
@@ -365,17 +406,17 @@ export function Booking() {
                           auto="family-name" pflicht fehler={versucht[4] && fehlerFeld('nachname')} />
                     <Feld id="email" label="E-Mail *" typ="email" wert={daten.email} onChange={setFeld('email')}
                           auto="email" inputMode="email" pflicht fehler={versucht[4] && fehlerFeld('email')} />
-                    <Feld id="telefon" label="Telefon (optional)" typ="tel" wert={daten.telefon}
+                    <Feld id="telefon" label="Telefon" typ="tel" wert={daten.telefon}
                           onChange={setFeld('telefon')} auto="tel" inputMode="tel" />
-                    <Feld id="firma" label="Maklerbüro / Unternehmen (optional)" breit wert={daten.firma}
+                    <Feld id="firma" label="Firma / Maklerbüro" breit wert={daten.firma}
                           onChange={setFeld('firma')} auto="organization" />
-                    <Feld id="adresse" label="Adresse des Objekts *" breit wert={daten.adresse}
+                    <Feld id="adresse" label="Objektadresse *" breit wert={daten.adresse}
                           onChange={setFeld('adresse')} auto="off" platzhalter="Straße, PLZ, Ort"
                           pflicht fehler={versucht[4] && fehlerFeld('adresse')} />
-                    <Feld id="eigentuemer" label="Kontakt zum Eigentümer (optional)" breit wert={daten.eigentuemer}
+                    <Feld id="eigentuemer" label="Kontakt zum Eigentümer" breit wert={daten.eigentuemer}
                           onChange={setFeld('eigentuemer')} auto="off"
                           hinweis="Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen." />
-                    <Feld id="nachricht" label="Nachricht (optional)" breit mehrzeilig wert={daten.nachricht}
+                    <Feld id="nachricht" label="Nachricht" breit mehrzeilig wert={daten.nachricht}
                           onChange={setFeld('nachricht')} />
                   </div>
                 </fieldset>
@@ -385,17 +426,16 @@ export function Booking() {
                 <fieldset className="qb-schritt">
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Angaben prüfen und senden</legend>
                   <p className="qb-cfg-book-desc">
-                    Die Anfrage ist unverbindlich. Verbindlich wird sie erst mit unserer persönlichen
-                    Bestätigung zu Termin, Leistungsumfang und Preis.
+                    Die Anfrage ist unverbindlich, verbindlich wird sie mit unserer Bestätigung.
                   </p>
                   <dl className="qb-cfg-recap">
                     <Zeile label="Objektklasse" wert={gewaehlt ? gewaehlt.name : 'offen'} />
-                    <Zeile label="Zusatzleistung" wert={gewaehlteZusatz.length ? gewaehlteZusatz.map((z) => z.name).join(', ') : 'keine'} />
-                    <Zeile label="Terminwunsch" wert={slot ? slot.label : 'Individuelle Terminabstimmung'} />
+                    <Zeile label="Ergänzungen" wert={gewaehlteZusatz.length ? gewaehlteZusatz.map((z) => z.name).join(', ') : '–'} />
+                    <Zeile label="Wunschtermin" wert={slot ? slot.label : 'Individuelle Terminanfrage'} />
                     <Zeile label="Kontakt" wert={`${daten.vorname} ${daten.nachname} · ${daten.email}`} />
                     <Zeile label="Objektadresse" wert={daten.adresse} />
                     {daten.eigentuemer && <Zeile label="Eigentümerkontakt" wert={daten.eigentuemer} />}
-                    <Zeile label="Preis" wert={preisNetto(summe)} />
+                    <Zeile label="Festpreis" wert={preisStern(summe)} />
                   </dl>
                   <div className={`qb-cfg-einwilligung ${versucht[5] && !unternehmer ? 'is-fehler' : ''}`}>
                     <input id="wz-unternehmer" type="checkbox" checked={unternehmer}
@@ -439,7 +479,7 @@ export function Booking() {
                 ) : <span />}
                 {step < 5 ? (
                   <button type="button" className="v2-btn" onClick={weiter}>
-                    Weiter <Arrow size={16} />
+                    {WEITER[step]} <Arrow size={16} />
                   </button>
                 ) : (
                   <button type="submit" className="v2-btn" disabled={status === 'sendet'}>
@@ -452,28 +492,34 @@ export function Booking() {
           </div>
 
           <aside className="qb-cfg-book-summary" aria-label="Ihre Auswahl">
-            <h2>Ihre Auswahl</h2>
+            <H>Ihre Auswahl</H>
             {!gewaehlt ? (
-              <p className="leer">Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
+              <p className="leer">Noch nichts gewählt. Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
             ) : (
               <>
-                <div className="row"><span>Immobilienfotografie · {gewaehlt.name}</span><b>{preis(gewaehlt.foto)}</b></div>
+                <div className="row"><span>Fotografie · {gewaehlt.name}</span><b>{preis(gewaehlt.foto)}</b></div>
                 {gewaehlteZusatz.map((z) => (
                   <div className="row" key={z.key}><span>{z.name}</span><b>{preis(z.preis)}</b></div>
                 ))}
               </>
             )}
             <div className="gesamt">
-              <span>Preis netto</span>
-              <b>{gewaehlt ? preis(summe) : '–'}</b>
+              <span>Festpreis</span>
+              <b>{gewaehlt ? preisStern(summe) : '–'}</b>
             </div>
+            {dauer > 0 && (
+              <div className="hinweis">
+                {slot ? <><b>Wunschtermin</b><br />{slot.label}</>
+                  : fallback ? <><b>Individuelle Terminanfrage</b><br />Termin wird persönlich abgestimmt.</>
+                    : <><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std. · Termin noch offen</>}
+              </div>
+            )}
             <p className="fuss">
-              {preishinweis} Termin, Umfang und Preis bestätigen wir persönlich.
+              {preishinweisStern} Der Preis steht mit unserer Bestätigung fest.
+              Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
             </p>
           </aside>
-        </div>
-      </div>
-    </section>
+        </div>,
   );
 }
 

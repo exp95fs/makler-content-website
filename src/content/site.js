@@ -161,6 +161,44 @@ export const prozess = [
 ];
 
 /**
+ * Der Ablauf einer Produktion in sechs Schritten, wie im bisherigen
+ * Onepager. Gegenüber der früheren Fassung korrigiert: keine
+ * Eigentümerkoordination als Standard (erst bei eingespielter
+ * Zusammenarbeit und auf Wunsch), kein zugesagter Liefertermin.
+ *
+ * TODO: Angabe durch Fabian bestätigen - die technischen Angaben in 04
+ * und 05 (Belichtungsreihen, manuelles Blending, Ausblicksoptimierung)
+ * beschreiben den dokumentierten HDR-Workflow. Bitte gegenprüfen, damit
+ * nichts zugesagt wird, was nicht immer gilt.
+ */
+export const ablauf = [
+  {
+    t: 'Anfrage',
+    x: 'Sie nennen uns Objekt, Objektklasse und Ihren Wunschtermin. Wir prüfen die Angaben und bestätigen Umfang, Preis und Termin persönlich.',
+  },
+  {
+    t: 'Terminabstimmung',
+    x: 'Den Aufnahmetermin stimmen wir mit Ihnen ab. Ist die Zusammenarbeit eingespielt, übernehmen wir auf Wunsch auch die Abstimmung direkt mit dem Eigentümer.',
+  },
+  {
+    t: 'Checkliste zur Objektvorbereitung',
+    x: 'Vorab erhalten Sie eine verständliche Anleitung, worauf es ankommt, auf Wunsch auch zur Weitergabe an den Eigentümer. So hält vor Ort nichts auf.',
+  },
+  {
+    t: 'Aufnahmen vor Ort',
+    x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.',
+  },
+  {
+    t: 'High-End-Postproduktion',
+    x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung Bild für Bild.',
+  },
+  {
+    t: 'Bereitstellung zum vereinbarten Zeitpunkt',
+    x: 'Die fertigen Aufnahmen werden zum vereinbarten Zeitpunkt digital bereitgestellt, einsatzfertig für Exposé, Portale und Ihre Kanäle.',
+  },
+];
+
+/**
  * Leistungsumfang je Objektklasse, wie er bisher auf der Seite stand.
  * Nicht erweitern ohne Freigabe.
  */
@@ -202,8 +240,18 @@ export const ergaenzungen = [
  * Weitere Formate stehen nachgeordnet und ohne Preis. Keine aktiven
  * Standardangebote, nicht im strukturierten Datenmodell.
  */
-export const weitereMedien = 'Weitere Medienformate, etwa Video, sowie individuelle Leistungen '
-  + 'wie virtuelles Home Staging auf Anfrage.';
+export const weitereMedien = 'Weitere Medienformate, etwa Video, auf Anfrage.';
+
+/**
+ * Aufzählung "Dazu buchbar" in der Preissektion der Startseite. Nur, was
+ * tatsächlich angeboten wird: Drohne mit festem Preis, Video ohne Preis
+ * und nur nach individueller Abstimmung. Kein Objektreel, kein Home
+ * Staging, keine vorgezogene Bearbeitung.
+ */
+export const weitereErgaenzungen = [
+  'Drohnenaufnahmen von Objekt, Grundstück und Umgebung, sofern am Objekt zulässig und witterungsbedingt möglich',
+  'Video nach individueller Abstimmung',
+];
 
 /* ------------------------------------------------------------------ *
  * Kontakt
@@ -237,5 +285,20 @@ export const preisNetto = (n) => preis(n) + '\u00A0netto';
 /** Kleinste Objektklasse, für "ab"-Angaben. */
 export const abPreis = () => Math.min(...fotoklassen.map((k) => k.foto));
 
+/**
+ * Preis mit Sternchen, wie im bisherigen Onepager. Der Stern verweist auf
+ * den vollständigen Hinweis `preishinweisStern`, der in jeder Sektion mit
+ * Sternchenpreisen und im Footer steht.
+ */
+export const preisStern = (n) => preis(n) + '\u202F*';
+
 export const preishinweis = 'Alle Preise sind Nettopreise in Euro zuzüglich der gesetzlichen '
   + 'Umsatzsteuer. Das Angebot richtet sich ausschließlich an Unternehmer im Sinne des § 14 BGB.';
+
+/** Vollständiger Hinweis zu den Sternchenpreisen. */
+export const preishinweisStern = '* Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
+  + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Unsere Leistungen richten sich '
+  + 'ausschließlich an Unternehmer im Sinne des § 14 BGB, nicht an Verbraucher.';
+
+/** Kurzform für enge Stellen, etwa unter dem Hero. */
+export const preishinweisKurz = 'Alle Preise netto zzgl. USt. · Angebot ausschließlich für Unternehmer';

@@ -29,43 +29,59 @@ export function useSmoothScroll() {
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
 
+    let beobachter = null;
     const ctx = gsap.context(() => {
       // Elemente, die beim Start schon im Bild sind, werden nicht animiert:
       // sie stehen bereits sichtbar im vorgerenderten HTML und sollen nicht
       // aus- und wieder eingeblendet werden.
-      const imBild = (el) => el.getBoundingClientRect().top < window.innerHeight * 0.9;
+      //
+      // Erst alle Positionen lesen (ein Layout), dann schreiben. Ein
+      // gemeinsamer IntersectionObserver startet die Animationen; eigene
+      // ScrollTrigger je Element würden beim Start für jedes Element das
+      // Layout neu berechnen und den Hauptthread blockieren.
+      const grenze = window.innerHeight * 0.9;
+      const unten = (el) => el.getBoundingClientRect().top >= grenze;
+      const reveals = gsap.utils.toArray('[data-reveal]');
+      const splits = gsap.utils.toArray('.v2-split[data-split-scroll]');
+      const revealUnten = new Set(reveals.filter(unten));
+      const splitUnten = new Set(splits.filter(unten));
 
-      // Standard-Reveals
-      gsap.utils.toArray('[data-reveal]').forEach((el) => {
-        if (imBild(el)) { el.classList.add('is-in'); return; }
-        gsap.fromTo(el,
-          { opacity: 0, y: 34 },
-          {
-            opacity: 1, y: 0,
-            duration: 1.15,
-            ease: 'power3.out',
+      reveals.forEach((el) => { if (!revealUnten.has(el)) el.classList.add('is-in'); });
+      splits.forEach((el) => { if (!splitUnten.has(el)) el.classList.add('is-done'); });
+      if (revealUnten.size) gsap.set([...revealUnten], { opacity: 0, y: 34 });
+      splitUnten.forEach((el) => gsap.set(el.querySelectorAll('.wi'), { yPercent: 115 }));
+
+      const starte = (el) => {
+        if (splitUnten.has(el)) {
+          gsap.to(el.querySelectorAll('.wi'), {
+            yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.05,
+            onComplete: () => el.classList.add('is-done'),
+          });
+        } else {
+          gsap.to(el, {
+            opacity: 1, y: 0, duration: 1.15, ease: 'power3.out',
             delay: parseFloat(el.dataset.delay || 0),
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
             onComplete: () => el.classList.add('is-in'),
           });
-      });
-
-      // Wort-Masken (kinetische Typo)
-      gsap.utils.toArray('.v2-split[data-split-scroll]').forEach((el) => {
-        if (imBild(el)) { el.classList.add('is-done'); return; }
-        gsap.fromTo(el.querySelectorAll('.wi'), { yPercent: 115 }, {
-          yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.05,
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true },
-          onComplete: () => el.classList.add('is-done'),
+        }
+      };
+      beobachter = new IntersectionObserver((eintraege) => {
+        eintraege.forEach((e) => {
+          if (!e.isIntersecting) return;
+          beobachter.unobserve(e.target);
+          starte(e.target);
         });
-      });
+      }, { rootMargin: '0px 0px -12% 0px' });
+      revealUnten.forEach((el) => beobachter.observe(el));
+      splitUnten.forEach((el) => beobachter.observe(el));
 
       // Parallax: data-parallax="20" => bewegt sich um ±20% der eigenen Höhe
       gsap.utils.toArray('[data-parallax]').forEach((el) => {
         const amount = parseFloat(el.dataset.parallax || 12);
         gsap.fromTo(el, { yPercent: -amount / 2 }, {
           yPercent: amount / 2, ease: 'none',
-          scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true },
+          // <picture> ist display: contents und hat keine eigene Box
+          scrollTrigger: { trigger: el.parentElement.closest(':not(picture)'), start: 'top bottom', end: 'bottom top', scrub: true },
         });
       });
 
@@ -82,6 +98,7 @@ export function useSmoothScroll() {
     });
 
     return () => {
+      beobachter?.disconnect();
       ctx.revert();
       gsap.ticker.remove(raf);
       lenis.destroy();
@@ -125,8 +142,25 @@ export function revealNachgeladen(wurzel) {
 export function scrollToId(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (lenisInstance) lenisInstance.scrollTo(el, { offset: -70, duration: 1.4 });
-  else el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Den Abstand zur Navigation liefert scroll-margin-top (v2.css), das
+  // Lenis beim Anspringen berücksichtigt.
+  if (lenisInstance) lenisInstance.scrollTo(el, { duration: 1.4 });
+  else el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+}
+
+/**
+ * Sprung zu einer Sektion des Onepagers per Ankerlink: weich scrollen,
+ * Adresse aktualisieren und den Fokus auf die Zielsektion setzen, damit
+ * Tastatur- und Screenreader-Nutzer dort weiterlesen.
+ */
+export function springeZu(id) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  scrollToId(id);
+  if (window.location.hash !== `#${id}`) window.history.pushState(null, '', `#${id}`);
+  if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+  el.focus({ preventScroll: true });
+  return true;
 }
 
 /** Zerlegt Text in Wort-Masken für den Staffel-Reveal. */

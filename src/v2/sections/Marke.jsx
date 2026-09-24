@@ -1,34 +1,31 @@
-/*
- * DERZEIT NICHT EINGEBUNDEN. Social Content und Markenaufbau gehören nicht
- * in den primären Website-Funnel (Freigabe Positionierung). Die Datei bleibt
- * für eine spätere Verwendung bei Bestandskunden erhalten.
- */
-import { Split, Magnetic, scrollToId } from '../fx.jsx';
+import { Split, Magnetic } from '../fx.jsx';
 import { Arrow } from '../ui.jsx';
 
 /**
- * Teaser, kein zweiter Funnel. Bewusst kurz und mit sekundärem CTA:
- * Der primäre Weg ist die Buchung unter #preise.
+ * Kurzer, nachgeordneter Teaser für Bestandskunden, wie im bisherigen
+ * Onepager. Kein zweiter Funnel, kein eigenes Angebot, kein Listenpreis.
+ *
+ * Korrigiert: keine Aussage über bestehende langfristige Zusammenarbeit
+ * mit "ausgewählten Maklerbüros" und kein Zielversprechen.
  */
 const punkte = [
-  'Gemeinsam festgelegt, welche Inhalte auf welchen Kanälen laufen',
+  'Gemeinsam festgelegt, welche Inhalte auf welchen Kanälen sinnvoll sind',
   'Wiedererkennbare Bildsprache über alle Objekte hinweg',
-  'Sie als Gesicht Ihres Büros, nicht nur die Immobilie',
+  'Auf Wunsch Sie als Gesicht Ihres Büros, nicht nur die Immobilie',
 ];
 
 export function Marke() {
   return (
-    <section className="v2-sec tight bg-sage" id="marke">
+    <section className="v2-sec tight bg-sage" id="marke" aria-labelledby="marke-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow on-dark" data-reveal>Marke &amp; Social</p>
-          <Split as="h2" className="v2-h-display v2-h-lg">
+          <Split as="h2" id="marke-titel" className="v2-h-display v2-h-lg">
             Für Bestandskunden auch über das einzelne Objekt hinaus.
           </Split>
           <p className="v2-lead on-dark" data-reveal>
-            Mit ausgewählten Maklerbüros arbeiten wir langfristig zusammen. Wir legen gemeinsam
-            fest, welche Inhalte für welche Kanäle in welchem Umfang sinnvoll sind, damit Sie Ihre
-            Ziele bei Sichtbarkeit und Vertrauen erreichen.
+            Wenn die Zusammenarbeit bei Objekten eingespielt ist, legen wir auf Wunsch gemeinsam
+            fest, welche Inhalte für welche Kanäle in welchem Umfang sinnvoll sind.
           </p>
         </div>
 
@@ -42,9 +39,9 @@ export function Marke() {
             unterscheiden. Nach einem kurzen Gespräch erhalten Sie ein Angebot.
           </p>
           <Magnetic>
-            <button type="button" className="v2-btn ghost on-dark" onClick={() => scrollToId('kontakt')}>
+            <a className="v2-btn ghost on-dark" href="#kontakt" data-event="cta_zusammenarbeit">
               Darüber sprechen <Arrow size={15} />
-            </button>
+            </a>
           </Magnetic>
         </div>
       </div>

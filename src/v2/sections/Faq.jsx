@@ -46,6 +46,46 @@ export const FRAGEN = {
   },
 };
 
+/**
+ * Fragen des bisherigen Onepagers in der alten Reihenfolge und Tonalität.
+ * Korrigiert: keine Zusage "Sie müssen nicht dabei sein", Eigentümer-
+ * abstimmung nur bei eingespielter Zusammenarbeit und auf Wunsch, keine
+ * Nachberechnungs- oder Expresszusage, keine kostenlose Nachholung von
+ * Außenaufnahmen, kein Launch-Reel, Nutzungsrechte in der freigegebenen,
+ * neutralen Fassung.
+ */
+export const FRAGEN_START = {
+  produktion: {
+    q: 'Was kostet die Produktion?',
+    a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisNetto(wohnung.foto)} für eine Wohnung, ${preisNetto(efh.foto)} für ein Einfamilienhaus, ${preisNetto(mfh.foto)} für ein Mehrfamilienhaus, jeweils zzgl. der gesetzlichen Umsatzsteuer. Drohnenaufnahmen lassen sich für ${preisNetto(drohne.preis)} ergänzen. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Stunden.`,
+  },
+  zeit: {
+    q: 'Wie viel Zeit kostet mich das?',
+    a: 'Wenig. Sie stellen die Anfrage, wir stimmen Termin und Umfang mit Ihnen ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Die ersten Projekte stimmen wir eng miteinander ab. Ist die Zusammenarbeit eingespielt, übernehmen wir auf Wunsch auch die Terminabstimmung mit dem Eigentümer.',
+  },
+  eigentuemer: {
+    q: 'Wer spricht mit dem Eigentümer?',
+    a: 'Das legen wir gemeinsam fest. Bei eingespielter Zusammenarbeit übernehmen wir auf Wunsch die Abstimmung direkt. Vor Ort treten wir als Teil Ihrer Vermarktung auf, nicht als unabhängiger Dienstleister. Der Verkauf einer Immobilie ist für Eigentümer ein sensibler Vorgang, entsprechend verhalten wir uns: angekündigt, pünktlich, zurückhaltend und im Namen Ihres Büros.',
+  },
+  vorbereitung: {
+    q: 'Wie muss die Immobilie vorbereitet sein?',
+    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Die Checkliste dazu geht vorab an Sie und auf Wunsch direkt an den Eigentümer. Ist ein Objekt nicht so weit, kostet das Zeit vor Ort, die wir dann gemeinsam einplanen müssen.',
+  },
+  lieferung: {
+    q: 'Wann erhalte ich die Bilder?',
+    a: 'Den Zeitpunkt der Bereitstellung nennen wir mit unserer Bestätigung, gemeinsam mit Termin, Leistungsumfang und Preis. Die Bilder werden digital bereitgestellt.',
+  },
+  wetter: {
+    q: 'Was passiert bei schlechtem Wetter?',
+    a: 'Die Innenaufnahmen sind weitgehend wetterunabhängig. Ob Außen- und Drohnenaufnahmen wie geplant möglich sind, hängt von Witterung und Standort ab. Das stimmen wir vor dem Termin mit Ihnen ab, ebenso, ob am Standort geflogen werden darf.',
+  },
+  ergaenzen: {
+    q: 'Was lässt sich ergänzen?',
+    a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisNetto(drohne.preis)} direkt dazubuchen. Video ist nach individueller Abstimmung möglich. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
+  },
+  rechte: FRAGEN.rechte,
+};
+
 function Eintrag({ id, q, a, offen, umschalten }) {
   const koerper = useRef(null);
   useEffect(() => {
@@ -71,18 +111,18 @@ function Eintrag({ id, q, a, offen, umschalten }) {
   );
 }
 
-export function Faq({ fragen, titel = 'Häufige Fragen', id = 'faq', bg = 'bg-linen-2' }) {
+export function Faq({ fragen, titel = 'Häufige Fragen', eyebrow = 'FAQ', quelle = FRAGEN, id = 'faq', bg = 'bg-linen-2' }) {
   const [offen, setOffen] = useState(0);
   return (
     <section className={`v2-sec ${bg}`} id={id} aria-labelledby={`${id}-titel`}>
       <div className="v2-wrap">
         <div className="v2-sec-head center">
-          <p className="v2-eyebrow" data-reveal>FAQ</p>
+          <p className="v2-eyebrow" data-reveal>{eyebrow}</p>
           <Split as="h2" id={`${id}-titel`} className="v2-h-display v2-h-lg">{titel}</Split>
         </div>
         <div className="v2-faq" data-reveal>
           {fragen.map((key, i) => (
-            <Eintrag key={key} id={`${id}-${key}`} q={FRAGEN[key].q} a={FRAGEN[key].a}
+            <Eintrag key={key} id={`${id}-${key}`} q={quelle[key].q} a={quelle[key].a}
                      offen={offen === i} umschalten={() => setOffen(offen === i ? -1 : i)} />
           ))}
         </div>

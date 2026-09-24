@@ -1,57 +1,66 @@
 import { useEffect } from 'react';
 import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
 import { Arrow, Bild } from '../ui.jsx';
-import { SEITEN } from '../seiten.js';
-import { images, preisNetto, abPreis } from '../../content/site.js';
+import { images, abPreis, preisStern, preishinweisKurz } from '../../content/site.js';
 
 /**
- * Hero der Startseite. Texte wie freigegeben.
+ * Hero des Onepagers. Gestaltung und Texte wie im bisherigen Onepager.
  *
- * Eyebrow, H1, Subheadline, CTAs und Preiszeile tragen bewusst KEINE
+ * Korrigiert gegenüber der früheren Fassung: keine Wirkungsversprechen
+ * ("schneller vermittelt", "qualifiziertere Anfragen"), Region Bühl,
+ * Baden-Baden, Achern statt Ortenau.
+ *
+ * Eyebrow, H1, Lead, CTAs und Preiszeile tragen bewusst KEINE
  * Reveal-Animation: sie sind im vorgerenderten HTML sofort sichtbar und
  * verzögern weder die Lesbarkeit noch den Largest Contentful Paint.
- * Nur das Hintergrundbild zoomt beim Laden leicht aus.
+ * Das Hintergrundbild zoomt beim Laden leicht aus und läuft mit Parallax.
  */
 export function Hero() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
     const tween = gsap.fromTo('.v2-hero-media img',
-      { scale: 1.06 }, { scale: 1, duration: 2.2, ease: 'power2.out' });
+      { scale: 1.14 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
     return () => tween.kill();
   }, []);
 
   return (
     <section className="v2-hero" id="top" aria-labelledby="hero-titel">
       <div className="v2-hero-media">
-        <Bild src={images.hero} vorrang sizes="100vw"
+        <Bild src={images.hero} vorrang sizes="100vw" data-parallax="14"
               alt="Wohnhaus mit heller Holzfassade und dunklem Sockel, Außenaufnahme" />
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
-        <p className="v2-eyebrow on-dark">
-          Immobilienfotografie für Makler · Bühl · Baden-Baden · Achern
-        </p>
-        <h1 id="hero-titel" className="v2-h-display v2-h-xl v2-hero-h">
-          Professionelle Immobilien­fotos für Makler in Mittelbaden.
+        <p className="v2-eyebrow on-dark">Immobilienfotografie · Raum Bühl · Baden-Baden · Achern</p>
+        <h1 id="hero-titel" className="v2-h-display v2-h-xl v2-hero-h" style={{ marginTop: 20 }}>
+          Bilder, die Ihre Objekte herausheben.
         </h1>
         <p className="v2-lead v2-hero-lead">
-          Natürliche Bildbearbeitung, klare Preise nach Objektklasse und persönliche
-          Abstimmung – für Makler und Immobilienprojekte in Bühl, Baden-Baden,
-          Achern und Umgebung.
+          Professionelle Immobilienfotografie für Maklerbüros im Raum Bühl,
+          Baden-Baden, Achern und Umgebung. Hochwertige Bilder, die Ihre Objekte
+          professionell präsentieren und Ihr Büro als Marke sichtbar machen.
         </p>
         <div className="v2-hero-ctas">
           <Magnetic>
-            <a className="v2-btn" href={SEITEN.anfrage.pfad} data-event="cta_primary">
-              Verfügbarkeit prüfen <Arrow />
+            <a className="v2-btn" href="#booking" data-event="cta_primary">
+              Paket &amp; Termin anfragen <Arrow />
             </a>
           </Magnetic>
           <Magnetic>
-            <a className="v2-btn ghost on-dark" href={SEITEN.referenzen.pfad}>
-              Referenzprojekte ansehen
+            <a className="v2-btn ghost on-dark" href="#referenzen" data-event="referenzen_aufruf">
+              Arbeitsproben ansehen
             </a>
           </Magnetic>
         </div>
-        <p className="v2-hero-note">Immobilienfotografie ab {preisNetto(abPreis())}</p>
+        <p className="v2-hero-note">
+          Festpreis ab {preisStern(abPreis())} je Objekt
+          {' · '}verbindlich vor dem Termin{' · '}Anfrage unverbindlich
+          <span className="fein">{preishinweisKurz}</span>
+        </p>
+      </div>
+      <div className="v2-hero-scroll" aria-hidden="true">
+        <span>Scroll</span>
+        <span className="line" />
       </div>
     </section>
   );

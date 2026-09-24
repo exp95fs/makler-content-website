@@ -2493,16 +2493,9 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .v2-nav-logo img { max-width: 44vw; }
 .v2-nav-link[aria-current="page"]::after { transform: scaleX(1); }
 .v2-nav-cta { white-space: nowrap; }
-/* Mobil bleibt der Primary CTA im Header sichtbar, kompakt und ohne Pfeil.
-   Unter 360 px reicht die Breite nicht für Logo, CTA und Menübutton; dann
-   steht der CTA im Menü und direkt im Hero. */
-@media (max-width: 940px) {
-  .v2-nav-cta { display: inline-flex; padding: 10px 14px; font-size: 12.5px; gap: 6px; }
-  .v2-nav-cta .arr { display: none; }
-  .v2-burger { width: 44px; height: 44px; }
-}
-@media (max-width: 480px) { .v2-nav-logo img { height: 22px; } }
-@media (max-width: 359px) { .v2-nav-cta { display: none !important; } }
+/* Mobil steht der CTA wie im Onepager im Menü; der Menübutton behält
+   eine ausreichende Tippfläche. */
+@media (max-width: 940px) { .v2-burger { width: 44px; height: 44px; } }
 /* Mobilmenü: geschlossen unsichtbar und nicht fokussierbar */
 .v2-menu { visibility: hidden; transition: opacity 0.45s var(--ease-out), visibility 0s linear 0.45s; }
 .v2-menu.is-open { visibility: visible; transition: opacity 0.45s var(--ease-out), visibility 0s; }
@@ -2510,18 +2503,11 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 .v2-menu-foot p a { color: var(--text-inv-soft); text-decoration: none; }
 .v2-menu-foot p { text-transform: none; letter-spacing: 0.02em; font-size: 13px; }
 
-/* ---------- Hero ---------- */
-.v2-hero-h { max-width: 17ch; }
-.v2-hero-note {
-  font-size: 12.5px; letter-spacing: 0.08em;
-  color: rgba(243, 238, 229, 0.86);
-}
-@media (max-width: 480px) {
-  .v2-hero-content { padding-top: 104px; padding-bottom: 56px; }
-  .v2-h-xl { font-size: clamp(2.05rem, 9.2vw, 2.6rem); line-height: 1.04; }
-  .v2-hero-ctas { margin-top: 28px; }
-  .v2-hero-ctas .v2-btn { padding: 15px 22px; }
-}
+/* ---------- Hero ----------
+   Gestaltung des Onepagers. Nur die Preiszeile ist heller als früher
+   (0,55 bzw. 0,42 Deckkraft lagen über dem Foto unter 4,5:1). */
+.v2-hero-note { color: rgba(243, 238, 229, 0.86); }
+.v2-hero-note .fein { color: rgba(243, 238, 229, 0.72); }
 /* Unterseiten-Kopf */
 .qb-kopf.kompakt { min-height: 0; }
 .qb-kopf.kompakt .v2-hero-content { padding-top: clamp(120px, 14vw, 170px); padding-bottom: clamp(52px, 7vw, 88px); }
@@ -2529,25 +2515,6 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 @media (max-width: 480px) { .v2-h-sub { font-size: clamp(1.9rem, 8.4vw, 2.3rem); } }
 .qb-404-links { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; }
 .qb-404-links a { color: var(--linen); font-size: 15px; }
-
-/* ---------- Vertrauenssignale ---------- */
-.qb-vertrauen { background: var(--ink); color: var(--text-inv); border-top: 1px solid var(--line-dark); }
-.qb-vertrauen ul {
-  list-style: none; margin: 0; padding: clamp(20px, 2.4vw, 30px) 0;
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0;
-}
-.qb-vertrauen li {
-  display: grid; gap: 6px; padding: 6px clamp(14px, 2vw, 28px);
-  border-left: 1px solid var(--line-dark);
-}
-.qb-vertrauen li:first-child { border-left: 0; padding-left: 0; }
-.qb-vertrauen b { font-family: var(--font-display); font-weight: 600; font-size: clamp(1rem, 1.4vw, 1.12rem); color: var(--linen); }
-.qb-vertrauen span { font-size: 13.5px; line-height: 1.55; color: rgba(243, 238, 229, 0.74); }
-@media (max-width: 760px) {
-  .qb-vertrauen ul { grid-template-columns: 1fr; }
-  .qb-vertrauen li { border-left: 0; padding: 12px 0; border-top: 1px solid var(--line-dark); }
-  .qb-vertrauen li:first-child { border-top: 0; }
-}
 
 /* ---------- Logos ---------- */
 .qb-logos { margin-top: clamp(48px, 6vw, 80px); }
@@ -2570,7 +2537,6 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
   font-family: var(--font-display); font-weight: 600;
   font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
 }
-.qb-refgruppe > .titel span { color: rgba(243, 238, 229, 0.78); }
 
 /* ---------- Vorteile als Liste ---------- */
 ul.v2-gruende { list-style: none; padding: 0; }
@@ -2654,10 +2620,6 @@ ul.v2-gruende { list-style: none; padding: 0; }
 @media (max-width: 900px) { .qb-zusammenarbeit { grid-template-columns: 1fr; align-items: start; } }
 
 /* ---------- About ---------- */
-.qb-about { max-width: 860px; }
-.qb-about h2 { margin: 18px 0 0; }
-.qb-about .v2-lead { margin-top: 20px; }
-.qb-about p:last-child { margin: 22px 0 0; }
 .qb-ueber { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
 .qb-ueber .text h2 { margin: 0; color: var(--text); max-width: 22ch; }
 .qb-ueber .text > p { margin: 22px 0 0; font-size: clamp(1rem, 1.25vw, 1.1rem); line-height: 1.75; color: var(--text-soft); max-width: 62ch; }
@@ -2695,8 +2657,6 @@ ul.v2-gruende { list-style: none; padding: 0; }
   outline: 2px solid var(--terra-soft); outline-offset: 3px;
 }
 .qb-cfg-checkbox .hit { font: inherit; }
-.qb-cfg-book-desc { color: rgba(243, 238, 229, 0.78); }
-.qb-cfg-book-note { color: rgba(243, 238, 229, 0.78); }
 .qb-cfg-book-note a, .qb-cfg-status a, .qb-cfg-book-summary a { color: var(--linen); }
 .qb-cfg-book-field > label {
   display: block; margin-bottom: 7px;
@@ -2716,11 +2676,9 @@ ul.v2-gruende { list-style: none; padding: 0; }
   background: rgba(208, 138, 103, 0.14); border: 1px solid rgba(240, 169, 135, 0.6);
 }
 .qb-cfg-recap { margin: 0; }
-.qb-cfg-recap .row dt { font-size: 14px; color: rgba(243, 238, 229, 0.74); }
+.qb-cfg-recap .row dt { font-size: 14px; color: var(--text-inv-soft); }
 .qb-cfg-recap .row dd { margin: 0; font-size: 14px; font-weight: 700; color: var(--linen); text-align: right; overflow-wrap: anywhere; }
 .qb-cfg-book-summary h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; color: var(--linen); margin: 0 0 14px; }
-.qb-cfg-book-summary .fuss { color: rgba(243, 238, 229, 0.72); }
-.qb-cfg-stepchip .s { color: rgba(243, 238, 229, 0.72); }
 .qb-cfg-sent { max-width: 640px; margin: 0 auto; text-align: center; padding: clamp(20px, 4vw, 48px) 0; }
 .qb-cfg-sent .ok {
   width: 58px; height: 58px; border-radius: 50%; margin: 0 auto 18px;
@@ -2752,12 +2710,10 @@ ul.v2-gruende { list-style: none; padding: 0; }
 .qb-kontakt .v2-contact-info h2 { color: var(--linen); }
 
 /* ---------- Kontraste: Kleinschrift auf dunklem Grund ---------- */
-.v2-footer-links a { color: rgba(243, 238, 229, 0.78); }
 .v2-footer-preis { color: rgba(243, 238, 229, 0.66); }
 .v2-footer-base { color: rgba(243, 238, 229, 0.66); }
-.v2-footer-brand p { color: rgba(243, 238, 229, 0.78); }
-.v2-contact-meta .k { color: rgba(243, 238, 229, 0.72); }
-.on-dark .v2-lead, .v2-lead.on-dark { color: rgba(243, 238, 229, 0.8); }
+/* Auf Salbei reicht die frühere Deckkraft 0,62 nicht (3,4:1). */
+.bg-sage .v2-lead.on-dark { color: rgba(243, 238, 229, 0.92); }
 .v2-fine.is-text a { color: var(--terra-deep); }
 
 /* ---------- Grain: auf Touch-Geräten statisch, spart Rechenzeit ---------- */
@@ -2778,9 +2734,9 @@ ul.v2-gruende { list-style: none; padding: 0; }
    Container werden und an weichen Trennstellen (&shy;) bzw. per
    Silbentrennung umbrechen. */
 h1, h2, h3, .v2-h-display { overflow-wrap: break-word; hyphens: manual; }
-.v2-split .w { max-width: 100%; }
-@media (max-width: 420px) {
-  .v2-h-lg { font-size: clamp(1.7rem, 8vw, 2.1rem); }
+@media (max-width: 420px) { .v2-split .w { max-width: 100%; } }
+@media (max-width: 360px) {
+  .v2-h-lg { font-size: clamp(1.6rem, 8vw, 1.9rem); }
   h1, h2, h3, .v2-h-display { hyphens: auto; }
 }
 
@@ -2793,24 +2749,64 @@ h1, h2, h3, .v2-h-display { overflow-wrap: break-word; hyphens: manual; }
   .qb-tabelle tr { grid-template-columns: minmax(0, 1fr) auto; }
   .qb-tabelle td.preis { white-space: normal; max-width: 13ch; }
 }
-/* Sehr kleine Geräte (z. B. 320 × 568): Hero straffen, damit H1,
-   Subheadline, CTA und Preiszeile möglichst im ersten Screen liegen. */
-@media (max-width: 380px) {
-  .v2-hero .v2-eyebrow { letter-spacing: 0.12em; font-size: 10.5px; gap: 10px; }
-  .v2-hero .v2-eyebrow::before { width: 20px; }
-  .v2-hero-content { padding-top: 88px; padding-bottom: 36px; }
-  .v2-hero-h { margin-top: 12px; }
-  .v2-hero-lead { margin-top: 16px; font-size: 0.97rem; line-height: 1.55; }
-  .v2-hero-ctas { margin-top: 20px; gap: 10px; }
-  .v2-hero-note { margin-top: 16px; }
-}
-@media (max-width: 380px) {
-  .v2-hero-content { display: flex; flex-direction: column; align-items: flex-start; }
-  .v2-hero-note { order: 3; margin-top: 14px; }
-  .v2-hero-ctas { order: 4; margin-top: 18px; }
-}
+
 /* Logo-Link als ausreichend großes Tap-Ziel (mind. 44 px hoch) */
 .v2-nav-logo { padding: 10px 0; margin: -10px 0; }
 /* Bei geöffnetem Menü liegt der Header (Logo, Schließen-Button) über dem Overlay */
 .v2-nav.menu-open { z-index: 250; transform: none; }
 .v2-nav.menu-open .v2-burger { background: rgba(243, 238, 229, 0.12); border-color: var(--line-dark-2); }
+
+/* ===================================================================
+   Rückbau auf den Onepager: Varianten der wiederhergestellten Sektionen
+   =================================================================== */
+
+/* Ankerziele: die fixierte Navigation verdeckt keine Überschrift. */
+main section[id] { scroll-margin-top: 84px; }
+main section[tabindex="-1"]:focus { outline: none; }
+
+/* Band unter dem Hero: drei Aussagen im Stil des Kennzahlenbands */
+.qb-signale { background: var(--ink); color: var(--text-inv); }
+.qb-signale .v2-stats-grid { list-style: none; margin: 0; padding: 0; grid-template-columns: repeat(3, 1fr); }
+.qb-signale .v2-stat-num { font-size: clamp(1.45rem, 2.4vw, 2.1rem); letter-spacing: -0.025em; }
+@media (max-width: 960px) {
+  .qb-signale .v2-stats-grid { grid-template-columns: repeat(3, 1fr); border-top: 0; border-left: 1px solid var(--line-dark); }
+  .qb-signale .v2-stat { border-bottom: 0; border-right: 1px solid var(--line-dark); padding: 16px; }
+}
+@media (max-width: 760px) {
+  .qb-signale .v2-stats-grid { grid-template-columns: 1fr; border-left: 0; }
+  .qb-signale .v2-stat { border-right: 0; border-bottom: 1px solid var(--line-dark); padding: 14px 0; grid-row: auto; grid-template-rows: auto auto; }
+  .qb-signale .v2-stat:last-child { border-bottom: 0; }
+  .qb-signale .v2-stat-num { font-size: clamp(1.3rem, 6vw, 1.6rem); }
+  .qb-signale .v2-stat-label { font-size: 12px; }
+}
+
+/* Leistungsversprechen: Links statt Buttons */
+.qb-einstieg a.mehr { text-decoration: none; }
+.qb-mehr-link { margin: 18px 0 0; }
+
+/* Logos: drei Boxen */
+.qb-kunden.drei { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 900px; }
+@media (max-width: 560px) {
+  .qb-kunden.drei { grid-template-columns: 1fr 1fr; }
+  .qb-kunden.drei li:last-child { grid-column: 1 / -1; justify-self: center; width: calc(50% - 7px); }
+}
+
+/* Arbeitsproben: Gruppentitel als h3 */
+.qb-refgruppe > .titel h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
+}
+.v2-mosaik-foot .v2-idx { color: rgba(243, 238, 229, 0.62); }
+
+/* Preise: Sonderobjekt-Titel als h3 */
+.qb-sonder h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--text); }
+
+/* Kontakt: Instagram-Zeile */
+.qb-insta { display: inline-flex; align-items: center; gap: 8px; }
+
+/* Wizard mit Sektionskopf auf der Startseite */
+.qb-wizard.mit-kopf .qb-cfg-book-shell { margin-top: clamp(38px, 4.4vw, 60px); }
+.qb-cfg-book-summary .fuss a { color: var(--linen); }
+
+/* Porträtfläche: Beschriftung unten links wie die übrigen Bildbeschriftungen */
+.qb-portrait .cap { position: absolute; left: 0; bottom: 0; }
