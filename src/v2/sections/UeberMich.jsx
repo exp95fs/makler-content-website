@@ -5,8 +5,6 @@
  * { id: 'ueber', label: 'Über uns' } wieder aufnehmen.
  */
 import { Split } from '../fx.jsx';
-import { Arrow } from '../ui.jsx';
-import { SEITEN } from '../seiten.js';
 
 /**
  * "Wer das macht", Gestaltung wie im bisherigen Onepager.
@@ -49,11 +47,6 @@ export function UeberMich() {
               Abstimmung bis zur finalen Bildauswahl.
             </p>
             <p className="loc" data-reveal>Ansässig in Bühl, unterwegs in Baden-Baden, Achern und Umgebung.</p>
-            <p data-reveal>
-              <a className="v2-link-inline on-light" href={SEITEN.ueber.pfad}>
-                Mehr über Quadratblick <Arrow size={14} />
-              </a>
-            </p>
           </div>
         </div>
       </div>

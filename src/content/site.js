@@ -44,7 +44,8 @@ export const images = {
     label: 'Beispiel-Bildstrecke',
     bilder: [22, 16, 15],
   },
-  // Referenzaufnahmen, 3:2, 1800 px. Reihenfolge wie in `referenzGruppen`.
+  // Referenzaufnahmen, 3:2, 1800 px. Auswahl und Reihenfolge der Startseite
+  // stehen in `referenzAuswahl`.
   referenzen: [
     { src: '/images/referenzen/ref-01.jpg', alt: 'Wohnküche mit Kochinsel und dunkler Küchenfront' },
     { src: '/images/referenzen/ref-02.jpg', alt: 'Küchenzeile mit Barhockern und Blick in den Wohnbereich' },
@@ -72,48 +73,9 @@ export const images = {
   ],
 };
 
-/* ------------------------------------------------------------------ *
- * Referenzgruppen
- *
- * Die Aufnahmen stehen nach Objekt gruppiert in einem versetzten Raster.
- * Welche Aufnahme zu welchem Objekt gehört, ist an den Bildern selbst
- * ablesbar; die Zuordnung ist also belegt.
- *
- * Nicht belegt sind Objektart, Ort und Auftraggeber. Deshalb heißen die
- * Gruppen neutral "Objekt 1" bis "Objekt 4", und das Label nennt nur die
- * Räume, die tatsächlich zu sehen sind. Nichts davon ist erfunden.
- *
- * TODO: Angabe durch Fabian bestätigen - sobald Objektart, Ort und die
- * Freigabe der Auftraggeber geklärt sind, können die Gruppen auf echte
- * Bezeichnungen umgestellt werden ("Mehrfamilienhaus, Bühl" o. ä.) und
- * das Label auf die erbrachte Leistung ("Fotografie · Drohne").
- *
- * Die Reihenfolge innerhalb einer Gruppe ist die Reihenfolge im Raster:
- * breit, quadratisch, hochkant, breit - danach wiederholt sich das Muster.
- *
- * `sichtbar: true` markiert die Gruppen, die ohne Klick zu sehen sind.
- * Von ihnen stehen zunächst nur die ersten vier Aufnahmen; alles Weitere
- * liegt hinter "Weitere Aufnahmen anzeigen".
- * ------------------------------------------------------------------ */
-export const referenzGruppen = [
-  { titel: 'Objekt 1', label: 'Küche, Wohnen, Essen', sichtbar: true,
-    bilder: [2, 0, 3, 1, 4] },
-  { titel: 'Objekt 2', label: 'Wohnen, Essen, Küche, Schlafen, Terrasse', sichtbar: true,
-    bilder: [17, 15, 16, 14, 22] },
-  // TODO: Angabe durch Fabian bestätigen - die Außenansicht (20) stammt aus
-  // derselben Bildstrecke wie die Dachgeschossaufnahmen und ist deshalb
-  // Objekt 3 zugeordnet.
-  { titel: 'Objekt 3', label: 'Außenansicht, Dachgeschosswohnung',
-    bilder: [20, 9, 7, 10, 5, 6, 8, 18, 19] },
-  { titel: 'Objekt 4', label: 'Wohnen, Schlafen, Bad',
-    bilder: [13, 12, 11] },
-  { titel: 'Objekt 5', label: 'Wohn- und Essbereich',
-    bilder: [21] },
-];
-
 /**
  * Auswahl für die Arbeitsproben auf der Startseite: nicht nach Objekt
- * gruppiert, sondern abwechselnd aus allen vier Objekten, damit schon die
+ * gruppiert, sondern abwechselnd aus verschiedenen Objekten, damit schon die
  * ersten Aufnahmen unterschiedliche Räume und Stile zeigen. Indizes in
  * `images.referenzen`; die erste Aufnahme steht im Mosaik groß.
  */
@@ -184,17 +146,6 @@ export const fotoklassen = [
 ];
 
 /**
- * Freigegebener Ablauf in vier Schritten. Keine Lieferzeit, keine SLA,
- * keine pauschale Eigentümerkoordination beim ersten Auftrag.
- */
-export const prozess = [
-  { t: 'Projekt anfragen', x: 'Objektklasse, Standort und gewünschten Zeitraum übermitteln.' },
-  { t: 'Umfang und Termin abstimmen', x: 'Quadratblick prüft die Angaben und bestätigt Leistungsumfang, Preis und Termin persönlich.' },
-  { t: 'Immobilie fotografieren', x: 'Die ersten Projekte werden eng mit dem Makler abgestimmt. Der konkrete Ablauf richtet sich nach Objekt und Zusammenarbeit.' },
-  { t: 'Bilder bearbeiten und bereitstellen', x: 'Die Aufnahmen werden professionell bearbeitet und zum vereinbarten Zeitpunkt digital bereitgestellt.' },
-];
-
-/**
  * Der Ablauf einer Produktion in sechs Schritten, wie im bisherigen
  * Onepager. Alle Texte bewusst gleich lang (Überschrift und zwei Zeilen
  * auf dem Desktop), damit die Abstände gleich bleiben. Korrigiert: keine
@@ -214,26 +165,6 @@ export const ablauf = [
   { t: 'High-End-Postproduktion', x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung je Bild.' },
   { t: 'Digitale Bereitstellung', x: 'Die fertigen Aufnahmen erhalten Sie zum vereinbarten Zeitpunkt, einsatzfertig für Exposé, Portale und Ihre Kanäle.' },
 ];
-
-/**
- * Leistungsumfang je Objektklasse, wie er bisher auf der Seite stand.
- * Nicht erweitern ohne Freigabe.
- */
-export const leistungsumfang = [
-  'Innen- und Außenaufnahmen',
-  '1 bis 2 Bilder je Raum, inklusive Nebenräume',
-  'Vollständig bearbeitete Bilder für Exposé und Immobilienportale',
-  'Checkliste zur Objektvorbereitung vorab',
-];
-
-/** Objekte außerhalb der drei Klassen. Kein Listenpreis, individuelle Prüfung. */
-export const sonderobjekt = {
-  key: 'sonder',
-  name: 'Größere oder besondere Objekte',
-  beschreibung: 'Gewerbe, Mischnutzung, mehrere Gebäude oder deutlich überdurchschnittlicher Umfang.',
-  preisLabel: 'Festpreis nach Objektprüfung',
-  stunden: 4,
-};
 
 /* ------------------------------------------------------------------ *
  * Zusatzleistungen
@@ -265,12 +196,6 @@ export const ergaenzungen = [
       + 'vermittelt. Ideal für Exposé, Website und Social Media – in 4K sowie im Hoch- oder Querformat.',
   },
 ];
-
-/**
- * Weitere Formate stehen nachgeordnet und ohne Preis. Keine aktiven
- * Standardangebote, nicht im strukturierten Datenmodell.
- */
-export const weitereMedien = 'Weitere Medienformate auf Anfrage.';
 
 /* ------------------------------------------------------------------ *
  * Kontakt
@@ -314,12 +239,6 @@ export const preisBrutto = (n) => preis(brutto(n)) + '\u00A0inkl.\u00A0USt.';
 
 /** Netto mit Brutto in Klammern, für Fließtext. */
 export const preisVoll = (n) => `${preisNetto(n)} (${preisBrutto(n)})`;
-
-/** Kleinste Objektklasse, für "ab"-Angaben. */
-export const abPreis = () => Math.min(...fotoklassen.map((k) => k.foto));
-
-export const preishinweis = 'Alle Preise sind Nettopreise in Euro zuzüglich der gesetzlichen '
-  + 'Umsatzsteuer von derzeit 19 %; die Bruttopreise sind jeweils angegeben.';
 
 /** Vollständiger Hinweis, steht im Footer. */
 export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '

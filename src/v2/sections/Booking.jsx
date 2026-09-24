@@ -3,7 +3,7 @@ import { Split } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisNetto, preisVoll } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisVoll } from '../../content/site.js';
 
 /**
  * Anfrage-Wizard für genau ein Objekt.
@@ -27,8 +27,7 @@ import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisNetto, preisVol
  * Unternehmer (auch Privatpersonen können anfragen). Zusatzleistungen:
  * Drohnenaufnahmen und Objekt-Kurzvideo (Daten in site.js).
  *
- * `kopf`: Sektionskopf des Onepagers ("Objekt anfragen", id "booking").
- * Ohne Kopf (auf /projekt-anfragen/) trägt die Sektion die id "wizard".
+ * Sektion "Objekt anfragen" des Onepagers (id "booking").
  */
 const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen'];
 const WEITER = {
@@ -87,7 +86,7 @@ const PFLICHT = {
   adresse: 'Bitte geben Sie die Adresse des Objekts an.',
 };
 
-export function Booking({ kopf = false }) {
+export function Booking() {
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(1);
   const [klasse, setKlasse] = useState('');
@@ -220,24 +219,20 @@ export function Booking({ kopf = false }) {
 
   const setFeld = (feld) => (e) => { starten(); setDaten((d) => ({ ...d, [feld]: e.target.value })); };
 
-  const H = kopf ? 'h3' : 'h2';
   const huelle = (inhalt) => (
-    <section className={`v2-sec bg-ink qb-wizard ${kopf ? 'mit-kopf' : ''}`} id={kopf ? 'booking' : 'wizard'}
-             {...(kopf ? { 'aria-labelledby': 'booking-titel' } : { 'aria-label': 'Projektanfrage' })}>
+    <section className="v2-sec bg-ink qb-wizard mit-kopf" id="booking" aria-labelledby="booking-titel">
       <div className="v2-wrap">
-        {kopf && (
-          <div className="v2-sec-head">
-            <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
-            <Split as="h2" id="booking-titel" className="v2-h-display v2-h-lg">
-              In wenigen Schritten zum festen Termin.
-            </Split>
-            <p className="v2-lead on-dark" data-reveal>
-              Sie wählen die Objektklasse und einen Wunschtermin, wir kümmern uns um
-              Vorbereitung, Aufnahme und Bearbeitung. Die Anfrage ist unverbindlich,
-              verbindlich wird sie mit unserer Bestätigung.
-            </p>
-          </div>
-        )}
+        <div className="v2-sec-head">
+          <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
+          <Split as="h2" id="booking-titel" className="v2-h-display v2-h-lg">
+            In wenigen Schritten zum festen Termin.
+          </Split>
+          <p className="v2-lead on-dark" data-reveal>
+            Sie wählen die Objektklasse und einen Wunschtermin, wir kümmern uns um
+            Vorbereitung, Aufnahme und Bearbeitung. Die Anfrage ist unverbindlich,
+            verbindlich wird sie mit unserer Bestätigung.
+          </p>
+        </div>
         {inhalt}
       </div>
     </section>
@@ -247,7 +242,7 @@ export function Booking({ kopf = false }) {
     return huelle(
       <div className="qb-cfg-sent" role="status">
         <span className="ok" aria-hidden="true">✓</span>
-        <H ref={erfolg} tabIndex={-1}>Anfrage gesendet</H>
+        <h3 ref={erfolg} tabIndex={-1}>Anfrage gesendet</h3>
         <p>
           Vielen Dank. Wir prüfen Ihre Angaben und melden uns persönlich mit der Bestätigung
           von Termin, Leistungsumfang und Preis.
@@ -479,7 +474,7 @@ export function Booking({ kopf = false }) {
           </div>
 
           <aside className="qb-cfg-book-summary" aria-label="Ihre Auswahl">
-            <H>Ihre Auswahl</H>
+            <h3>Ihre Auswahl</h3>
             {!gewaehlt ? (
               <p className="leer">Noch nichts gewählt. Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
             ) : (

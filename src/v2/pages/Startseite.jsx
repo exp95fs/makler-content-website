@@ -9,15 +9,15 @@ import { Preise } from '../sections/Preise.jsx';
 import { Booking } from '../sections/Booking.jsx';
 import { Ablauf } from '../sections/Ablauf.jsx';
 import { Marke } from '../sections/Marke.jsx';
-import { Faq, FRAGEN_START } from '../sections/Faq.jsx';
+import { Faq } from '../sections/Faq.jsx';
 import { Kontakt } from '../sections/Kontakt.jsx';
 
 /**
  * Startseite als Onepager, Sektionsfolge wie im bisherigen Onepager.
  * Preise und Buchung stehen unmittelbar hintereinander, damit aus der
  * Preisübersicht direkt angefragt werden kann; der Ablauf folgt darauf.
- * Die Unterseiten bleiben als vertiefende Seiten erreichbar (Textlinks
- * in den Sektionen und im Footer).
+ * Die früheren Unterseiten leiten per 301 auf die passenden Abschnitte
+ * weiter (netlify.toml).
  */
 export function Startseite() {
   return (
@@ -26,15 +26,14 @@ export function Startseite() {
       <StatBar />
       <LeistungenVorschau />
       <LogoSektion />
-      <Referenzen variante="start" />
+      <Referenzen />
       <WarumQuadratblick />
       <Preise />
-      <Booking kopf />
+      <Booking />
       <Ablauf />
       <Marke />
-      <Faq quelle={FRAGEN_START} eyebrow="Häufige Fragen" titel="Damit keine Fragen offen bleiben."
-           fragen={Object.keys(FRAGEN_START)} />
-      <Kontakt variante="start" />
+      <Faq />
+      <Kontakt />
     </PageShell>
   );
 }

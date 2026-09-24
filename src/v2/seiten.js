@@ -12,41 +12,11 @@ export const SEITEN = {
     title: 'Immobilienfotograf Mittelbaden | Quadratblick',
     description: 'Professionelle Immobilienfotografie für Makler in Bühl, Baden-Baden, Achern und Mittelbaden. Klare Preise nach Objektklasse und direkte Projektanfrage.',
   },
-  immobilienfotografie: {
-    pfad: '/immobilienfotografie/',
-    name: 'Immobilienfotografie',
-    title: 'Immobilienfotografie für Makler | Quadratblick',
-    description: 'Professionelle Immobilienfotos für Exposés und Immobilienportale in Bühl, Baden-Baden, Rastatt und Mittelbaden. Jetzt Verfügbarkeit prüfen.',
-  },
-  referenzen: {
-    pfad: '/referenzen/',
-    name: 'Referenzen',
-    title: 'Referenzen Immobilienfotografie | Quadratblick',
-    description: 'Ausgewählte Immobilienaufnahmen und regionale Referenzprojekte von Quadratblick in Bühl und Mittelbaden.',
-  },
-  preise: {
-    pfad: '/preise/',
-    name: 'Preise',
-    title: 'Preise für Immobilienfotografie | Quadratblick',
-    description: 'Transparente Preise für professionelle Immobilienfotografie: drei Objektklassen ab 350 € netto, Drohnenaufnahmen und Objekt-Kurzvideo als optionale Add-ons.',
-  },
-  ueber: {
-    pfad: '/ueber-quadratblick/',
-    name: 'Über Quadratblick',
-    title: 'Über Quadratblick und Fabian Schneebiegl',
-    description: 'Quadratblick steht für persönliche, professionelle Immobilienfotografie für Makler in Bühl und Mittelbaden. Lernen Sie Fabian Schneebiegl kennen.',
-  },
-  anfrage: {
-    pfad: '/projekt-anfragen/',
-    name: 'Verfügbarkeit prüfen',
-    title: 'Verfügbarkeit prüfen | Quadratblick',
-    description: 'Immobilienfotografie für ein konkretes Objekt anfragen und gewünschten Zeitraum übermitteln. Quadratblick bestätigt Termin, Umfang und Preis persönlich.',
-  },
   nichtGefunden: {
     pfad: '/404.html',
     name: 'Seite nicht gefunden',
     title: 'Seite nicht gefunden | Quadratblick',
-    description: 'Die angefragte Seite gibt es nicht. Von hier geht es zur Startseite, zu den Preisen oder zur Projektanfrage.',
+    description: 'Die angefragte Seite gibt es nicht. Von hier geht es zurück zur Startseite, zu den Preisen oder zur Anfrage.',
     index: false,
   },
 };

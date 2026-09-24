@@ -1,6 +1,14 @@
 import { PageShell } from '../Shell.jsx';
 import { SeitenKopf } from '../sections/SeitenKopf.jsx';
-import { SEITEN } from '../seiten.js';
+
+/** Ziele auf der Startseite (die Website ist ein Onepager). */
+const ZIELE = [
+  ['/', 'Startseite'],
+  ['/#leistungen', 'Leistungen'],
+  ['/#referenzen', 'Referenzen'],
+  ['/#preise', 'Preise'],
+  ['/#booking', 'Objekt anfragen'],
+];
 
 export function NichtGefunden() {
   return (
@@ -12,8 +20,8 @@ export function NichtGefunden() {
         einleitung="Diese Seite gibt es nicht oder nicht mehr. Hier geht es weiter:"
       >
         <ul className="qb-404-links">
-          {['start', 'immobilienfotografie', 'referenzen', 'preise', 'anfrage'].map((k) => (
-            <li key={k}><a href={SEITEN[k].pfad}>{SEITEN[k].name}</a></li>
+          {ZIELE.map(([href, text]) => (
+            <li key={href}><a href={href}>{text}</a></li>
           ))}
         </ul>
       </SeitenKopf>

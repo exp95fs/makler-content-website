@@ -2,19 +2,59 @@
   command = "npm run build"
   publish = "dist"
 
-# Dauerhafte Weiterleitungen für URLs aus der früheren Sitemap.
-# Netlify wertet die Regeln unabhängig vom abschließenden Schrägstrich aus.
+# Dauerhafte Weiterleitungen (301).
+#
+# Suchmaschinen übertragen damit die Bewertung der alten URL auf die
+# Startseite. Der Anker (#preise usw.) wird von Suchmaschinen ignoriert,
+# führt Besucher aber direkt zum passenden Abschnitt. Netlify wertet die
+# Regeln unabhängig vom abschließenden Schrägstrich aus; `force` greift auch
+# dann, wenn noch eine alte Datei unter dem Pfad liegen sollte.
 # Kein Redirect für /marke-und-social/: der Pfad lieferte in Produktion
-# bereits 404 und hat keine passende Zielseite; er ist aus der Sitemap entfernt.
+# bereits 404 und hat keine passende Zielseite.
+
+# Frühere Unterseiten (Mehrseiten-Fassung). Die Website ist wieder ein
+# Onepager; jede Unterseite leitet dauerhaft auf den passenden Abschnitt.
+[[redirects]]
+  from = "/immobilienfotografie"
+  to = "/#leistungen"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/referenzen"
+  to = "/#referenzen"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/preise"
+  to = "/#preise"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/projekt-anfragen"
+  to = "/#booking"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/ueber-quadratblick"
+  to = "/"
+  status = 301
+  force = true
+
+# URLs der bisherigen Live-Seite. Ziel direkt auf die Startseite, ohne
+# Umweg über eine weitere Weiterleitung.
 [[redirects]]
   from = "/objektcontent"
-  to = "/immobilienfotografie/"
+  to = "/#leistungen"
   status = 301
   force = true
 
 [[redirects]]
   from = "/ueber-uns"
-  to = "/ueber-quadratblick/"
+  to = "/"
   status = 301
   force = true
 

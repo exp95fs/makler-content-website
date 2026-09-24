@@ -11,42 +11,6 @@ const [wohnung, efh, mfh] = fotoklassen;
 const drohne = ergaenzungen.find((e) => e.key === 'drohne');
 const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 
-export const FRAGEN = {
-  kosten: {
-    q: 'Was kostet die Immobilienfotografie?',
-    a: `Der Preis richtet sich nach der Objektklasse: ${preisVoll(wohnung.foto)} für eine Wohnung, ${preisVoll(efh.foto)} für ein Einfamilienhaus und ${preisVoll(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisVoll(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen Festpreis.`,
-  },
-  anwesenheit: {
-    q: 'Muss ich beim Fototermin dabei sein?',
-    a: 'Bei den ersten Projekten stimmen wir den Ablauf persönlich und eng miteinander ab. Wenn die Zusammenarbeit eingespielt ist, kann Quadratblick auf Wunsch die Terminabstimmung mit Eigentümern direkt übernehmen.',
-  },
-  bereitstellung: {
-    q: 'Wann erhalte ich die Bilder?',
-    a: 'Den Zeitpunkt der Bereitstellung bestätigen wir zusammen mit Leistungsumfang, Preis und Termin persönlich. Die Bilder werden digital bereitgestellt.',
-  },
-  video: {
-    q: 'Bieten Sie auch Video an?',
-    a: `Ja. Ein Objekt-Kurzvideo, ein Rundgang in 4K im Hoch- oder Querformat, lässt sich für ${preisVoll(kurzvideo.preis)} dazubuchen und entsteht im selben Termin wie die Fotos. Weitere Videoformate auf Anfrage.`,
-  },
-  bilder: {
-    q: 'Wie viele Bilder erhalte ich?',
-    a: `Als Orientierung: ${wohnung.bilder} bei einer Wohnung, ${efh.bilder} bei einem Einfamilienhaus und ${mfh.bilder} bei einem Mehrfamilienhaus, jeweils 1 bis 2 Bilder je Raum. Die genaue Anzahl richtet sich nach dem Objekt.`,
-  },
-  vorbereitung: {
-    q: 'Wie sollte die Immobilie vorbereitet sein?',
-    a: 'Aufgeräumt, zugänglich, persönliche Gegenstände entfernt, Außenbereiche in ordentlichem Zustand. Eine Checkliste zur Objektvorbereitung erhalten Sie vorab.',
-  },
-  wetter: {
-    q: 'Was passiert bei schlechtem Wetter?',
-    a: 'Innenaufnahmen sind weitgehend wetterunabhängig. Ob Außen- und Drohnenaufnahmen wie geplant möglich sind, hängt von Witterung und Standort ab. Das stimmen wir vor dem Termin ab.',
-  },
-  rechte: {
-    q: 'Wie dürfen die Bilder genutzt werden?',
-    // TODO: Angabe durch Fabian bestätigen (Umfang der Nutzungsrechte).
-    a: 'Den Umfang der Nutzungsrechte legen wir mit der Auftragsbestätigung fest.',
-  },
-};
-
 /**
  * Fragen des bisherigen Onepagers in der alten Reihenfolge und Tonalität.
  * Korrigiert: keine Zusage "Sie müssen nicht dabei sein", Eigentümer-
@@ -84,7 +48,11 @@ export const FRAGEN_START = {
     q: 'Was lässt sich ergänzen?',
     a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisVoll(drohne.preis)} und ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)} direkt dazubuchen. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
   },
-  rechte: FRAGEN.rechte,
+  rechte: {
+    q: 'Wie dürfen die Bilder genutzt werden?',
+    // TODO: Angabe durch Fabian bestätigen (Umfang der Nutzungsrechte).
+    a: 'Den Umfang der Nutzungsrechte legen wir mit der Auftragsbestätigung fest.',
+  },
 };
 
 function Eintrag({ id, q, a, offen, umschalten }) {
@@ -112,7 +80,7 @@ function Eintrag({ id, q, a, offen, umschalten }) {
   );
 }
 
-export function Faq({ fragen, titel = 'Häufige Fragen', eyebrow = 'FAQ', quelle = FRAGEN, id = 'faq', bg = 'bg-linen-2' }) {
+export function Faq({ fragen = Object.keys(FRAGEN_START), titel = 'Damit keine Fragen offen bleiben.', eyebrow = 'Häufige Fragen', quelle = FRAGEN_START, id = 'faq', bg = 'bg-linen-2' }) {
   const [offen, setOffen] = useState(0);
   return (
     <section className={`v2-sec ${bg}`} id={id} aria-labelledby={`${id}-titel`}>

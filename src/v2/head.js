@@ -16,9 +16,9 @@ const ID = {
   business: `${SITE_URL}/#quadratblick`,
   person: `${SITE_URL}/#fabian-schneebiegl`,
   website: `${SITE_URL}/#website`,
-  foto: `${SITE_URL}/immobilienfotografie/#leistung`,
-  drohne: `${SITE_URL}/preise/#drohnenaufnahmen`,
-  kurzvideo: `${SITE_URL}/preise/#objekt-kurzvideo`,
+  foto: `${SITE_URL}/#immobilienfotografie`,
+  drohne: `${SITE_URL}/#drohnenaufnahmen`,
+  kurzvideo: `${SITE_URL}/#objekt-kurzvideo`,
 };
 
 const esc = (s) => String(s)
@@ -88,7 +88,7 @@ function graph(key) {
       description: 'Innen- und Außenaufnahmen für Exposés und Immobilienportale.',
       provider: { '@id': ID.business },
       areaServed: { '@type': 'AdministrativeArea', name: 'Mittelbaden' },
-      url: `${SITE_URL}/immobilienfotografie/`,
+      url: `${SITE_URL}/`,
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         '@id': `${ID.foto}-angebote`,
@@ -100,7 +100,7 @@ function graph(key) {
           price: k.foto,
           priceCurrency: 'EUR',
           priceSpecification: netto(k.foto),
-          url: `${SITE_URL}/preise/`,
+          url: `${SITE_URL}/`,
         })),
       },
     },
@@ -118,7 +118,7 @@ function graph(key) {
         price: e.preis,
         priceCurrency: 'EUR',
         priceSpecification: netto(e.preis),
-        url: `${SITE_URL}/preise/`,
+        url: `${SITE_URL}/`,
       },
     })),
   ];

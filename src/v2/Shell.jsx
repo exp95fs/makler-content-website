@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useSmoothScroll, springeZu, scrollToId, Cursor, Magnetic } from './fx.jsx';
 import { Arrow } from './ui.jsx';
 import { useKlickTracking } from './tracking.js';
-import { SEITEN } from './seiten.js';
 import logoWhite from '../assets/logo/quadratblick-logo-weiss-400.png';
 import logoBlack from '../assets/logo/quadratblick-logo-schwarz-400.png';
 import { kontakt, preishinweisVoll } from '../content/site.js';
 
-const ANFRAGE = SEITEN.anfrage.pfad;
 const REGION = 'Bühl · Baden-Baden · Achern';
 
 /**
@@ -78,7 +76,7 @@ function Nav({ start }) {
   }, [open]);
 
   const logo = solid && !open ? logoBlack : logoWhite;
-  const cta = start ? '#preise' : ANFRAGE;
+  const cta = start ? '#preise' : '/#preise';
 
   return (
     <>

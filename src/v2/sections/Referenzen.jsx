@@ -1,69 +1,40 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Split, revealNachgeladen } from '../fx.jsx';
 import { Arrow, Bild, InstagramGlyph } from '../ui.jsx';
-import { SEITEN } from '../seiten.js';
 import { track } from '../tracking.js';
-import { images, referenzGruppen, referenzAuswahl, kontakt } from '../../content/site.js';
+import { images, referenzAuswahl, kontakt } from '../../content/site.js';
 
 /**
- * Referenzgalerie, nach Objekt gruppiert in einem versetzten Raster.
- *
- * `variante="seite"` (/referenzen/): alle Aufnahmen mit Bildunterschrift,
- * je Gruppe der CTA "Ähnliches Objekt anfragen".
- *
- * `variante="start"` (Onepager): Gestaltung der früheren Arbeitsproben-
- * Sektion, aber nicht nach Objekt gruppiert: eine gemischte Auswahl aus
- * allen Objekten (`referenzAuswahl`) als kompaktes Mosaik. Zunächst ein
- * großes und vier kleine Bilder, "Weitere einblenden" ergänzt jeweils
- * eine Reihe. Die Großansicht läuft über die ganze Auswahl.
- *
- * Bildunterschriften beschreiben nur, was auf der Aufnahme zu sehen ist.
- * Objektart, Ort und Auftraggeber sind nicht belegt und werden nicht
- * genannt (siehe referenzGruppen in site.js).
+ * Arbeitsproben des Onepagers: eine gemischte Auswahl aus allen Objekten
+ * (`referenzAuswahl`) als kompaktes Mosaik. Zunächst ein großes und vier
+ * kleine Bilder, "Weitere einblenden" ergänzt jeweils eine Reihe. Die
+ * Großansicht läuft über die ganze Auswahl.
  *
  * Großansicht: vollständig per Tastatur bedienbar, Pfeiltasten blättern,
  * Escape schließt, der Fokus kehrt auf die auslösende Kachel zurück.
  */
-// Startseite: ein großes und vier kleine Bilder, danach je eine Reihe.
 const ANFANG = 5;
 const TAKT = 4;
 
-export function Referenzen({ variante = 'seite' }) {
-  const start = variante === 'start';
+export function Referenzen() {
   const [offen, setOffen] = useState(-1);
   const [anzahl, setAnzahl] = useState(ANFANG);
   const ausloeser = useRef(null);
   const dialog = useRef(null);
   const liste = useRef(null);
 
-  // Seite: nach Objekt gruppiert. Start: eine Gruppe ohne Titel mit der
-  // gemischten Auswahl. Die flache Reihenfolge ist zugleich die der
-  // Großansicht.
-  const { gruppen, reihenfolge } = useMemo(() => {
-    const flach = [];
-    const quelle = start
-      ? [{ titel: 'Auswahl', bilder: referenzAuswahl }]
-      : referenzGruppen;
-    const g = quelle.map((gr) => ({
-      ...gr,
-      bilder: gr.bilder.map((i) => {
-        const bild = images.referenzen[i];
-        const pos = flach.push(bild) - 1;
-        return { ...bild, pos };
-      }),
-    }));
-    return { gruppen: g, reihenfolge: flach };
-  }, [start]);
-
-  const sichtbareGruppen = start
-    ? gruppen.map((g) => ({ ...g, bilder: g.bilder.slice(0, anzahl) }))
-    : gruppen;
+  // Reihenfolge der Kacheln ist zugleich die der Großansicht.
+  const reihenfolge = useMemo(
+    () => referenzAuswahl.map((i, pos) => ({ ...images.referenzen[i], pos })),
+    [],
+  );
+  const sichtbar = reihenfolge.slice(0, anzahl);
   const rest = reihenfolge.length - anzahl;
 
   // Nachgeladene Aufnahmen bekommen ihren Reveal nachträglich.
   useEffect(() => {
-    if (start && anzahl > ANFANG) revealNachgeladen(liste.current);
-  }, [start, anzahl]);
+    if (anzahl > ANFANG) revealNachgeladen(liste.current);
+  }, [anzahl]);
 
   const schliessen = useCallback(() => {
     setOffen(-1);
@@ -102,69 +73,46 @@ export function Referenzen({ variante = 'seite' }) {
   const aktuell = offen >= 0 ? reihenfolge[offen] : null;
 
   return (
-    <section className="v2-sec bg-ink" id={start ? 'referenzen' : 'galerie'}
-             {...(start ? { 'aria-labelledby': 'referenzen-titel' } : { 'aria-label': 'Referenzgalerie' })}>
+    <section className="v2-sec bg-ink" id="referenzen" aria-labelledby="referenzen-titel">
       <div className="v2-wrap">
-        {start && (
-          <div className="v2-sec-head">
-            <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben</p>
-            <Split as="h2" id="referenzen-titel" className="v2-h-display v2-h-lg">
-              Die ersten Referenzobjekte.
-            </Split>
-            <p className="v2-lead on-dark" data-reveal>
-              Aufnahmen aus abgeschlossenen Objektproduktionen. Unser Portfolio wächst mit
-              jedem neuen Objekt.
-            </p>
-          </div>
-        )}
+        <div className="v2-sec-head">
+          <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben</p>
+          <Split as="h2" id="referenzen-titel" className="v2-h-display v2-h-lg">
+            Die ersten Referenzobjekte.
+          </Split>
+          <p className="v2-lead on-dark" data-reveal>
+            Aufnahmen aus abgeschlossenen Objektproduktionen. Unser Portfolio wächst mit
+            jedem neuen Objekt.
+          </p>
+        </div>
 
-        <ul className="qb-refgruppen" ref={liste}>
-          {sichtbareGruppen.map((g) => (
-            <li className="qb-refgruppe" key={g.titel}>
-              {!start && (
-                <div className="titel">
-                  <h2>{g.titel}</h2>
-                  <span>{g.label}</span>
-                </div>
-              )}
-              <ul className={start ? 'qb-versatz qb-mosaik' : 'qb-versatz'}>
-                {g.bilder.map((b, i) => (
-                  <li key={b.src} {...(start ? { 'data-reveal': '', 'data-delay': (i % TAKT) * 0.07 } : {})}>
-                    <figure>
-                      <button
-                        type="button"
-                        className="box"
-                        onClick={(e) => {
-                          ausloeser.current = e.currentTarget;
-                          setOffen(b.pos);
-                          track('referenzen_aufruf', { ansicht: 'grossansicht' });
-                        }}
-                        aria-label={`${b.alt}. Große Ansicht öffnen`}
-                      >
-                        <Bild src={b.src} alt={b.alt} sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1560px) 55vw, 860px" />
-                        <span className="lupe" aria-hidden="true">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M11 8v6" /><path d="M8 11h6" />
-                          </svg>
-                        </span>
-                      </button>
-                      {!start && <figcaption>{b.alt}</figcaption>}
-                    </figure>
-                  </li>
-                ))}
-              </ul>
-              {!start && (
-                <p className="qb-ref-cta">
-                  <a className="v2-btn ghost on-dark sm" href={SEITEN.anfrage.pfad} data-event="cta_primary">
-                    Ähnliches Objekt anfragen <Arrow size={14} />
-                  </a>
-                </p>
-              )}
+        <ul className="qb-versatz qb-mosaik" ref={liste}>
+          {sichtbar.map((b, i) => (
+            <li key={b.src} data-reveal data-delay={(i % TAKT) * 0.07}>
+              <figure>
+                <button
+                  type="button"
+                  className="box"
+                  onClick={(e) => {
+                    ausloeser.current = e.currentTarget;
+                    setOffen(b.pos);
+                    track('referenzen_aufruf', { ansicht: 'grossansicht' });
+                  }}
+                  aria-label={`${b.alt}. Große Ansicht öffnen`}
+                >
+                  <Bild src={b.src} alt={b.alt} sizes={i === 0 ? '(max-width: 760px) calc(100vw - 40px), 50vw' : '(max-width: 760px) 50vw, 25vw'} />
+                  <span className="lupe" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /><path d="M11 8v6" /><path d="M8 11h6" />
+                    </svg>
+                  </span>
+                </button>
+              </figure>
             </li>
           ))}
         </ul>
 
-        {start && rest > 0 && (
+        {rest > 0 && (
           <div className="v2-mosaik-mehr" data-reveal>
             <button type="button" className="v2-btn ghost on-dark"
                     onClick={() => { setAnzahl((n) => n + TAKT); track('referenzen_aufruf', { ansicht: 'mehr' }); }}>
@@ -173,13 +121,11 @@ export function Referenzen({ variante = 'seite' }) {
           </div>
         )}
 
-        {start && (
-          <div className="v2-mosaik-foot" data-reveal>
-            <a className="v2-link-inline" href={kontakt.instagram} target="_blank" rel="noopener noreferrer">
-              <InstagramGlyph size={15} />&nbsp;Mehr Arbeitsproben auf Instagram
-            </a>
-          </div>
-        )}
+        <div className="v2-mosaik-foot" data-reveal>
+          <a className="v2-link-inline" href={kontakt.instagram} target="_blank" rel="noopener noreferrer">
+            <InstagramGlyph size={15} />&nbsp;Mehr Arbeitsproben auf Instagram
+          </a>
+        </div>
       </div>
 
       {aktuell && (
