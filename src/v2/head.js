@@ -93,15 +93,23 @@ function graph(key) {
         '@type': 'OfferCatalog',
         '@id': `${ID.foto}-angebote`,
         name: 'Immobilienfotografie nach Objektklasse',
-        itemListElement: fotoklassen.map((k) => ({
-          '@type': 'Offer',
-          name: `Immobilienfotografie ${k.name}`,
-          description: `${k.beschreibung} ${k.bilder}.`,
-          price: k.foto,
-          priceCurrency: 'EUR',
-          priceSpecification: netto(k.foto),
-          url: `${SITE_URL}/`,
-        })),
+        // Klasse "auf Anfrage": Offer ohne Preisangaben, nie `price: null`.
+        itemListElement: fotoklassen.map((k) => (k.aufAnfrage
+          ? {
+            '@type': 'Offer',
+            name: `Immobilienfotografie ${k.name}`,
+            description: `${k.beschreibung} Preis auf Anfrage, nach kurzer Prüfung vorab als Festpreis.`,
+            url: `${SITE_URL}/`,
+          }
+          : {
+            '@type': 'Offer',
+            name: `Immobilienfotografie ${k.name}`,
+            description: `${k.beschreibung} ${k.bilder}.`,
+            price: k.foto,
+            priceCurrency: 'EUR',
+            priceSpecification: netto(k.foto),
+            url: `${SITE_URL}/`,
+          })),
       },
     },
     ...ergaenzungen.map((e) => ({

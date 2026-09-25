@@ -2,15 +2,19 @@ import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
-import { fotoklassen, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
+import { fotoklassen, aufAnfrage, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
- * drei gleichwertige Kacheln, ein CTA darunter, Ergänzungen.
+ * drei gleichwertige Kacheln mit Festpreis, darunter über die volle
+ * Breite die Klasse "auf Anfrage", ein CTA, Ergänzungen.
  *
  * Preise netto mit kleinem "netto", darunter der Bruttopreis inkl. USt.
  * Der vollständige Hinweis zur Umsatzsteuer steht im Footer.
  */
+
+const festpreisKlassen = fotoklassen.filter((k) => !k.aufAnfrage);
+const sonderKlassen = fotoklassen.filter((k) => k.aufAnfrage);
 
 export function Preise() {
   const ref = useRef(null);
@@ -22,17 +26,18 @@ export function Preise() {
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Pakete und Preise</p>
           <Split as="h2" id="preise-titel" className="v2-h-display v2-h-lg">
-            Ein Festpreis. Alles inkludiert. Ohne Überraschungen.
+            Festpreis nach Objektklasse.
           </Split>
           <p className="v2-lead" data-reveal>
-            Jedes Paket enthält alle Bilder, die Sie für eine erfolgreiche Vermarktung
-            brauchen. Die Preise unterscheiden sich allein nach Größe des Objekts und
-            damit nach der Anzahl der Bilder.
+            Der Preis richtet sich nach der Objektklasse, nicht nach Stunden, und steht vor
+            dem Termin fest. Er umfasst die Aufnahmen vor Ort und die Standardbearbeitung
+            eines aufnahmebereiten Objekts. Größere oder besondere Objekte prüfen wir kurz
+            und nennen Ihnen vorab einen Festpreis.
           </p>
         </div>
 
         <div className="qb-pakete">
-          {fotoklassen.map((k, i) => (
+          {festpreisKlassen.map((k, i) => (
             <article className="qb-paket" key={k.key} data-reveal data-delay={i * 0.08}>
               <div className="kopf">
                 <h3>{k.name}</h3>
@@ -46,6 +51,16 @@ export function Preise() {
             </article>
           ))}
         </div>
+
+        {sonderKlassen.map((k) => (
+          <article className="qb-sonder" key={k.key} data-reveal>
+            <div>
+              <h3>{k.name}</h3>
+              <p>{k.beschreibung}</p>
+            </div>
+            <p className="label">{aufAnfrage.zeile}</p>
+          </article>
+        ))}
 
         <div className="qb-pakete-fuss" data-reveal>
           <Magnetic strength={0.18}>

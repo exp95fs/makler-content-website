@@ -2328,6 +2328,15 @@ button.v2-link-inline {
   font-family: var(--font-body); font-weight: 700; font-size: 13.5px;
   color: var(--terra-deep); white-space: nowrap;
 }
+/* Klasse "auf Anfrage" unter den drei Kacheln (Preise.jsx) */
+.qb-sonder { background: #EBE3D5; border-color: var(--taupe); border-radius: 10px; }
+.qb-sonder > div { flex: 1 1 320px; min-width: 0; }
+.qb-sonder h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.1rem, 1.7vw, 1.3rem); letter-spacing: -0.02em; color: var(--text);
+}
+.qb-sonder > div p { margin: 6px 0 0; font-size: 13px; line-height: 1.55; }
+.qb-sonder p.label { flex: 1 1 260px; margin: 0; max-width: 40ch; white-space: normal; line-height: 1.55; }
 
 /* ---------- Ergänzungen: Hinweis statt Preisliste ---------- */
 .qb-ergaenzung {

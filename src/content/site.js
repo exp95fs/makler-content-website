@@ -124,7 +124,24 @@ export const fotoklassen = [
     foto: 550,
     stunden: 4,
   },
+  {
+    // Kein Festpreis ab Werk: nach kurzer Prüfung nennen wir vorab einen
+    // Festpreis. Ohne `foto` gibt es keine Summe; ohne `stunden` springt
+    // die Terminwahl auf die persönliche Abstimmung.
+    key: 'individuell',
+    name: 'Größeres oder besonderes Objekt',
+    beschreibung: 'Zum Beispiel ab vier Wohneinheiten, Gewerbe, mehrere Gebäude oder sehr große Grundstücke.',
+    foto: null,
+    aufAnfrage: true,
+  },
 ];
+
+/** Texte für die Klasse ohne Festpreis ab Werk. */
+export const aufAnfrage = {
+  preis: 'auf Anfrage',
+  summe: 'Preis nach Prüfung',
+  zeile: 'Preis auf Anfrage – nach kurzer Prüfung erhalten Sie vorab einen Festpreis.',
+};
 
 /**
  * Der Ablauf einer Produktion in sechs Schritten, wie im bisherigen
@@ -243,25 +260,31 @@ export const kontakt = {
 /** Umsatzsteuersatz, derzeit 19 %. */
 export const UST = 0.19;
 
+/*
+ * Alle Helfer sind null-sicher: ohne Betrag (Klasse "auf Anfrage") liefern
+ * sie "auf Anfrage" bzw. null statt einer Summe oder "NaN".
+ */
+const ohneBetrag = (n) => n === null || n === undefined || Number.isNaN(n);
+
 /** Betrag formatieren, ohne Zusatz. Cent nur, wenn nötig. */
-export const preis = (n) => n.toLocaleString('de-DE', {
+export const preis = (n) => (ohneBetrag(n) ? aufAnfrage.preis : n.toLocaleString('de-DE', {
   minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2,
-}) + '\u00A0€';
+}) + '\u00A0€');
 
 /** Bruttobetrag, auf den Cent gerundet. */
-export const brutto = (n) => Math.round(n * (1 + UST) * 100) / 100;
+export const brutto = (n) => (ohneBetrag(n) ? null : Math.round(n * (1 + UST) * 100) / 100);
 
 /** Betrag mit Nettozusatz, überall dort wo ein Preis genannt wird. */
-export const preisNetto = (n) => preis(n) + '\u00A0netto';
+export const preisNetto = (n) => (ohneBetrag(n) ? aufAnfrage.preis : preis(n) + '\u00A0netto');
 
 /** Bruttoangabe als Text: "416,50 € inkl. USt." */
-export const preisBrutto = (n) => preis(brutto(n)) + '\u00A0inkl.\u00A0USt.';
+export const preisBrutto = (n) => (ohneBetrag(n) ? '' : preis(brutto(n)) + '\u00A0inkl.\u00A0USt.');
 
 /** Netto mit Brutto in Klammern, für Fließtext. */
-export const preisVoll = (n) => `${preisNetto(n)} (${preisBrutto(n)})`;
+export const preisVoll = (n) => (ohneBetrag(n) ? aufAnfrage.preis : `${preisNetto(n)} (${preisBrutto(n)})`);
 
 /** Kleinster Festpreis der Objektklassen (ohne "auf Anfrage"), für "ab"-Angaben. */
-export const abPreis = () => Math.min(...fotoklassen.filter((k) => k.foto).map((k) => k.foto));
+export const abPreis = () => Math.min(...fotoklassen.filter((k) => !k.aufAnfrage).map((k) => k.foto));
 
 /** Vollständiger Hinweis, steht im Footer. */
 export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
