@@ -1,25 +1,27 @@
 import { Split } from '../fx.jsx';
 import { Arrow, Bild } from '../ui.jsx';
-import { images } from '../../content/site.js';
+import { images, kennzahlenQuelle } from '../../content/site.js';
 
 /**
  * Erste Sektion nach dem Hero, wie im bisherigen Onepager: das
  * Leistungsversprechen mit drei Vorteilen und einer versetzten
  * Bildstrecke.
  *
- * Eigentümerabstimmung als Option, nicht als Standard; "begleiten" statt
- * "übernehmen den gesamten Prozess".
+ * Eigentümerabstimmung als Option, nicht als Standard. Die Studienaussage
+ * in Punkt 01 trägt ein Sternchen; die Quelle steht unter der Liste
+ * (dieselbe Angabe wie im Kennzahlenband, `kennzahlenQuelle`).
  */
 const vorteile = [
   {
-    t: 'Nachweislich schneller vermittelt',
-    x: 'Ein Inserat, das aus der Masse heraussticht, wird häufiger geöffnet, bringt '
-      + 'qualifiziertere Anfragen und wird nachweislich schneller vermittelt.',
+    t: 'Nachweislich schneller vermittelt*',
+    x: 'Ein Inserat, das aus der Masse heraussticht, fällt im Portal auf und wird häufiger '
+      + 'angeklickt. Professionell fotografierte Häuser werden im Schnitt deutlich schneller '
+      + 'verkauft.*',
   },
   {
-    t: 'Zeit, die in Ihrem Büro bleibt',
-    x: 'Optional schicken Sie uns den Kontakt zum Eigentümer, wir liefern die fertigen '
-      + 'Bilder. So bleibt Ihre Zeit beim Verkaufen.',
+    t: 'Vorbereitung, die vor Ort Zeit spart',
+    x: 'Vorab erhalten Sie eine Checkliste, auf Wunsch auch für den Eigentümer. Wenn Sie '
+      + 'möchten, stimmen wir den Termin direkt mit dem Eigentümer ab.',
   },
   {
     t: 'Sichtbar für den nächsten Eigentümer',
@@ -40,11 +42,12 @@ export function LeistungenVorschau() {
           <div className="text">
             <p className="v2-eyebrow" data-reveal>Unser Leistungsversprechen</p>
             <Split as="h2" id="leistungen-titel" className="v2-h-display v2-h-lg">
-              Wir liefern nicht nur hochwertige Bilder. Wir begleiten den gesamten Prozess.
+              Ein Ablauf, auf den sich Ihr Büro verlassen kann.
             </Split>
             <p className="v2-lead" data-reveal>
-              Von der Abstimmung über den Fototermin bis zur Bereitstellung der fertigen
-              Bilder haben Sie einen festen Ansprechpartner.
+              Von der Anfrage bis zu den fertigen Bildern haben Sie einen festen
+              Ansprechpartner. Termin, Umfang, Preis und Bereitstellungszeitpunkt stehen mit
+              unserer Bestätigung fest.
             </p>
             <ol className="punkte" data-reveal>
               {vorteile.map((a, i) => (
@@ -55,6 +58,7 @@ export function LeistungenVorschau() {
                 </li>
               ))}
             </ol>
+            <p className="qb-quelle" data-reveal>{kennzahlenQuelle}</p>
             <div className="fuss" data-reveal>
               <a className="v2-btn" href="#preise">
                 Pakete und Preise <Arrow size={16} />

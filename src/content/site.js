@@ -221,6 +221,9 @@ export const preisBrutto = (n) => preis(brutto(n)) + '\u00A0inkl.\u00A0USt.';
 /** Netto mit Brutto in Klammern, für Fließtext. */
 export const preisVoll = (n) => `${preisNetto(n)} (${preisBrutto(n)})`;
 
+/** Kleinster Festpreis der Objektklassen (ohne "auf Anfrage"), für "ab"-Angaben. */
+export const abPreis = () => Math.min(...fotoklassen.filter((k) => k.foto).map((k) => k.foto));
+
 /** Vollständiger Hinweis, steht im Footer. */
 export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
   + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Die Bruttopreise inklusive Umsatzsteuer '
@@ -244,7 +247,7 @@ export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verste
  * ------------------------------------------------------------------ */
 export const kennzahlen = [
   { wert: 32, suffix: '\u00A0%*', label: 'schneller verkauft mit Profi-Fotos' },
-  { text: `ab ${preis(Math.min(...fotoklassen.filter((k) => k.foto).map((k) => k.foto)))}`, label: 'netto, Festpreis nach Objektklasse' },
+  { text: `ab ${preis(abPreis())}`, label: 'netto, Festpreis nach Objektklasse' },
   { text: '1 Termin', label: 'für Fotos, Drohne und Kurzvideo' },
   { text: '3–5 Werktage', label: 'bis zur Bereitstellung, in der Regel' },
 ];
