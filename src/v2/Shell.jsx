@@ -6,7 +6,7 @@ import logoWhite from '../assets/logo/quadratblick-logo-weiss-400.png';
 import logoBlack from '../assets/logo/quadratblick-logo-schwarz-400.png';
 import { kontakt, preishinweisVoll, CTA } from '../content/site.js';
 
-const REGION = 'Bühl · Baden-Baden · Achern';
+const REGION = kontakt.region;
 
 /**
  * Navigation des Onepagers, wie im bisherigen Onepager: alle Ziele sind
@@ -142,7 +142,7 @@ function Footer({ start }) {
             <img src={logoWhite} alt="Quadratblick" width="400" height="94" loading="lazy" />
             <p>
               Immobilienfotografie für Maklerbüros · Verkauf &amp; Vermietung ·
-              Raum Bühl · Baden-Baden · Achern
+              {' '}{REGION}
             </p>
           </div>
           <nav className="v2-footer-links" aria-label="Sektionen der Startseite">
