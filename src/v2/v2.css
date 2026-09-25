@@ -551,35 +551,6 @@ button.v2-link-inline {
 /* Für Hinweise, die über eine Zeile hinausgehen: gleiche Rolle, lesbarere Schrift. */
 .v2-fine.is-text { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; opacity: 1; max-width: 74ch; }
 
-/* ---------- Markenbildung (Sage) ---------- */
-.v2-brand-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--line-dark);
-  margin-top: clamp(48px, 6vw, 80px);
-}
-.v2-brand-cell {
-  padding: clamp(28px, 3.4vw, 48px) clamp(20px, 2.4vw, 40px);
-  border-right: 1px solid var(--line-dark);
-  position: relative;
-  transition: background 0.5s var(--ease-soft);
-}
-.v2-brand-cell:first-child { padding-left: 0; }
-.v2-brand-cell:last-child { border-right: none; }
-.v2-brand-cell:hover { background: rgba(243, 238, 229, 0.045); }
-.v2-brand-cell .num { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; color: var(--terra-soft); }
-.v2-brand-cell h3 {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.2rem, 1.7vw, 1.5rem); letter-spacing: -0.015em;
-  color: var(--linen); margin: 18px 0 12px;
-}
-.v2-brand-cell p { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--text-inv-soft); }
-@media (max-width: 860px) {
-  .v2-brand-grid { grid-template-columns: 1fr; }
-  .v2-brand-cell { border-right: none; border-bottom: 1px solid var(--line-dark); padding-left: 0; }
-}
-.v2-brand-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: clamp(40px, 5vw, 64px); }
-.v2-brand-foot p { margin: 0; max-width: 46ch; font-weight: 500; font-size: 15px; line-height: 1.6; color: var(--linen); }
-
 /* ---------- USP ---------- */
 .v2-usps { margin-top: clamp(48px, 6vw, 84px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0px, 0vw, 0px); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
 .v2-usp {
@@ -1463,14 +1434,6 @@ button.v2-link-inline {
 .qb-hinweis p { margin: 11px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); }
 @media (max-width: 760px) { .qb-hinweise { grid-template-columns: 1fr; } }
 
-/* ---------- Marke & Social: Preisbegründung ---------- */
-.qb-marke-preis {
-  margin-top: clamp(36px, 4vw, 56px); border: 1px solid var(--line-dark-2); border-radius: 6px;
-  background: rgba(243, 238, 229, 0.06); padding: clamp(20px, 2.6vw, 30px);
-}
-.qb-marke-preis .k { font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-soft); }
-.qb-marke-preis p { margin: 10px 0 0; font-size: 14.5px; line-height: 1.75; color: var(--text-inv-soft); max-width: 76ch; }
-
 /* ---------- Porträt im Über-Block ---------- */
 .v2-about-visual .frame.qb-portrait { display: block; }
 .qb-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1648,23 +1611,6 @@ button.v2-link-inline {
   color: var(--text); max-width: 68ch;
 }
 .qb-erw-note { margin: 14px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
-
-/* ---------- Teaser-Stichpunkte (Auftritt des Büros) ---------- */
-.qb-teaser-punkte {
-  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
-  border-top: 1px solid var(--line-dark);
-}
-.qb-teaser-punkte li {
-  padding: clamp(20px, 2.4vw, 30px) clamp(18px, 2vw, 30px) clamp(20px, 2.4vw, 30px) 0;
-  border-bottom: 1px solid var(--line-dark);
-  font-family: var(--font-display); font-weight: 500;
-  font-size: clamp(0.98rem, 1.4vw, 1.12rem); line-height: 1.5; letter-spacing: -0.01em;
-  color: var(--linen);
-}
-@media (max-width: 760px) {
-  .qb-teaser-punkte { grid-template-columns: 1fr; }
-}
 
 /* ---------- Anfrage: Erweiterungen über die volle Formularbreite ---------- */
 .qb-extras {
@@ -2858,3 +2804,31 @@ main section[tabindex="-1"]:focus { outline: none; }
 
 /* Quellenangabe unter dem Leistungsversprechen (Sternchen in Punkt 01) */
 .qb-quelle { margin: 12px 0 0; max-width: 62ch; font-size: 11.5px; line-height: 1.55; color: var(--text-soft); }
+
+/* ---------- Regelmäßige Zusammenarbeit (bg-sage) ---------- */
+.qb-zusammen-punkte {
+  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 64px);
+  border-top: 1px solid var(--line-dark);
+}
+.qb-zusammen-punkte li { padding: clamp(18px, 2.2vw, 26px) 0; border-bottom: 1px solid var(--line-dark); }
+.qb-zusammen-punkte h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1rem, 1.4vw, 1.12rem); letter-spacing: -0.01em; color: var(--linen);
+}
+.qb-zusammen-punkte p { margin: 6px 0 0; max-width: 52ch; font-size: 14.5px; line-height: 1.65; color: rgba(243, 238, 229, 0.86); }
+.qb-zusammen-start { margin-top: clamp(32px, 4vw, 48px); }
+.qb-zusammen-start h3 {
+  margin: 0; font-family: var(--font-body); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: #EDB99B;
+}
+.qb-zusammen-start ol {
+  list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px clamp(18px, 2.4vw, 36px);
+}
+.qb-zusammen-start li { display: flex; gap: 12px; align-items: baseline; font-size: 14.5px; line-height: 1.55; color: var(--linen); }
+.qb-zusammen-start .n { font-family: var(--font-display); font-weight: 600; font-size: 13px; color: #EDB99B; flex: none; }
+.qb-zusammen-cta { margin-top: clamp(28px, 3.6vw, 44px); }
+@media (max-width: 760px) {
+  .qb-zusammen-punkte, .qb-zusammen-start ol { grid-template-columns: 1fr; }
+}

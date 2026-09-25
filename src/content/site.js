@@ -179,6 +179,45 @@ export const ergaenzungen = [
 ];
 
 /* ------------------------------------------------------------------ *
+ * Die zwei Wege zur Anfrage. Überall dieselben Bezeichnungen:
+ * "Termin anfragen" führt zum Konfigurator (#booking), "Unverbindlich
+ * anfragen" zum Kontaktformular (#kontakt).
+ * ------------------------------------------------------------------ */
+export const CTA = {
+  termin: 'Termin anfragen',
+  kontakt: 'Unverbindlich anfragen',
+};
+
+/* ------------------------------------------------------------------ *
+ * Regelmäßige Zusammenarbeit (Sektion #zusammenarbeit)
+ *
+ * Bewusst ohne Prozentzahlen, Rabattversprechen, Kundennamen und ohne
+ * Begriffe wie Retainer, Kontingent oder Paketpreis. Konditionen werden
+ * persönlich besprochen.
+ * ------------------------------------------------------------------ */
+export const zusammenarbeit = {
+  eyebrow: 'Für Maklerbüros und Immobilienabteilungen',
+  titel: 'Mehrere Objekte im Jahr? Ein Ablauf für alle.',
+  lead: 'Wenn Ihr Büro regelmäßig Objekte vermarktet, stimmen wir Ablauf, Ansprechpartner, '
+    + 'Vorbereitung und Freigaben einmal gemeinsam ab. Danach läuft jedes neue Objekt nach '
+    + 'demselben Muster.',
+  punkte: [
+    { t: 'Einmal abgestimmt', x: 'Checkliste, Bildstil und Freigabeweg legen wir zu Beginn fest. Jedes weitere Objekt braucht nur noch Adresse und Wunschtermin.' },
+    { t: 'Ein fester Ansprechpartner', x: 'Sie sprechen immer mit derselben Person, die Ihre Objekte und Abläufe kennt.' },
+    { t: 'Termine bündeln', x: 'Mehrere Objekte in der Nähe fotografieren wir auf Wunsch am selben Tag.' },
+    { t: 'Einheitlicher Auftritt', x: 'Alle Objekte erscheinen in derselben Bildsprache, im Portal wie auf Ihrer Website.' },
+  ],
+  startTitel: 'So starten wir',
+  start: [
+    'Kurzes Gespräch über Objektzahl und Objektarten',
+    'Erstes Objekt zum regulären Festpreis',
+    'Ablauf festhalten und Konditionen für die regelmäßige Zusammenarbeit besprechen',
+  ],
+  // Vorauswahl im Kontaktformular (Schlüssel aus `anliegen`)
+  anliegen: 'regelmaessig',
+};
+
+/* ------------------------------------------------------------------ *
  * Kontakt
  * ------------------------------------------------------------------ */
 export const kontakt = {
