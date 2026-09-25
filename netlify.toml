@@ -2,6 +2,21 @@
   command = "npm run build"
   publish = "dist"
 
+# Kanonische Domain: www und http direkt auf https://quadratblick.de, in
+# einem Schritt statt einer Kette (http → https → ohne www). Stehen vor
+# allen anderen Regeln, weil Netlify die erste passende Regel anwendet.
+[[redirects]]
+  from = "http://www.quadratblick.de/*"
+  to = "https://quadratblick.de/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.quadratblick.de/*"
+  to = "https://quadratblick.de/:splat"
+  status = 301
+  force = true
+
 # Dauerhafte Weiterleitungen (301).
 #
 # Suchmaschinen übertragen damit die Bewertung der alten URL auf die
@@ -40,7 +55,7 @@
 
 [[redirects]]
   from = "/ueber-quadratblick"
-  to = "/"
+  to = "/#ueber"
   status = 301
   force = true
 
@@ -54,7 +69,7 @@
 
 [[redirects]]
   from = "/ueber-uns"
-  to = "/"
+  to = "/#ueber"
   status = 301
   force = true
 
@@ -62,3 +77,40 @@
 # Netlify automatisch mit "X-Robots-Tag: noindex" aus. Hier wird bewusst
 # kein globaler Robots-Header gesetzt, damit die Produktionsdomain
 # indexierbar bleibt.
+
+# ---------------------------------------------------------------------
+# Header
+# ---------------------------------------------------------------------
+
+# Sicherheits-Header für alle Antworten. Die Content-Security-Policy steht
+# bewusst nur als Report-Only: Verstöße erscheinen in der Browser-Konsole,
+# blockiert wird nichts. Erlaubt sind eigene Quellen, der Cloudflare-Web-
+# Analytics-Beacon (Skript von static.cloudflareinsights.com, Meldungen an
+# cloudflareinsights.com), der Formular-POST an "/" (Netlify Forms) und
+# das kleine Inline-Skript im <head> von index.html (per Hash; ändert es
+# sich, muss der Hash neu berechnet werden). Inline-Styles sind nötig für
+# style-Attribute und die <style>-Blöcke der Rechtsseiten.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'sha256-t8Qa/rojjjd1HVVytDsv0GdRu8plJFmoxAoPOcaxj7s=' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com https://static.cloudflareinsights.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+
+# Gebaute Dateien tragen einen Hash im Namen und ändern sich nie.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Bilder ohne Hash im Namen: 30 Tage.
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+# HTML bekommt keinen eigenen Cache-Header und behält damit den
+# Netlify-Standard (max-age=0, must-revalidate), damit neue Deploys sofort
+# ausgeliefert werden.
