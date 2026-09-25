@@ -2325,7 +2325,7 @@ button.v2-link-inline {
   font-size: clamp(1.1rem, 1.7vw, 1.3rem); letter-spacing: -0.02em; color: var(--text);
 }
 .qb-sonder > div p { margin: 6px 0 0; font-size: 13px; line-height: 1.55; }
-.qb-sonder p.label { flex: 1 1 260px; margin: 0; max-width: 40ch; white-space: normal; line-height: 1.55; }
+.qb-sonder p.label { flex: 1 1 260px; margin: 0; max-width: 40ch; white-space: normal; line-height: 1.55; color: #8E4A2F; }
 @media (max-width: 900px) { .qb-sonder { max-width: 560px; } }
 
 /* ---------- Ergänzungen: Hinweis statt Preisliste ---------- */
