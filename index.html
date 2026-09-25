@@ -43,7 +43,11 @@
   <form name="kontakt" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="kontakt" />
     <input type="text" name="bot-field" />
-    <input type="text" name="anliegen" />
+    <select name="anliegen">
+      <option value="Einzelnes Objekt">Einzelnes Objekt</option>
+      <option value="Regelmäßig mehrere Objekte">Regelmäßig mehrere Objekte</option>
+      <option value="Sonstiges">Sonstiges</option>
+    </select>
     <input type="text" name="name" />
     <input type="email" name="email" />
     <textarea name="nachricht"></textarea>

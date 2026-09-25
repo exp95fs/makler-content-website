@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
-import { fotoklassen, aufAnfrage, festpreisUmfang, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
+import { CTA, fotoklassen, aufAnfrage, festpreisUmfang, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
@@ -75,7 +75,7 @@ export function Preise() {
         <div className="qb-pakete-fuss" data-reveal>
           <Magnetic strength={0.18}>
             <a className="v2-btn" href="#booking" data-event="cta_primary">
-              Objekt anfragen <Arrow size={16} />
+              {CTA.termin} <Arrow size={16} />
             </a>
           </Magnetic>
         </div>
@@ -90,11 +90,11 @@ export function Preise() {
               kurzen Gespräch auf das Objekt ab.
             </p>
             <div className="ctas">
-              <a className="v2-btn ghost sm" href="#booking">
-                Im Buchungsprozess auswählen <Arrow size={15} />
+              <a className="v2-btn ghost sm" href="#booking" data-event="cta_primary">
+                {CTA.termin} <Arrow size={15} />
               </a>
-              <a className="v2-btn ghost sm" href="#kontakt">
-                Abstimmungstermin vereinbaren
+              <a className="v2-btn ghost sm" href="#kontakt" data-event="cta_kontakt">
+                {CTA.kontakt}
               </a>
             </div>
           </div>

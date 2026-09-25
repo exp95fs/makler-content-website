@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
 import { Arrow, Bild } from '../ui.jsx';
-import { images, abPreis, preisNetto } from '../../content/site.js';
+import { images, abPreis, preisNetto, CTA } from '../../content/site.js';
 
 /**
  * Hero des Onepagers. Gestaltung und Texte wie im bisherigen Onepager.
@@ -41,12 +41,12 @@ export function Hero() {
         <div className="v2-hero-ctas">
           <Magnetic>
             <a className="v2-btn" href="#booking" data-event="cta_primary">
-              Paket &amp; Termin anfragen <Arrow />
+              {CTA.termin} <Arrow />
             </a>
           </Magnetic>
           <Magnetic>
-            <a className="v2-btn ghost on-dark" href="#referenzen" data-event="referenzen_aufruf">
-              Arbeitsproben ansehen
+            <a className="v2-btn ghost on-dark" href="#kontakt" data-event="cta_kontakt">
+              {CTA.kontakt}
             </a>
           </Magnetic>
         </div>

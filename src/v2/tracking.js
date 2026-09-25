@@ -7,7 +7,8 @@
  * nur Ereignisname, Formularname, Schrittnummer und Zielseite.
  *
  * Ereignisse:
- *   cta_primary          Klick auf "Verfügbarkeit prüfen"
+ *   cta_primary          Klick auf "Termin anfragen" (Ziel #booking, Konfigurator)
+ *   cta_kontakt          Klick auf "Unverbindlich anfragen" (Ziel #kontakt, Kontaktformular)
  *   referenzen_aufruf    Aufruf der Referenzen (Seite oder Großansicht)
  *   preisbereich         Preisbereich sichtbar
  *   formular_start       erste Interaktion mit einem Formular
@@ -16,7 +17,8 @@
  *   formular_fehler      Übertragung fehlgeschlagen
  *   telefon_klick        Klick auf tel:-Link
  *   email_klick          Klick auf mailto:-Link
- *   cta_zusammenarbeit   Klick auf "Regelmäßige Zusammenarbeit besprechen"
+ *   cta_zusammenarbeit   Klick auf "Unverbindlich anfragen" in #zusammenarbeit
+ *                        (Ziel #kontakt, Anliegen "Regelmäßig mehrere Objekte")
  */
 import { useEffect } from 'react';
 

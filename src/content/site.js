@@ -220,6 +220,17 @@ export const CTA = {
   kontakt: 'Unverbindlich anfragen',
 };
 
+/**
+ * Pflichtauswahl "Anliegen" im Kontaktformular. Übertragen wird das Label
+ * im Feld `anliegen` (gleicher Feldname im statischen Formular in
+ * index.html). `regelmaessig` wird aus #zusammenarbeit vorausgewählt.
+ */
+export const anliegenOptionen = [
+  { key: 'einzeln', label: 'Einzelnes Objekt' },
+  { key: 'regelmaessig', label: 'Regelmäßig mehrere Objekte' },
+  { key: 'sonstiges', label: 'Sonstiges' },
+];
+
 /* ------------------------------------------------------------------ *
  * Regelmäßige Zusammenarbeit (Sektion #zusammenarbeit)
  *
