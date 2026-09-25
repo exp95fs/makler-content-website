@@ -14,8 +14,8 @@ const punkte = [
     text: 'Wir verbinden Fotografie, Drohne und Video mit einem klaren Verständnis für professionelle Immobilienvermarktung. So entstehen Medien, die Objekt und Maklerbüro überzeugend präsentieren.',
   },
   {
-    title: 'Fester Preis, keine Überraschung',
-    text: 'Sie wissen vor dem Termin, was die Produktion kostet. Der Preis richtet sich nach der Objektklasse, nicht nach Stunden, und steht mit unserer Bestätigung fest.',
+    title: 'Fester Preis für die Produktion',
+    text: 'Sie wissen vor dem Termin, was die Produktion kostet. Der Preis richtet sich nach der Objektklasse, nicht nach Stunden. Zusätzliche Wünsche nach dem Termin stimmen wir vorab mit Ihnen ab.',
   },
   {
     title: 'Wenig Aufwand auf Ihrer Seite',

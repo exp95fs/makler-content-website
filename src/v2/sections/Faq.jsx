@@ -22,7 +22,7 @@ const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 export const FRAGEN_START = {
   produktion: {
     q: 'Was kostet die Produktion?',
-    a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisVoll(wohnung.foto)} für eine Wohnung, ${preisVoll(efh.foto)} für ein Einfamilienhaus, ${preisVoll(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisVoll(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach einer kurzen Prüfung einen verbindlichen Festpreis. Keine Abrechnung nach Stunden.`,
+    a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisVoll(wohnung.foto)} für eine Wohnung, ${preisVoll(efh.foto)} für ein Einfamilienhaus, ${preisVoll(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisVoll(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach kurzer Prüfung einen Festpreis. Die Produktion selbst rechnen wir nicht nach Stunden ab. Zusätzliche Wünsche nach dem Termin stimmen wir vorab mit Ihnen ab und berechnen sie nach Aufwand.`,
   },
   zeit: {
     q: 'Wie viel Zeit kostet mich das?',

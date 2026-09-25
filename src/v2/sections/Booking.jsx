@@ -520,7 +520,7 @@ export function Booking() {
             )}
             <p className="fuss">
               Alle Einzelpreise netto. Der Preis steht mit unserer Bestätigung fest.
-              Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
+              Zusatzwünsche nach Absprache. Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
             </p>
           </aside>
         </div>,

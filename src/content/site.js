@@ -136,6 +136,21 @@ export const fotoklassen = [
   },
 ];
 
+/**
+ * Was der Festpreis umfasst und was nach Absprache dazukommt. Steht unter
+ * den Preiskacheln und (Zusatz) als FAQ-Antwort.
+ */
+export const festpreisUmfang = {
+  enthalten: {
+    t: 'Im Festpreis enthalten',
+    x: 'Termin vor Ort mit Innen- und Außenaufnahmen, Bildauswahl, Standardbearbeitung und digitale Bereitstellung.',
+  },
+  zusaetzlich: {
+    t: 'Nach Absprache zusätzlich',
+    x: 'Wünsche, die über die Standardbearbeitung hinausgehen, etwa virtuelles Home Staging, das Entfernen von Gegenständen oder aufwendigere Retuschen, sowie Mehraufwand vor Ort, wenn ein Objekt nicht vorbereitet ist. Diesen Aufwand stimmen wir vorher mit Ihnen ab und berechnen ihn nach Zeit.',
+  },
+};
+
 /** Texte für die Klasse ohne Festpreis ab Werk. */
 export const aufAnfrage = {
   preis: 'auf Anfrage',

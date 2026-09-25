@@ -2,12 +2,13 @@ import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
-import { fotoklassen, aufAnfrage, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
+import { fotoklassen, aufAnfrage, festpreisUmfang, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
  * drei gleichwertige Kacheln mit Festpreis, darunter über die volle
- * Breite die Klasse "auf Anfrage", ein CTA, Ergänzungen.
+ * Breite die Klasse "auf Anfrage", was der Festpreis umfasst und was nach
+ * Absprache dazukommt, ein CTA, Ergänzungen.
  *
  * Preise netto mit kleinem "netto", darunter der Bruttopreis inkl. USt.
  * Der vollständige Hinweis zur Umsatzsteuer steht im Footer.
@@ -61,6 +62,15 @@ export function Preise() {
             <p className="label">{aufAnfrage.zeile}</p>
           </article>
         ))}
+
+        <div className="qb-preis-details" data-reveal>
+          {[festpreisUmfang.enthalten, festpreisUmfang.zusaetzlich].map((b) => (
+            <div key={b.t}>
+              <h3>{b.t}</h3>
+              <p>{b.x}</p>
+            </div>
+          ))}
+        </div>
 
         <div className="qb-pakete-fuss" data-reveal>
           <Magnetic strength={0.18}>
