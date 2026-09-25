@@ -117,7 +117,7 @@ function graph(key) {
       '@id': ID[e.key],
       name: e.name,
       serviceType: e.name,
-      description: 'Optionale Zusatzleistung zur Immobilienfotografie.',
+      description: `${e.kurz} Optionale Zusatzleistung zur Immobilienfotografie.`,
       provider: { '@id': ID.business },
       offers: {
         '@type': 'Offer',

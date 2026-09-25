@@ -184,7 +184,8 @@ export const ablauf = [
  *
  * Im Anfrage-Wizard direkt wählbar: Drohnenaufnahmen (130 € netto) und
  * das Objekt-Kurzvideo (390 € netto), Preise nach Vorgabe von Fabian.
- * `note` ist der Text hinter dem Infobutton.
+ * `note` ist der Text hinter dem Infobutton. Das Video heißt überall
+ * "Objekt-Kurzvideo" (keine anderen Bezeichnungen).
  *
  * KONFLIKT zur Knowledge Base: dort steht der Arbeitspreis für
  * Drohnenfotos bei +170 €. Hier 130 € nach ausdrücklicher Vorgabe.
@@ -204,9 +205,10 @@ export const ergaenzungen = [
     name: 'Objekt-Kurzvideo',
     preis: 390,
     stunden: 2,
-    kurz: 'Rundgang in 4K, im Hoch- oder Querformat, für Exposé, Website und Social Media.',
-    note: 'Ein professionell produzierter Rundgang, der Raumgefühl und Atmosphäre authentisch '
-      + 'vermittelt. Ideal für Exposé, Website und Social Media – in 4K sowie im Hoch- oder Querformat.',
+    kurz: 'Walk-through durch die Immobilie in 4K, im Hoch- oder Querformat, für Exposé, Website und Social Media.',
+    note: 'Ein professionell produzierter Walk-through durch die Immobilie, der Raumgefühl und '
+      + 'Atmosphäre authentisch vermittelt. In 4K, im Hoch- oder Querformat, für Exposé, Website '
+      + 'und Social Media.',
   },
 ];
 
