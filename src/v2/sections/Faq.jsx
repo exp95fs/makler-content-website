@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Split } from '../fx.jsx';
-import { fotoklassen, ergaenzungen, preisVoll } from '../../content/site.js';
+import { fotoklassen, ergaenzungen, festpreisUmfang, preisVoll } from '../../content/site.js';
 
 /**
  * Häufige Fragen als semantisches HTML (Button + Region). Kein FAQ-Schema.
- * Antworten nur mit belegten Angaben: keine Lieferzeiten, keine
- * Rechtebedingungen, keine pauschale Eigentümerkoordination.
+ * Antworten nur mit belegten Angaben: Bereitstellung "in der Regel",
+ * keine Rechtebedingungen, keine pauschale Eigentümerkoordination.
  */
 const [wohnung, efh, mfh] = fotoklassen;
 const drohne = ergaenzungen.find((e) => e.key === 'drohne');
@@ -24,6 +24,10 @@ export const FRAGEN_START = {
     q: 'Was kostet die Produktion?',
     a: `Der Preis richtet sich nach der Objektklasse und steht vor dem Termin fest: ${preisVoll(wohnung.foto)} für eine Wohnung, ${preisVoll(efh.foto)} für ein Einfamilienhaus, ${preisVoll(mfh.foto)} für ein Mehrfamilienhaus. Drohnenaufnahmen lassen sich für ${preisVoll(drohne.preis)} ergänzen, ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)}. Für größere oder besondere Objekte erhalten Sie nach kurzer Prüfung einen Festpreis. Die Produktion selbst rechnen wir nicht nach Stunden ab. Zusätzliche Wünsche nach dem Termin stimmen wir vorab mit Ihnen ab und berechnen sie nach Aufwand.`,
   },
+  nichtEnthalten: {
+    q: 'Was ist nicht im Festpreis enthalten?',
+    a: festpreisUmfang.zusaetzlich.x,
+  },
   zeit: {
     q: 'Wie viel Zeit kostet mich das?',
     a: 'Wenig. Sie stellen die Anfrage, wir stimmen Termin und Umfang mit Ihnen ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Auf Wunsch stimmen wir den Termin direkt mit dem Eigentümer ab.',
@@ -38,7 +42,7 @@ export const FRAGEN_START = {
   },
   lieferung: {
     q: 'Wann erhalte ich die Bilder?',
-    a: 'Den Zeitpunkt der Bereitstellung nennen wir mit unserer Bestätigung, gemeinsam mit Termin, Leistungsumfang und Preis. Die Bilder werden digital bereitgestellt.',
+    a: 'In der Regel innerhalb von 3 bis 5 Werktagen nach dem Termin, je nach Objektklasse und gebuchten Ergänzungen wie Drohnenaufnahmen oder Kurzvideo. Den genauen Zeitpunkt nennen wir Ihnen mit der Bestätigung.',
   },
   wetter: {
     q: 'Was passiert bei schlechtem Wetter?',
@@ -47,6 +51,14 @@ export const FRAGEN_START = {
   ergaenzen: {
     q: 'Was lässt sich ergänzen?',
     a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisVoll(drohne.preis)} und ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)} direkt dazubuchen. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
+  },
+  orte: {
+    q: 'Für welche Orte arbeiten Sie?',
+    a: 'Unser Kerngebiet sind Bühl, Baden-Baden, Rastatt, Achern, Sinzheim, Gaggenau, Gernsbach und Umgebung. Für weiter entfernte Orte nennen wir Ihnen die Anfahrt vorab.',
+  },
+  regelmaessig: {
+    q: 'Arbeiten Sie regelmäßig für Maklerbüros und Immobilienabteilungen?',
+    a: 'Ja. Wenn Ihr Büro regelmäßig Objekte vermarktet, stimmen wir Ablauf, Ansprechpartner, Vorbereitung und Freigaben einmal ab. Konditionen für eine regelmäßige Zusammenarbeit besprechen wir persönlich.',
   },
   rechte: {
     q: 'Wie dürfen die Bilder genutzt werden?',
