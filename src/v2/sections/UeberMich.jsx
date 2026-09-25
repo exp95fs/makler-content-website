@@ -1,36 +1,20 @@
-/*
- * DERZEIT NICHT EINGEBUNDEN. Auf Wunsch von Fabian entfernt, bis ein
- * passendes Porträt oder Video vorliegt. Zum Einbinden in
- * pages/Startseite.jsx vor der FAQ einsetzen und in Shell.jsx den Anker
- * { id: 'ueber', label: 'Über uns' } wieder aufnehmen.
- */
 import { Split } from '../fx.jsx';
 
 /**
- * "Wer das macht", Gestaltung wie im bisherigen Onepager.
- *
- * Das frühere Porträt war ein Platzhalterbild. Statt eines Platzhalters
- * steht die gestaltete Fläche mit Monogramm (vorhandene Stile .frame,
- * .mono, .cap); es wird kein Bild geladen.
- * TODO: Angabe durch Fabian bestätigen – echtes Porträt (4:5) einsetzen.
+ * "Über uns" vor der FAQ, nur Text: kein Bild und kein Platzhalter, bis
+ * ein passendes Porträt vorliegt. Eyebrow links, Text rechts; auf Mobil
+ * gestapelt.
  *
  * Korrigiert: keine unbelegten Angaben zu Dauer und Auftraggebern
- * ("über viele Jahre", "namhafte Unternehmen"), Video nachgeordnet,
- * Region Bühl, Baden-Baden, Achern.
+ * ("über viele Jahre", "namhafte Unternehmen").
  */
 export function UeberMich() {
   return (
-    <section className="v2-sec bg-linen-2" id="ueber" aria-labelledby="ueber-titel">
+    <section className="v2-sec bg-linen" id="ueber" aria-labelledby="ueber-titel">
       <div className="v2-wrap">
-        <div className="v2-about">
-          <div className="v2-about-visual" data-reveal aria-hidden="true">
-            <div className="frame qb-portrait">
-              <span className="mono">Q</span>
-              <span className="cap">Fabian Schneebiegl · Quadratblick · Bühl</span>
-            </div>
-          </div>
+        <div className="v2-about ohne-bild">
+          <p className="v2-eyebrow" data-reveal>Über uns</p>
           <div className="v2-about-body">
-            <p className="v2-eyebrow" data-reveal>Wer das macht</p>
             <Split as="h2" id="ueber-titel" className="v2-h-display v2-h-lg">
               Fabian – Fotografie und strategischer Blick für Immobilien­marken.
             </Split>
@@ -46,7 +30,11 @@ export function UeberMich() {
               professionell positionieren. Ich begleite jedes Projekt persönlich, von der
               Abstimmung bis zur finalen Bildauswahl.
             </p>
-            <p className="loc" data-reveal>Ansässig in Bühl, unterwegs in Baden-Baden, Achern und Umgebung.</p>
+            <p data-reveal>
+              Sie haben einen festen Ansprechpartner, vom ersten Gespräch bis zur
+              Bereitstellung der Bilder.
+            </p>
+            <p className="loc" data-reveal>Ansässig in Bühl, unterwegs in Baden-Baden, Rastatt, Achern und Umgebung.</p>
           </div>
         </div>
       </div>

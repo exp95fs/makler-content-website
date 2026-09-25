@@ -78,7 +78,7 @@ export function Referenzen() {
         <div className="v2-sec-head">
           <p className="v2-eyebrow on-dark" data-reveal>Arbeitsproben</p>
           <Split as="h2" id="referenzen-titel" className="v2-h-display v2-h-lg">
-            Die ersten Referenzobjekte.
+            Aufnahmen aus aktuellen Objektproduktionen.
           </Split>
           <p className="v2-lead on-dark" data-reveal>
             Aufnahmen aus abgeschlossenen Objektproduktionen. Unser Portfolio wächst mit

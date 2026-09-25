@@ -19,11 +19,15 @@ for (const marke of ['<!--app-head-->', '<!--app-preload-->', '<div id="root"></
   }
 }
 
-// Die zwei Schnitte, die im sichtbaren Bereich zuerst gebraucht werden,
-// vorab laden: Überschriften (Jakarta 600) und Fließtext (Mulish 400).
+// Die zwei Schnitte, die im Hero zuerst gebraucht werden, vorab laden:
+// Überschrift (Jakarta 600) und Lead (Mulish 300). Kommt der Lead-Schnitt
+// erst nach dem ersten Paint, bricht der Lead mit der Webschrift anders um
+// und der unten ausgerichtete Hero-Text verschiebt sich (Layout Shift).
+// Ein dritter Preload (Mulish 500 für die Eyebrow) senkt den CLS kaum
+// weiter, kostet aber LCP.
 const assets = readdirSync(resolve('dist/assets'));
 const schrift = (muster) => assets.find((f) => f.startsWith(muster) && f.endsWith('.woff2'));
-const preload = ['plus-jakarta-sans-latin-600-normal', 'mulish-latin-400-normal']
+const preload = ['plus-jakarta-sans-latin-600-normal', 'mulish-latin-300-normal']
   .map(schrift).filter(Boolean)
   .map((f) => `<link rel="preload" href="/assets/${f}" as="font" type="font/woff2" crossorigin>`)
   .join('\n  ');

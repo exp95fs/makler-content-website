@@ -3,10 +3,15 @@ import { Split } from '../fx.jsx';
 import { Arrow, InstagramGlyph } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { kontakt } from '../../content/site.js';
+import { kontakt, anliegenOptionen, CTA } from '../../content/site.js';
 
 /**
- * Kontaktformular des Onepagers: Name, E-Mail, Nachricht.
+ * Kontaktformular des Onepagers: Anliegen (Pflichtauswahl), Name, E-Mail,
+ * Nachricht. Ziel aller Buttons "Unverbindlich anfragen".
+ *
+ * Das Anliegen kann von außen vorausgewählt werden: Die Sektion
+ * #zusammenarbeit löst beim Klick `qb:anliegen` mit dem Schlüssel aus
+ * (siehe RegelmaessigeZusammenarbeit.jsx).
  *
  * Erfolg nur nach bestätigter Serverantwort, Fehler mit erhaltenen
  * Eingaben und erneutem Senden, kein Doppelversand. Formular- und
@@ -15,7 +20,7 @@ import { kontakt } from '../../content/site.js';
  * Texte wie im bisherigen Onepager, ohne die frühere Zusage "innerhalb
  * von 24 Stunden".
  */
-const LEER = { name: '', email: '', nachricht: '' };
+const LEER = { anliegen: '', name: '', email: '', nachricht: '' };
 
 export function Kontakt() {
   const [daten, setDaten] = useState(LEER);
@@ -27,7 +32,18 @@ export function Kontakt() {
 
   useEffect(() => { if (status === 'erfolg') erfolg.current?.focus(); }, [status]);
 
+  useEffect(() => {
+    const vorwahl = (e) => {
+      if (!anliegenOptionen.some((o) => o.key === e.detail)) return;
+      setDaten((d) => ({ ...d, anliegen: e.detail }));
+      setStatus((s) => (s === 'erfolg' ? 'bereit' : s));
+    };
+    window.addEventListener('qb:anliegen', vorwahl);
+    return () => window.removeEventListener('qb:anliegen', vorwahl);
+  }, []);
+
   const fehler = {
+    anliegen: daten.anliegen ? null : 'Bitte wählen Sie Ihr Anliegen.',
     name: daten.name.trim() ? null : 'Bitte geben Sie Ihren Namen an.',
     email: emailGueltig(daten.email) ? null : 'Bitte geben Sie eine gültige E-Mail-Adresse an.',
     nachricht: daten.nachricht.trim() ? null : 'Bitte schreiben Sie kurz zu Ihrem Objekt und Anliegen.',
@@ -52,8 +68,8 @@ export function Kontakt() {
     const ergebnis = await sendeFormular({
       'form-name': 'kontakt',
       'bot-field': e.target.elements['bot-field']?.value || '',
-      anliegen: 'Anfrage über die Startseite',
       ...daten,
+      anliegen: anliegenOptionen.find((o) => o.key === daten.anliegen)?.label || '',
     });
     sendet.current = false;
     if (ergebnis.ok) {
@@ -79,10 +95,10 @@ export function Kontakt() {
           <div className="v2-contact-info">
             <p className="v2-eyebrow on-dark" data-reveal>Jetzt anfragen</p>
             <Split as="h2" id="kontakt-titel" className="v2-h-display v2-h-lg">
-              Erzählen Sie uns von Ihrem Objekt.
+              Fragen vorab oder mehrere Objekte im Jahr? Schreiben Sie uns.
             </Split>
             <p className="v2-lead on-dark" data-reveal>
-              Kurz Ihre Eckdaten, wir melden uns persönlich mit einem Terminvorschlag.
+              Kurz Ihr Anliegen, wir melden uns persönlich bei Ihnen.
             </p>
             <div className="v2-contact-meta" data-reveal>
               <a href={`mailto:${kontakt.email}`}><span className="k">E-Mail</span>{kontakt.email}</a>
@@ -114,6 +130,14 @@ export function Kontakt() {
                   <label>Nicht ausfüllen <input type="text" name="bot-field" tabIndex={-1} autoComplete="off" /></label>
                 </p>
                 <div className="v2-field">
+                  <label htmlFor="k-anliegen">Ihr Anliegen</label>
+                  <select required {...feldProps('anliegen')}>
+                    <option value="" disabled>Bitte wählen</option>
+                    {anliegenOptionen.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
+                  </select>
+                  {versucht && fehler.anliegen && <small className="fehler" id="k-anliegen-fehler">{fehler.anliegen}</small>}
+                </div>
+                <div className="v2-field">
                   <label htmlFor="k-name">Ihr Name</label>
                   <input type="text" autoComplete="name" required placeholder="Vor- und Nachname" {...feldProps('name')} />
                   {versucht && fehler.name && <small className="fehler" id="k-name-fehler">{fehler.name}</small>}
@@ -139,7 +163,7 @@ export function Kontakt() {
                   )}
                 </div>
                 <button type="submit" className="v2-btn" disabled={status === 'sendet'}>
-                  {status === 'sendet' ? 'Wird gesendet …' : status === 'fehler' ? 'Erneut senden' : 'Unverbindlich anfragen'}
+                  {status === 'sendet' ? 'Wird gesendet …' : status === 'fehler' ? 'Erneut senden' : CTA.kontakt}
                   {status !== 'sendet' && <Arrow />}
                 </button>
                 <p className="v2-form-note">

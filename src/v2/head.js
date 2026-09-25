@@ -4,12 +4,13 @@
  *
  * Das JSON-LD ist ein @graph mit stabilen @id-Werten. Es enthält nur
  * Angaben, die auch sichtbar auf der Seite stehen: Unternehmen, Person,
- * die Leistung Immobilienfotografie mit den drei Objektklassen und den
- * Zusatzleistungen (Drohnenaufnahmen, Objekt-Kurzvideo). Keine Social-
- * oder Staging-Angebote.
+ * die Leistung Immobilienfotografie mit den Objektklassen (die Klasse
+ * "auf Anfrage" ohne Preis) und den Zusatzleistungen (Drohnenaufnahmen,
+ * Objekt-Kurzvideo) sowie die FAQ als FAQPage aus derselben Quelle wie
+ * die sichtbare FAQ (FRAGEN_START). Keine Social- oder Staging-Angebote.
  */
 import { SEITEN } from './seiten.js';
-import { SITE_URL, fotoklassen, ergaenzungen, kontakt } from '../content/site.js';
+import { SITE_URL, fotoklassen, ergaenzungen, kontakt, FRAGEN_START } from '../content/site.js';
 
 const OG_BILD = `${SITE_URL}/og-immobilienfotografie-mittelbaden.jpg`;
 const ID = {
@@ -20,6 +21,16 @@ const ID = {
   drohne: `${SITE_URL}/#drohnenaufnahmen`,
   kurzvideo: `${SITE_URL}/#objekt-kurzvideo`,
 };
+
+/** Einsatzgebiet, gleich für ProfessionalService und Service. */
+const GEBIET = [
+  ...['Bühl', 'Baden-Baden', 'Rastatt', 'Achern', 'Sinzheim', 'Gaggenau', 'Gernsbach']
+    .map((name) => ({ '@type': 'City', name })),
+  { '@type': 'AdministrativeArea', name: 'Mittelbaden' },
+];
+
+const festpreise = fotoklassen.filter((k) => !k.aufAnfrage).map((k) => k.foto);
+const PREISSPANNE = `${Math.min(...festpreise)}–${Math.max(...festpreise)} € netto`;
 
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -43,7 +54,8 @@ function graph(key) {
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/quadratblick-logo.png`,
       image: OG_BILD,
-      description: 'Immobilienfotografie für Makler in Bühl, Baden-Baden, Achern und Mittelbaden.',
+      description: 'Immobilienfotografie für Maklerbüros in Bühl, Baden-Baden, Rastatt, Achern und Mittelbaden.',
+      priceRange: PREISSPANNE,
       email: kontakt.email,
       telephone: '+49 159 0469 2843',
       address: {
@@ -55,12 +67,7 @@ function graph(key) {
         addressCountry: 'DE',
       },
       geo: { '@type': 'GeoCoordinates', latitude: 48.6959, longitude: 8.1351 },
-      areaServed: [
-        { '@type': 'City', name: 'Bühl' },
-        { '@type': 'City', name: 'Baden-Baden' },
-        { '@type': 'City', name: 'Achern' },
-        { '@type': 'AdministrativeArea', name: 'Mittelbaden' },
-      ],
+      areaServed: GEBIET,
       founder: { '@id': ID.person },
       sameAs: [kontakt.instagram],
       makesOffer: [{ '@id': `${ID.foto}-angebote` }, ...ergaenzungen.map((e) => ({ '@id': `${ID[e.key]}-angebot` }))],
@@ -69,6 +76,7 @@ function graph(key) {
       '@type': 'Person',
       '@id': ID.person,
       name: 'Fabian Schneebiegl',
+      jobTitle: 'Foto- und Videoproduzent für Immobilien',
       worksFor: { '@id': ID.business },
       workLocation: { '@type': 'Place', name: 'Bühl' },
     },
@@ -87,21 +95,29 @@ function graph(key) {
       serviceType: 'Immobilienfotografie',
       description: 'Innen- und Außenaufnahmen für Exposés und Immobilienportale.',
       provider: { '@id': ID.business },
-      areaServed: { '@type': 'AdministrativeArea', name: 'Mittelbaden' },
+      areaServed: GEBIET,
       url: `${SITE_URL}/`,
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         '@id': `${ID.foto}-angebote`,
         name: 'Immobilienfotografie nach Objektklasse',
-        itemListElement: fotoklassen.map((k) => ({
-          '@type': 'Offer',
-          name: `Immobilienfotografie ${k.name}`,
-          description: `${k.beschreibung} ${k.bilder}.`,
-          price: k.foto,
-          priceCurrency: 'EUR',
-          priceSpecification: netto(k.foto),
-          url: `${SITE_URL}/`,
-        })),
+        // Klasse "auf Anfrage": Offer ohne Preisangaben, nie `price: null`.
+        itemListElement: fotoklassen.map((k) => (k.aufAnfrage
+          ? {
+            '@type': 'Offer',
+            name: `Immobilienfotografie ${k.name}`,
+            description: `${k.beschreibung} Preis auf Anfrage, nach kurzer Prüfung vorab als Festpreis.`,
+            url: `${SITE_URL}/`,
+          }
+          : {
+            '@type': 'Offer',
+            name: `Immobilienfotografie ${k.name}`,
+            description: `${k.beschreibung} ${k.bilder}.`,
+            price: k.foto,
+            priceCurrency: 'EUR',
+            priceSpecification: netto(k.foto),
+            url: `${SITE_URL}/`,
+          })),
       },
     },
     ...ergaenzungen.map((e) => ({
@@ -109,7 +125,7 @@ function graph(key) {
       '@id': ID[e.key],
       name: e.name,
       serviceType: e.name,
-      description: 'Optionale Zusatzleistung zur Immobilienfotografie.',
+      description: `${e.kurz} Optionale Zusatzleistung zur Immobilienfotografie.`,
       provider: { '@id': ID.business },
       offers: {
         '@type': 'Offer',
@@ -122,6 +138,21 @@ function graph(key) {
       },
     })),
   ];
+
+  if (seite.pfad === '/') {
+    knoten.push({
+      '@type': 'FAQPage',
+      '@id': `${SITE_URL}/#faq`,
+      url: `${SITE_URL}/#faq`,
+      inLanguage: 'de-DE',
+      isPartOf: { '@id': ID.website },
+      mainEntity: Object.values(FRAGEN_START).map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    });
+  }
 
   if (seite.pfad !== '/') {
     knoten.push({

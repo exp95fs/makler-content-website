@@ -1,5 +1,5 @@
 import { Split } from '../fx.jsx';
-import { ablauf } from '../../content/site.js';
+import { ablauf, CTA } from '../../content/site.js';
 
 /**
  * Der Ablauf einer Produktion als eigene Sektion, wie im bisherigen
@@ -21,8 +21,8 @@ export function Ablauf() {
               den fertigen Bildern.
             </p>
             <div className="ctas" data-reveal>
-              <a className="v2-btn ghost sm" href="#booking" data-event="cta_primary">Objekt anfragen</a>
-              <a className="v2-btn ghost sm" href="#kontakt">Erst kurz sprechen</a>
+              <a className="v2-btn ghost sm" href="#booking" data-event="cta_primary">{CTA.termin}</a>
+              <a className="v2-btn ghost sm" href="#kontakt" data-event="cta_kontakt">{CTA.kontakt}</a>
             </div>
           </div>
 

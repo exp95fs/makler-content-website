@@ -3,7 +3,7 @@ import { Split } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
-import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisVoll } from '../../content/site.js';
+import { fotoklassen, aufAnfrage, ergaenzungen, kontakt, preis, brutto, preisVoll } from '../../content/site.js';
 
 /**
  * Anfrage-Wizard für genau ein Objekt.
@@ -26,6 +26,10 @@ import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisVoll } from '..
  * Standard, keine AGB-Bestätigung ohne AGB-Seite, keine Beschränkung auf
  * Unternehmer (auch Privatpersonen können anfragen). Zusatzleistungen:
  * Drohnenaufnahmen und Objekt-Kurzvideo (Daten in site.js).
+ *
+ * Klasse "auf Anfrage" (`aufAnfrage` in fotoklassen): keine Summe, sondern
+ * "Preis nach Prüfung"; Ergänzungen werden mit Einzelpreisen gelistet; die
+ * Terminwahl steht auf der persönlichen Terminabstimmung.
  *
  * Sektion "Objekt anfragen" des Onepagers (id "booking").
  */
@@ -106,13 +110,15 @@ export function Booking() {
 
   const gewaehlt = fotoklassen.find((k) => k.key === klasse) || null;
   const gewaehlteZusatz = ergaenzungen.filter((e) => addons[e.key]);
+  const ohnePreis = !!gewaehlt?.aufAnfrage;
 
   const dauer = useMemo(() => {
-    if (!gewaehlt) return 0;
+    if (!gewaehlt || ohnePreis) return 0;
     return gewaehlt.stunden + gewaehlteZusatz.reduce((h, e) => h + e.stunden, 0);
-  }, [gewaehlt, gewaehlteZusatz]);
+  }, [gewaehlt, ohnePreis, gewaehlteZusatz]);
 
-  const summe = gewaehlt ? gewaehlt.foto + gewaehlteZusatz.reduce((s, e) => s + e.preis, 0) : 0;
+  // Ohne Festpreis ab Werk gibt es keine Summe (null), nie 0 oder NaN.
+  const summe = gewaehlt && !ohnePreis ? gewaehlt.foto + gewaehlteZusatz.reduce((s, e) => s + e.preis, 0) : null;
 
   // Terminvorschläge erst im Browser berechnen: sie hängen vom heutigen
   // Datum ab und würden sonst vom vorgerenderten HTML abweichen.
@@ -120,7 +126,7 @@ export function Booking() {
     if (dauer === 0 || dauer > MAX_FENSTER) { setKandidaten([]); return; }
     setKandidaten(produktionstage(120).filter((d) => d.fenster[1] - d.fenster[0] >= dauer).slice(0, 6));
   }, [dauer]);
-  const persoenlich = dauer > MAX_FENSTER || (dauer > 0 && kandidaten.length === 0);
+  const persoenlich = ohnePreis || dauer > MAX_FENSTER || (dauer > 0 && kandidaten.length === 0);
 
   useEffect(() => {
     if (step === 3 && persoenlich && !slot) setFallback(true);
@@ -182,7 +188,7 @@ export function Booking() {
       `Objektklasse: ${gewaehlt ? gewaehlt.name : 'offen'}`,
       `Zusatzleistung: ${gewaehlteZusatz.length ? gewaehlteZusatz.map((e) => e.name).join(', ') : 'keine'}`,
       `Wunschtermin: ${slot ? slot.label : 'Individuelle Terminanfrage'}`,
-      `Preisorientierung: ${preisVoll(summe)}`,
+      ohnePreis ? `Preis: ${aufAnfrage.preis}` : `Preisorientierung: ${preisVoll(summe)}`,
     ].join('\n');
   }
 
@@ -334,7 +340,7 @@ export function Booking() {
                     Wir planen ausreichend Zeit für eine reibungslose Produktion ein. Ihr Terminwunsch
                     ist unverbindlich, den Termin bestätigen wir persönlich.
                   </p>
-                  <p className="qb-cfg-book-note"><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std.</p>
+                  {dauer > 0 && <p className="qb-cfg-book-note"><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std.</p>}
                   {persoenlich ? (
                     <div className="qb-cfg-warnbox">
                       <b>Persönliche Terminabstimmung</b>
@@ -408,7 +414,7 @@ export function Booking() {
                           pflicht fehler={versucht[4] && fehlerFeld('adresse')} />
                     <Feld id="eigentuemer" label="Kontakt zum Eigentümer" breit wert={daten.eigentuemer}
                           onChange={setFeld('eigentuemer')} auto="off"
-                          hinweis="Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen." />
+                          hinweis="Optional. Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen und der Eigentümer mit der Weitergabe einverstanden ist." />
                     <Feld id="nachricht" label="Nachricht" breit mehrzeilig wert={daten.nachricht}
                           onChange={setFeld('nachricht')} />
                   </div>
@@ -428,7 +434,9 @@ export function Booking() {
                     <Zeile label="Kontakt" wert={`${daten.vorname} ${daten.nachname} · ${daten.email}`} />
                     <Zeile label="Objektadresse" wert={daten.adresse} />
                     {daten.eigentuemer && <Zeile label="Eigentümerkontakt" wert={daten.eigentuemer} />}
-                    <Zeile label="Festpreis" wert={preisVoll(summe)} />
+                    {ohnePreis
+                      ? <Zeile label="Preis" wert={aufAnfrage.preis} />
+                      : <Zeile label="Festpreis" wert={preisVoll(summe)} />}
                   </dl>
                   <p className="qb-cfg-book-note">
                     Informationen zur Verarbeitung Ihrer Angaben finden Sie in der{' '}
@@ -479,32 +487,40 @@ export function Booking() {
               <p className="leer">Noch nichts gewählt. Ihre Auswahl erscheint hier, sobald Sie eine Objektklasse wählen.</p>
             ) : (
               <>
-                <div className="row"><span>Fotografie · {gewaehlt.name}</span><b>{preis(gewaehlt.foto)}</b></div>
+                <div className="row"><span>Fotografie · {gewaehlt.name}</span><b>{ohnePreis ? aufAnfrage.preis : preis(gewaehlt.foto)}</b></div>
                 {gewaehlteZusatz.map((z) => (
                   <div className="row" key={z.key}><span>{z.name}</span><b>{preis(z.preis)}</b></div>
                 ))}
               </>
             )}
-            {gewaehlt && (
+            {gewaehlt && !ohnePreis && (
               <>
                 <div className="row summe"><span>Summe netto</span><b>{preis(summe)}</b></div>
                 <div className="row"><span>zzgl. 19 % USt.</span><b>{preis(Math.round((brutto(summe) - summe) * 100) / 100)}</b></div>
               </>
             )}
-            <div className="gesamt">
-              <span>Festpreis inkl. USt.</span>
-              <b>{gewaehlt ? preis(brutto(summe)) : '–'}</b>
-            </div>
-            {dauer > 0 && (
+            {ohnePreis ? (
+              <div className="gesamt">
+                <span>Gesamt</span>
+                <b>{aufAnfrage.summe}</b>
+              </div>
+            ) : (
+              <div className="gesamt">
+                <span>Festpreis inkl. USt.</span>
+                <b>{summe !== null ? preis(brutto(summe)) : '–'}</b>
+              </div>
+            )}
+            {(dauer > 0 || ohnePreis) && (
               <div className="hinweis">
                 {slot ? <><b>Wunschtermin</b><br />{slot.label}</>
-                  : fallback ? <><b>Individuelle Terminanfrage</b><br />Termin wird persönlich abgestimmt.</>
+                  : ohnePreis ? <><b>Persönliche Terminabstimmung</b><br />Termin wird persönlich abgestimmt.</>
+                    : fallback ? <><b>Individuelle Terminanfrage</b><br />Termin wird persönlich abgestimmt.</>
                     : <><b>Voraussichtliche Produktionszeit:</b> ca. {dauer} Std. · Termin noch offen</>}
               </div>
             )}
             <p className="fuss">
               Alle Einzelpreise netto. Der Preis steht mit unserer Bestätigung fest.
-              Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
+              Zusatzwünsche nach Absprache. Fragen vorab? <a href={kontakt.telefonHref}>{kontakt.telefon}</a>
             </p>
           </aside>
         </div>,

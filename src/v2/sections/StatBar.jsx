@@ -3,13 +3,13 @@ import { prefersReducedMotion } from '../fx.jsx';
 import { kennzahlen, kennzahlenQuelle } from '../../content/site.js';
 
 /**
- * Kennzahlenband unter dem Hero, wie im bisherigen Onepager.
+ * Kennzahlenband unter dem Hero. Werte und Quelle in site.js.
  *
  * Der Zielwert ist der Ausgangszustand: im vorgerenderten HTML, ohne
  * JavaScript und bei reduzierter Bewegung steht der richtige Wert. Die
  * Animation zählt nur dann hoch, wenn sie tatsächlich starten kann.
  */
-function Stat({ wert, prefix = '', suffix = '', label }) {
+function Zahl({ wert, prefix = '', suffix = '' }) {
   const [anzeige, setAnzeige] = useState(wert);
   const ref = useRef(null);
 
@@ -40,9 +40,16 @@ function Stat({ wert, prefix = '', suffix = '', label }) {
     return () => { beobachter.disconnect(); if (frame) cancelAnimationFrame(frame); };
   }, [wert]);
 
+  return <div className="v2-stat-num" ref={ref}>{prefix}{anzeige}{suffix}</div>;
+}
+
+/** Eine Zelle: Zahlen zählen hoch, Textwerte stehen fest. */
+function Stat({ wert, text, prefix, suffix, label }) {
   return (
-    <div className="v2-stat" ref={ref}>
-      <div className="v2-stat-num">{prefix}{anzeige}{suffix}</div>
+    <div className="v2-stat">
+      {typeof wert === 'number'
+        ? <Zahl wert={wert} prefix={prefix} suffix={suffix} />
+        : <div className="v2-stat-num">{text}</div>}
       <div className="v2-stat-label">{label}</div>
     </div>
   );
@@ -54,7 +61,7 @@ export function StatBar() {
       <div className="v2-wrap">
         <div className="v2-stats-grid">
           {kennzahlen.map((k) => (
-            <Stat key={k.label} wert={k.wert} prefix={k.prefix} suffix={k.suffix} label={k.label} />
+            <Stat key={k.label} {...k} />
           ))}
         </div>
         <p className="v2-stats-src">{kennzahlenQuelle}</p>

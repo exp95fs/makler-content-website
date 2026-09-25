@@ -4,9 +4,9 @@ import { Arrow } from './ui.jsx';
 import { useKlickTracking } from './tracking.js';
 import logoWhite from '../assets/logo/quadratblick-logo-weiss-400.png';
 import logoBlack from '../assets/logo/quadratblick-logo-schwarz-400.png';
-import { kontakt, preishinweisVoll } from '../content/site.js';
+import { kontakt, preishinweisVoll, CTA } from '../content/site.js';
 
-const REGION = 'Bühl · Baden-Baden · Achern';
+const REGION = kontakt.region;
 
 /**
  * Navigation des Onepagers, wie im bisherigen Onepager: alle Ziele sind
@@ -18,6 +18,7 @@ export const ANKER = [
   { id: 'referenzen', label: 'Referenzen' },
   { id: 'warum', label: 'Warum wir' },
   { id: 'preise', label: 'Preise & Buchung' },
+  { id: 'ueber', label: 'Über uns' },
   { id: 'faq', label: 'FAQ' },
 ];
 
@@ -76,7 +77,7 @@ function Nav({ start }) {
   }, [open]);
 
   const logo = solid && !open ? logoBlack : logoWhite;
-  const cta = start ? '#preise' : '/#preise';
+  const cta = start ? '#booking' : '/#booking';
 
   return (
     <>
@@ -94,7 +95,7 @@ function Nav({ start }) {
           <div className="v2-nav-aktionen">
             <Magnetic strength={0.25}>
               <a className="v2-btn sm v2-nav-cta" href={cta} data-event="cta_primary">
-                Termin anfragen <Arrow size={15} />
+                {CTA.termin} <Arrow size={15} />
               </a>
             </Magnetic>
             <button
@@ -122,7 +123,7 @@ function Nav({ start }) {
         </nav>
         <div className="v2-menu-foot">
           <a className="v2-btn" href={cta} data-event="cta_primary" onClick={() => setOpen(false)}>
-            Termin anfragen <Arrow />
+            {CTA.termin} <Arrow />
           </a>
           <p>{REGION}</p>
         </div>
@@ -141,7 +142,7 @@ function Footer({ start }) {
             <img src={logoWhite} alt="Quadratblick" width="400" height="94" loading="lazy" />
             <p>
               Immobilienfotografie für Maklerbüros · Verkauf &amp; Vermietung ·
-              Raum Bühl · Baden-Baden · Achern
+              {' '}{REGION}
             </p>
           </div>
           <nav className="v2-footer-links" aria-label="Sektionen der Startseite">

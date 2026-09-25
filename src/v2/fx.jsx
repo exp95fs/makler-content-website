@@ -1,12 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export const prefersReducedMotion = () =>
   typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * GSAP, ScrollTrigger und Lenis werden erst bei Bedarf als eigener Chunk
+ * geladen und bei reduzierter Bewegung gar nicht: alle Aufrufer prüfen
+ * vorher prefersReducedMotion(). Einmal geladen, teilen sich alle
+ * Aufrufer dieselbe Instanz.
+ */
+let motion = null;
+export function ladeMotion() {
+  if (!motion) {
+    motion = Promise.all([import('gsap'), import('gsap/ScrollTrigger'), import('lenis')])
+      .then(([g, st, l]) => {
+        const gsap = g.gsap || g.default;
+        const { ScrollTrigger } = st;
+        gsap.registerPlugin(ScrollTrigger);
+        return { gsap, ScrollTrigger, Lenis: l.default };
+      });
+  }
+  return motion;
+}
 
 let lenisInstance = null;
 
@@ -17,7 +32,18 @@ export function useSmoothScroll() {
       document.documentElement.classList.add('no-fx');
       return undefined;
     }
+    let abgebrochen = false;
+    let aufraeumen = null;
+    ladeMotion().then(({ gsap, ScrollTrigger, Lenis }) => {
+      if (abgebrochen) return;
+      aufraeumen = starteSmoothScroll(gsap, ScrollTrigger, Lenis);
+    });
+    return () => { abgebrochen = true; aufraeumen?.(); };
+  }, []);
+}
 
+function starteSmoothScroll(gsap, ScrollTrigger, Lenis) {
+  {
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -104,7 +130,7 @@ export function useSmoothScroll() {
       lenis.destroy();
       lenisInstance = null;
     };
-  }, []);
+  }
 }
 
 /**
@@ -124,19 +150,21 @@ export function revealNachgeladen(wurzel) {
     neu.forEach((el) => el.classList.add('is-in'));
     return;
   }
-  neu.forEach((el) => {
-    gsap.fromTo(el,
-      { opacity: 0, y: 34 },
-      {
-        opacity: 1, y: 0,
-        duration: 1.15,
-        ease: 'power3.out',
-        delay: parseFloat(el.dataset.delay || 0),
-        scrollTrigger: { trigger: el, start: 'top 95%', once: true },
-        onComplete: () => el.classList.add('is-in'),
-      });
+  ladeMotion().then(({ gsap, ScrollTrigger }) => {
+    neu.forEach((el) => {
+      gsap.fromTo(el,
+        { opacity: 0, y: 34 },
+        {
+          opacity: 1, y: 0,
+          duration: 1.15,
+          ease: 'power3.out',
+          delay: parseFloat(el.dataset.delay || 0),
+          scrollTrigger: { trigger: el, start: 'top 95%', once: true },
+          onComplete: () => el.classList.add('is-in'),
+        });
+    });
+    ScrollTrigger.refresh();
   });
-  ScrollTrigger.refresh();
 }
 
 export function scrollToId(id) {
@@ -258,18 +286,26 @@ export function Magnetic({ children, strength = 0.32 }) {
     if (!el || prefersReducedMotion()) return undefined;
     if (window.matchMedia('(hover: none)').matches) return undefined;
 
-    const xTo = gsap.quickTo(el, 'x', { duration: 0.9, ease: 'elastic.out(1, 0.4)' });
-    const yTo = gsap.quickTo(el, 'y', { duration: 0.9, ease: 'elastic.out(1, 0.4)' });
+    let xTo = null;
+    let yTo = null;
+    let abgebrochen = false;
+    ladeMotion().then(({ gsap }) => {
+      if (abgebrochen) return;
+      xTo = gsap.quickTo(el, 'x', { duration: 0.9, ease: 'elastic.out(1, 0.4)' });
+      yTo = gsap.quickTo(el, 'y', { duration: 0.9, ease: 'elastic.out(1, 0.4)' });
+    });
 
     const onMove = (e) => {
+      if (!xTo) return;
       const r = el.getBoundingClientRect();
       xTo((e.clientX - (r.left + r.width / 2)) * strength);
       yTo((e.clientY - (r.top + r.height / 2)) * strength);
     };
-    const onLeave = () => { xTo(0); yTo(0); };
+    const onLeave = () => { if (xTo) { xTo(0); yTo(0); } };
     el.addEventListener('mousemove', onMove);
     el.addEventListener('mouseleave', onLeave);
     return () => {
+      abgebrochen = true;
       el.removeEventListener('mousemove', onMove);
       el.removeEventListener('mouseleave', onLeave);
     };
@@ -280,29 +316,3 @@ export function Magnetic({ children, strength = 0.32 }) {
     </span>
   );
 }
-
-/** Zählt eine Zahl hoch, sobald das Element sichtbar wird. */
-export function CountUp({ to, prefix = '', suffix = '', duration = 1.6 }) {
-  const ref = useRef(null);
-  const [val, setVal] = useState(prefersReducedMotion() ? to : 0);
-  useEffect(() => {
-    if (prefersReducedMotion()) return undefined;
-    const el = ref.current;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return;
-      obs.disconnect();
-      const start = performance.now();
-      const tick = (now) => {
-        const p = Math.min((now - start) / (duration * 1000), 1);
-        setVal(Math.round(to * (1 - Math.pow(1 - p, 4))));
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }, { threshold: 0.5 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [to, duration]);
-  return <span ref={ref}>{prefix}{val}{suffix}</span>;
-}
-
-export { gsap, ScrollTrigger };

@@ -9,8 +9,9 @@ export const SEITEN = {
   start: {
     pfad: '/',
     name: 'Startseite',
-    title: 'Immobilienfotograf Mittelbaden | Quadratblick',
-    description: 'Professionelle Immobilienfotografie für Makler in Bühl, Baden-Baden, Achern und Mittelbaden. Klare Preise nach Objektklasse und direkte Projektanfrage.',
+    title: 'Immobilienfotograf Bühl, Baden-Baden & Rastatt | Quadratblick',
+    // Vorgabe auf ca. 160 Zeichen gekürzt ("und Mittelbaden", "direkte" entfallen).
+    description: 'Immobilienfotografie für Maklerbüros in Bühl, Baden-Baden, Rastatt und Achern. Festpreis nach Objektklasse, Drohnenaufnahmen, Objekt-Kurzvideo und Terminanfrage.',
   },
   nichtGefunden: {
     pfad: '/404.html',

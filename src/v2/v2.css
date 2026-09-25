@@ -242,6 +242,9 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   transition: transform 0.45s var(--ease-out);
 }
 .v2-nav-link:hover::after { transform: scaleX(1); transform-origin: left center; }
+/* Sechs Anker: Links nicht umbrechen, knapp über dem Umschaltpunkt enger. */
+.v2-nav-link { white-space: nowrap; }
+@media (max-width: 1080px) { .v2-nav-links { gap: 18px; } }
 @media (max-width: 940px) { .v2-nav-links { display: none; } }
 @media (max-width: 480px) {
   .v2-nav-inner { padding-top: 12px; padding-bottom: 12px; }
@@ -550,35 +553,6 @@ button.v2-link-inline {
 }
 /* Für Hinweise, die über eine Zeile hinausgehen: gleiche Rolle, lesbarere Schrift. */
 .v2-fine.is-text { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; opacity: 1; max-width: 74ch; }
-
-/* ---------- Markenbildung (Sage) ---------- */
-.v2-brand-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  border-top: 1px solid var(--line-dark);
-  margin-top: clamp(48px, 6vw, 80px);
-}
-.v2-brand-cell {
-  padding: clamp(28px, 3.4vw, 48px) clamp(20px, 2.4vw, 40px);
-  border-right: 1px solid var(--line-dark);
-  position: relative;
-  transition: background 0.5s var(--ease-soft);
-}
-.v2-brand-cell:first-child { padding-left: 0; }
-.v2-brand-cell:last-child { border-right: none; }
-.v2-brand-cell:hover { background: rgba(243, 238, 229, 0.045); }
-.v2-brand-cell .num { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.16em; color: var(--terra-soft); }
-.v2-brand-cell h3 {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.2rem, 1.7vw, 1.5rem); letter-spacing: -0.015em;
-  color: var(--linen); margin: 18px 0 12px;
-}
-.v2-brand-cell p { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--text-inv-soft); }
-@media (max-width: 860px) {
-  .v2-brand-grid { grid-template-columns: 1fr; }
-  .v2-brand-cell { border-right: none; border-bottom: 1px solid var(--line-dark); padding-left: 0; }
-}
-.v2-brand-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: clamp(40px, 5vw, 64px); }
-.v2-brand-foot p { margin: 0; max-width: 46ch; font-weight: 500; font-size: 15px; line-height: 1.6; color: var(--linen); }
 
 /* ---------- USP ---------- */
 .v2-usps { margin-top: clamp(48px, 6vw, 84px); display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0px, 0vw, 0px); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
@@ -924,28 +898,17 @@ button.v2-link-inline {
 
 /* ---------- About ---------- */
 .v2-about { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(36px, 6vw, 90px); align-items: center; }
-.v2-about-visual { position: relative; }
-.v2-about-visual .frame {
-  aspect-ratio: 4 / 5; border-radius: 4px; overflow: clip; position: relative;
-  background: linear-gradient(150deg, var(--sage) 0%, var(--sage-deep) 60%, var(--sage-black) 100%);
-  display: flex; align-items: flex-end;
-}
-.v2-about-visual .mono {
-  position: absolute; top: -6%; right: -4%;
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(12rem, 26vw, 24rem); line-height: 1; letter-spacing: -0.05em;
-  color: rgba(243, 238, 229, 0.09);
-  user-select: none;
-}
-.v2-about-visual .cap {
-  position: relative; z-index: 1; padding: 26px;
-  font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(243, 238, 229, 0.66);
-}
 .v2-about-body h2 { margin: 22px 0 0; }
 .v2-about-body p { font-size: 15.5px; font-weight: 300; line-height: 1.75; color: var(--text); margin: 20px 0 0; }
 .v2-about-body .loc { font-family: var(--font-body); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); margin-top: 26px; }
-@media (max-width: 860px) { .v2-about { grid-template-columns: 1fr; } }
+/* Ohne Bild: Eyebrow links, Text rechts */
+.v2-about.ohne-bild { grid-template-columns: minmax(0, 0.55fr) minmax(0, 1.45fr); align-items: start; }
+.v2-about.ohne-bild .v2-about-body { max-width: 760px; }
+.v2-about.ohne-bild .v2-about-body h2 { margin-top: 0; }
+@media (max-width: 860px) {
+  .v2-about, .v2-about.ohne-bild { grid-template-columns: 1fr; gap: 0; }
+  .v2-about.ohne-bild .v2-about-body h2 { margin-top: 22px; }
+}
 
 /* ---------- FAQ ---------- */
 .v2-faq { max-width: 860px; margin: clamp(40px, 5vw, 64px) auto 0; border-top: 1px solid var(--line); }
@@ -1463,17 +1426,6 @@ button.v2-link-inline {
 .qb-hinweis p { margin: 11px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); }
 @media (max-width: 760px) { .qb-hinweise { grid-template-columns: 1fr; } }
 
-/* ---------- Marke & Social: Preisbegründung ---------- */
-.qb-marke-preis {
-  margin-top: clamp(36px, 4vw, 56px); border: 1px solid var(--line-dark-2); border-radius: 6px;
-  background: rgba(243, 238, 229, 0.06); padding: clamp(20px, 2.6vw, 30px);
-}
-.qb-marke-preis .k { font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-soft); }
-.qb-marke-preis p { margin: 10px 0 0; font-size: 14.5px; line-height: 1.75; color: var(--text-inv-soft); max-width: 76ch; }
-
-/* ---------- Porträt im Über-Block ---------- */
-.v2-about-visual .frame.qb-portrait { display: block; }
-.qb-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ---------- Referenzen: Karussell ---------- */
 .qb-ref-head {
@@ -1648,23 +1600,6 @@ button.v2-link-inline {
   color: var(--text); max-width: 68ch;
 }
 .qb-erw-note { margin: 14px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
-
-/* ---------- Teaser-Stichpunkte (Auftritt des Büros) ---------- */
-.qb-teaser-punkte {
-  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
-  border-top: 1px solid var(--line-dark);
-}
-.qb-teaser-punkte li {
-  padding: clamp(20px, 2.4vw, 30px) clamp(18px, 2vw, 30px) clamp(20px, 2.4vw, 30px) 0;
-  border-bottom: 1px solid var(--line-dark);
-  font-family: var(--font-display); font-weight: 500;
-  font-size: clamp(0.98rem, 1.4vw, 1.12rem); line-height: 1.5; letter-spacing: -0.01em;
-  color: var(--linen);
-}
-@media (max-width: 760px) {
-  .qb-teaser-punkte { grid-template-columns: 1fr; }
-}
 
 /* ---------- Anfrage: Erweiterungen über die volle Formularbreite ---------- */
 .qb-extras {
@@ -2382,6 +2317,16 @@ button.v2-link-inline {
   font-family: var(--font-body); font-weight: 700; font-size: 13.5px;
   color: var(--terra-deep); white-space: nowrap;
 }
+/* Klasse "auf Anfrage" unter den drei Kacheln (Preise.jsx) */
+.qb-sonder { background: #EBE3D5; border-color: var(--taupe); border-radius: 10px; }
+.qb-sonder > div { flex: 1 1 320px; min-width: 0; }
+.qb-sonder h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.1rem, 1.7vw, 1.3rem); letter-spacing: -0.02em; color: var(--text);
+}
+.qb-sonder > div p { margin: 6px 0 0; font-size: 13px; line-height: 1.55; }
+.qb-sonder p.label { flex: 1 1 260px; margin: 0; max-width: 40ch; white-space: normal; line-height: 1.55; color: #8E4A2F; }
+@media (max-width: 900px) { .qb-sonder { max-width: 560px; } }
 
 /* ---------- Ergänzungen: Hinweis statt Preisliste ---------- */
 .qb-ergaenzung {
@@ -2702,6 +2647,9 @@ ul.v2-gruende { list-style: none; padding: 0; }
   background: transparent; border: none; border-bottom: 1.5px solid var(--line); padding: 10px 2px; border-radius: 0;
 }
 .v2-field input, .v2-field textarea { font-size: 16px; }
+.v2-field select:focus { outline: none; border-color: var(--terra); }
+.v2-field select:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; }
+.v2-field select[aria-invalid="true"] { border-color: var(--terra-deep); }
 .v2-field label { color: #57554A; font-size: 11px; }
 .v2-field small.fehler { display: block; margin-top: 6px; font-size: 12.5px; color: var(--terra-deep); }
 .v2-field input[aria-invalid="true"], .v2-field textarea[aria-invalid="true"] { border-color: var(--terra-deep); }
@@ -2855,3 +2803,34 @@ main section[tabindex="-1"]:focus { outline: none; }
   .qb-signale .v2-stats-src { margin-top: 8px; font-size: 9px; letter-spacing: 0; }
 }
 @media (max-width: 360px) { .qb-signale { --band: 66px; } }
+
+/* Quellenangabe unter dem Leistungsversprechen (Sternchen in Punkt 01) */
+.qb-quelle { margin: 12px 0 0; max-width: 62ch; font-size: 11.5px; line-height: 1.55; color: var(--text-soft); }
+
+/* ---------- Regelmäßige Zusammenarbeit (bg-sage) ---------- */
+.qb-zusammen-punkte {
+  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(24px, 4vw, 64px);
+  border-top: 1px solid var(--line-dark);
+}
+.qb-zusammen-punkte li { padding: clamp(18px, 2.2vw, 26px) 0; border-bottom: 1px solid var(--line-dark); }
+.qb-zusammen-punkte h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1rem, 1.4vw, 1.12rem); letter-spacing: -0.01em; color: var(--linen);
+}
+.qb-zusammen-punkte p { margin: 6px 0 0; max-width: 52ch; font-size: 14.5px; line-height: 1.65; color: rgba(243, 238, 229, 0.86); }
+.qb-zusammen-start { margin-top: clamp(32px, 4vw, 48px); }
+.qb-zusammen-start h3 {
+  margin: 0; font-family: var(--font-body); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: #EDB99B;
+}
+.qb-zusammen-start ol {
+  list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px clamp(18px, 2.4vw, 36px);
+}
+.qb-zusammen-start li { display: flex; gap: 12px; align-items: baseline; font-size: 14.5px; line-height: 1.55; color: var(--linen); }
+.qb-zusammen-start .n { font-family: var(--font-display); font-weight: 600; font-size: 13px; color: #EDB99B; flex: none; }
+.qb-zusammen-cta { margin-top: clamp(28px, 3.6vw, 44px); }
+@media (max-width: 760px) {
+  .qb-zusammen-punkte, .qb-zusammen-start ol { grid-template-columns: 1fr; }
+}
