@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Magnetic, gsap, prefersReducedMotion } from '../fx.jsx';
+import { Magnetic, ladeMotion, prefersReducedMotion } from '../fx.jsx';
 import { Arrow, Bild } from '../ui.jsx';
 import { images, abPreis, preisNetto, CTA } from '../../content/site.js';
 
@@ -16,9 +16,14 @@ import { images, abPreis, preisNetto, CTA } from '../../content/site.js';
 export function Hero() {
   useEffect(() => {
     if (prefersReducedMotion()) return undefined;
-    const tween = gsap.fromTo('.v2-hero-media img',
-      { scale: 1.14 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
-    return () => tween.kill();
+    let tween = null;
+    let abgebrochen = false;
+    ladeMotion().then(({ gsap }) => {
+      if (abgebrochen) return;
+      tween = gsap.fromTo('.v2-hero-media img',
+        { scale: 1.14 }, { scale: 1, duration: 2.4, ease: 'power2.out' });
+    });
+    return () => { abgebrochen = true; tween?.kill(); };
   }, []);
 
   return (

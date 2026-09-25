@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Split } from '../fx.jsx';
 import { FRAGEN_START } from '../../content/site.js';
 
-export { FRAGEN_START };
 
 /**
  * Häufige Fragen als semantisches HTML (Button + Region). Fragen und
