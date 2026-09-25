@@ -90,25 +90,6 @@ export const referenzAuswahl = [
 ];
 
 /* ------------------------------------------------------------------ *
- * Kennzahlen unter dem Hero
- * Werte und Quellenhinweis wörtlich wie im bisherigen Onepager, auf
- * ausdrücklichen Wunsch von Fabian wieder eingesetzt. Das kurze erste
- * Label ist bewusst zweizeilig (\n), damit alle vier Zellen gleich
- * gefüllt sind und Zahl und Label in jeder Zelle mittig sitzen.
- * TODO: Angabe durch Fabian bestätigen - Primärquellen der Werte
- * dokumentieren (KB: keine Wirkungsclaims ohne verifizierbare Quelle).
- * ------------------------------------------------------------------ */
-export const kennzahlen = [
-  { wert: 403, prefix: '+', suffix: ' %', label: 'mehr Anfragen\nmit Video' },
-  { wert: 32, prefix: '~', suffix: ' %', label: 'schnellere Vermittlung mit Profi-Fotos' },
-  { wert: 73, prefix: '', suffix: ' %', label: 'der Verkäufer bevorzugen Makler, die Video nutzen' },
-  { wert: 9, prefix: 'nur ', suffix: ' %', label: 'der Makler machen objektspezifische Videos' },
-];
-
-export const kennzahlenQuelle = 'Quellen: NAR, Redfin/VHT, Branchenstudien (überwiegend international). '
-  + 'Die Größenordnung ist auf den deutschen Markt übertragbar, in dem Video noch kaum genutzt wird.';
-
-/* ------------------------------------------------------------------ *
  * Foto-Objektklassen
  *
  * Jede Klasse erhält dieselbe professionelle Qualitätszusage. Die Klasse
@@ -244,3 +225,31 @@ export const preisVoll = (n) => `${preisNetto(n)} (${preisBrutto(n)})`;
 export const preishinweisVoll = 'Alle Preise sind Nettopreise in Euro und verstehen sich zuzüglich '
   + 'der gesetzlichen Umsatzsteuer von derzeit 19 %. Die Bruttopreise inklusive Umsatzsteuer '
   + 'sind jeweils mit angegeben.';
+
+/* ------------------------------------------------------------------ *
+ * Kennzahlen unter dem Hero
+ *
+ * Werbung mit Statistiken muss belegbar und die Quelle konkret auffindbar
+ * sein (§ 5 UWG). Deshalb nur noch ein Studienwert mit exakter Quelle,
+ * die übrigen Zellen sind eigene, überprüfbare Angaben.
+ *
+ * Quelle der 32 %: VHT Studios, Pressemitteilung "Professional Real
+ * Estate Photography Sells Homes 32% Faster" vom 2. September 2014 (PR
+ * Newswire, prnewswire.com/news-releases/professional-real-estate-
+ * photography-sells-homes-32-faster-273534171.html): Auswertung der 2013
+ * im Raum Chicago verkauften Häuser, 89 statt 123 Tage am Markt.
+ *
+ * `wert` (Zahl) zählt beim ersten Sichtkontakt hoch, `text` steht fest.
+ * Beide Varianten stehen mit dem Zielwert im vorgerenderten HTML.
+ * ------------------------------------------------------------------ */
+export const kennzahlen = [
+  { wert: 32, suffix: '\u00A0%*', label: 'schneller verkauft mit Profi-Fotos' },
+  { text: `ab ${preis(Math.min(...fotoklassen.filter((k) => k.foto).map((k) => k.foto)))}`, label: 'netto, Festpreis nach Objektklasse' },
+  { text: '1 Termin', label: 'für Fotos, Drohne und Kurzvideo' },
+  { text: '3–5 Werktage', label: 'bis zur Bereitstellung, in der Regel' },
+];
+
+/** Quellenangabe zum Sternchen, steht im Kennzahlenband und im Leistungsversprechen. */
+export const kennzahlenQuelle = '* VHT Studios (Pressemitteilung vom 2. September 2014), Auswertung der '
+  + '2013 im Raum Chicago (USA) verkauften Häuser: professionell fotografierte Objekte waren im '
+  + 'Schnitt 89 statt 123 Tage am Markt.';
