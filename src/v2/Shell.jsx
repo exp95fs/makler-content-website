@@ -18,6 +18,7 @@ export const ANKER = [
   { id: 'referenzen', label: 'Referenzen' },
   { id: 'warum', label: 'Warum wir' },
   { id: 'preise', label: 'Preise & Buchung' },
+  { id: 'ueber', label: 'Über uns' },
   { id: 'faq', label: 'FAQ' },
 ];
 

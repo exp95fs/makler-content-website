@@ -6,17 +6,18 @@ import { images } from '../../content/site.js';
  * Gestaltung des bisherigen Onepagers (Überschrift, Luft, feste Box je
  * Logo).
  *
- * Überschrift ohne "die mit uns arbeiten" bzw. "Setzen auf", weil eine
- * laufende Zusammenarbeit nicht für alle gezeigten Logos belegt ist.
+ * Überschrift bewusst ohne "die auf uns setzen" bzw. "die mit uns
+ * arbeiten", weil nicht für alle gezeigten Logos eine laufende
+ * Zusammenarbeit besteht.
  */
 export function LogoSektion() {
   return (
     <section className="v2-sec tight bg-linen-2" id="kunden" aria-labelledby="kunden-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head center">
-          <p className="v2-eyebrow" data-reveal>Referenzen aus der Region</p>
+          <p className="v2-eyebrow" data-reveal>Unsere Kunden</p>
           <Split as="h2" id="kunden-titel" className="v2-h-display v2-h-lg">
-            Aufnahmen für regionale Immobilien­anbieter.
+            Immobilienanbieter aus der Region, für die wir fotografieren.
           </Split>
         </div>
 

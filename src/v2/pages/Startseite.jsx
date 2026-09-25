@@ -9,6 +9,7 @@ import { Preise } from '../sections/Preise.jsx';
 import { Booking } from '../sections/Booking.jsx';
 import { Ablauf } from '../sections/Ablauf.jsx';
 import { RegelmaessigeZusammenarbeit } from '../sections/RegelmaessigeZusammenarbeit.jsx';
+import { UeberMich } from '../sections/UeberMich.jsx';
 import { Faq } from '../sections/Faq.jsx';
 import { Kontakt } from '../sections/Kontakt.jsx';
 
@@ -32,6 +33,7 @@ export function Startseite() {
       <Booking />
       <Ablauf />
       <RegelmaessigeZusammenarbeit />
+      <UeberMich />
       <Faq />
       <Kontakt />
     </PageShell>

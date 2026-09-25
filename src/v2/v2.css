@@ -242,6 +242,9 @@ body.v2-cursor-on, body.v2-cursor-on a, body.v2-cursor-on button { cursor: none;
   transition: transform 0.45s var(--ease-out);
 }
 .v2-nav-link:hover::after { transform: scaleX(1); transform-origin: left center; }
+/* Sechs Anker: Links nicht umbrechen, knapp über dem Umschaltpunkt enger. */
+.v2-nav-link { white-space: nowrap; }
+@media (max-width: 1080px) { .v2-nav-links { gap: 18px; } }
 @media (max-width: 940px) { .v2-nav-links { display: none; } }
 @media (max-width: 480px) {
   .v2-nav-inner { padding-top: 12px; padding-bottom: 12px; }
@@ -895,28 +898,17 @@ button.v2-link-inline {
 
 /* ---------- About ---------- */
 .v2-about { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(36px, 6vw, 90px); align-items: center; }
-.v2-about-visual { position: relative; }
-.v2-about-visual .frame {
-  aspect-ratio: 4 / 5; border-radius: 4px; overflow: clip; position: relative;
-  background: linear-gradient(150deg, var(--sage) 0%, var(--sage-deep) 60%, var(--sage-black) 100%);
-  display: flex; align-items: flex-end;
-}
-.v2-about-visual .mono {
-  position: absolute; top: -6%; right: -4%;
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(12rem, 26vw, 24rem); line-height: 1; letter-spacing: -0.05em;
-  color: rgba(243, 238, 229, 0.09);
-  user-select: none;
-}
-.v2-about-visual .cap {
-  position: relative; z-index: 1; padding: 26px;
-  font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(243, 238, 229, 0.66);
-}
 .v2-about-body h2 { margin: 22px 0 0; }
 .v2-about-body p { font-size: 15.5px; font-weight: 300; line-height: 1.75; color: var(--text); margin: 20px 0 0; }
 .v2-about-body .loc { font-family: var(--font-body); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); margin-top: 26px; }
-@media (max-width: 860px) { .v2-about { grid-template-columns: 1fr; } }
+/* Ohne Bild: Eyebrow links, Text rechts */
+.v2-about.ohne-bild { grid-template-columns: minmax(0, 0.55fr) minmax(0, 1.45fr); align-items: start; }
+.v2-about.ohne-bild .v2-about-body { max-width: 760px; }
+.v2-about.ohne-bild .v2-about-body h2 { margin-top: 0; }
+@media (max-width: 860px) {
+  .v2-about, .v2-about.ohne-bild { grid-template-columns: 1fr; gap: 0; }
+  .v2-about.ohne-bild .v2-about-body h2 { margin-top: 22px; }
+}
 
 /* ---------- FAQ ---------- */
 .v2-faq { max-width: 860px; margin: clamp(40px, 5vw, 64px) auto 0; border-top: 1px solid var(--line); }
@@ -1434,9 +1426,6 @@ button.v2-link-inline {
 .qb-hinweis p { margin: 11px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); }
 @media (max-width: 760px) { .qb-hinweise { grid-template-columns: 1fr; } }
 
-/* ---------- Porträt im Über-Block ---------- */
-.v2-about-visual .frame.qb-portrait { display: block; }
-.qb-portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ---------- Referenzen: Karussell ---------- */
 .qb-ref-head {
