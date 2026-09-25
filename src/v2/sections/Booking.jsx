@@ -414,7 +414,7 @@ export function Booking() {
                           pflicht fehler={versucht[4] && fehlerFeld('adresse')} />
                     <Feld id="eigentuemer" label="Kontakt zum Eigentümer" breit wert={daten.eigentuemer}
                           onChange={setFeld('eigentuemer')} auto="off"
-                          hinweis="Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen." />
+                          hinweis="Optional. Nur angeben, wenn wir den Termin direkt mit dem Eigentümer abstimmen sollen und der Eigentümer mit der Weitergabe einverstanden ist." />
                     <Feld id="nachricht" label="Nachricht" breit mehrzeilig wert={daten.nachricht}
                           onChange={setFeld('nachricht')} />
                   </div>

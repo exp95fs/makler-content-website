@@ -14,7 +14,7 @@ const kurzvideo = ergaenzungen.find((e) => e.key === 'kurzvideo');
 /**
  * Fragen des bisherigen Onepagers in der alten Reihenfolge und Tonalität.
  * Korrigiert: keine Zusage "Sie müssen nicht dabei sein", Eigentümer-
- * abstimmung nur bei eingespielter Zusammenarbeit und auf Wunsch, keine
+ * abstimmung nur auf Wunsch (überall derselbe Satz), keine
  * Nachberechnungs- oder Expresszusage, keine kostenlose Nachholung von
  * Außenaufnahmen, Nutzungsrechte in der freigegebenen,
  * neutralen Fassung.
@@ -26,11 +26,11 @@ export const FRAGEN_START = {
   },
   zeit: {
     q: 'Wie viel Zeit kostet mich das?',
-    a: 'Wenig. Sie stellen die Anfrage, wir stimmen Termin und Umfang mit Ihnen ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Die ersten Projekte stimmen wir eng miteinander ab. Ist die Zusammenarbeit eingespielt, übernehmen wir auf Wunsch auch die Terminabstimmung mit dem Eigentümer.',
+    a: 'Wenig. Sie stellen die Anfrage, wir stimmen Termin und Umfang mit Ihnen ab, schicken vorab die Checkliste zur Objektvorbereitung und sind zum vereinbarten Zeitpunkt vor Ort. Auf Wunsch stimmen wir den Termin direkt mit dem Eigentümer ab.',
   },
   eigentuemer: {
     q: 'Wer spricht mit dem Eigentümer?',
-    a: 'Das legen wir gemeinsam fest. Bei eingespielter Zusammenarbeit übernehmen wir auf Wunsch die Abstimmung direkt. Vor Ort treten wir als Teil Ihrer Vermarktung auf, nicht als unabhängiger Dienstleister. Der Verkauf einer Immobilie ist für Eigentümer ein sensibler Vorgang, entsprechend verhalten wir uns: angekündigt, pünktlich, zurückhaltend und im Namen Ihres Büros.',
+    a: 'Das legen wir gemeinsam fest. Auf Wunsch stimmen wir den Termin direkt mit dem Eigentümer ab. Vor Ort treten wir als Teil Ihrer Vermarktung auf, nicht als unabhängiger Dienstleister. Der Verkauf einer Immobilie ist für Eigentümer ein sensibler Vorgang, entsprechend verhalten wir uns: angekündigt, pünktlich, zurückhaltend und im Namen Ihres Büros.',
   },
   vorbereitung: {
     q: 'Wie muss die Immobilie vorbereitet sein?',

@@ -19,7 +19,7 @@ const punkte = [
   },
   {
     title: 'Wenig Aufwand auf Ihrer Seite',
-    text: 'Sie nennen uns Objekt und Wunschtermin, Vorbereitung, Aufnahme und Bearbeitung liegen bei uns. Ist die Zusammenarbeit eingespielt, übernehmen wir auf Wunsch auch die Terminabstimmung mit dem Eigentümer.',
+    text: 'Sie nennen uns Objekt und Wunschtermin, Vorbereitung, Aufnahme und Bearbeitung liegen bei uns. Auf Wunsch stimmen wir den Termin direkt mit dem Eigentümer ab.',
   },
   {
     title: 'Ein klarer, durchdachter Ablauf',

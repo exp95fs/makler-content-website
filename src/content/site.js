@@ -161,9 +161,9 @@ export const aufAnfrage = {
 /**
  * Der Ablauf einer Produktion in sechs Schritten, wie im bisherigen
  * Onepager. Alle Texte bewusst gleich lang (Überschrift und zwei Zeilen
- * auf dem Desktop), damit die Abstände gleich bleiben. Korrigiert: keine
- * Eigentümerkoordination als Standard (erst bei eingespielter
- * Zusammenarbeit und auf Wunsch), kein zugesagter Liefertermin.
+ * auf dem Desktop), damit die Abstände gleich bleiben. Eigentümerkontakt
+ * überall mit demselben Satz: nur auf Wunsch, kein Standard. Kein
+ * zugesagter Liefertermin.
  *
  * TODO: Angabe durch Fabian bestätigen - die technischen Angaben in 04
  * und 05 (Belichtungsreihen, manuelles Blending, Ausblicksoptimierung)
@@ -172,7 +172,7 @@ export const aufAnfrage = {
  */
 export const ablauf = [
   { t: 'Anfrage', x: 'Sie nennen uns Objekt, Objektklasse und Ihren Wunschtermin. Wir bestätigen Umfang, Preis und Termin persönlich.' },
-  { t: 'Terminabstimmung', x: 'Den Aufnahmetermin stimmen wir mit Ihnen ab. Optional übernehmen wir die Abstimmung direkt mit dem Eigentümer.' },
+  { t: 'Terminabstimmung', x: 'Den Aufnahmetermin legen wir gemeinsam mit Ihnen fest. Auf Wunsch stimmen wir den Termin direkt mit dem Eigentümer ab.' },
   { t: 'Checkliste zur Vorbereitung', x: 'Vorab erhalten Sie eine verständliche Anleitung, auf Wunsch auch für den Eigentümer. So hält vor Ort nichts auf.' },
   { t: 'Aufnahmen vor Ort', x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.' },
   { t: 'High-End-Postproduktion', x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung je Bild.' },
