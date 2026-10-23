@@ -31,7 +31,7 @@ const vorteile = [
 const STRECKE = '(max-width: 900px) 86vw, 46vw';
 
 export function LeistungenVorschau() {
-  const [haupt, zwei, drei] = images.strecke.bilder.map((i) => images.referenzen[i]);
+  const [haupt, zwei, drei] = images.strecke.bilder;
 
   return (
     <section className="v2-sec bg-linen" id="leistungen" aria-labelledby="leistungen-titel">
@@ -70,7 +70,7 @@ export function LeistungenVorschau() {
               <figcaption>{images.strecke.label}</figcaption>
             </figure>
             <a className="mehr" href="#referenzen" data-event="referenzen_aufruf">
-              Mehr Arbeitsproben <Arrow size={15} />
+              Beispiel-Inserate ansehen <Arrow size={15} />
             </a>
           </div>
         </div>

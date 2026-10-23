@@ -31,18 +31,26 @@ export function InstagramGlyph({ size = 16 }) {
  *
  * `vorrang`: für das Bild im ersten Sichtbereich (LCP). Lädt sofort und
  * mit hoher Priorität. Alle anderen Bilder laden lazy.
+ *
+ * `meta`: Varianten direkt übergeben statt über `src` aus bilder.json,
+ * etwa für die Beispiel-Inserate (src/content/beispiele.json).
  */
-export function Bild({ src, alt, sizes = '100vw', vorrang = false, className, ...rest }) {
-  const m = bilder[src];
+export function Bild({ src, alt, sizes = '100vw', vorrang = false, className, meta, alternativ, ...rest }) {
+  const m = meta || bilder[src];
   const laden = vorrang
     ? { loading: 'eager', fetchpriority: 'high', decoding: 'async' }
     : { loading: 'lazy', decoding: 'async' };
   if (!m) return <img src={src} alt={alt} className={className} {...laden} {...rest} />;
-  const set = (ext) => m.breiten.map((b) => `${m.basis}-${b}.${ext} ${b}w`).join(', ');
+  const set = (x, ext) => x.breiten.map((b) => `${x.basis}-${b}.${ext} ${b}w`).join(', ');
+  // `alternativ`: { src, media } – anderes Motiv, solange die Media-Query gilt
+  // (Art Direction, z. B. Hochformat). Der Browser lädt nur eines der Motive.
+  const alt2 = alternativ && bilder[alternativ.src];
   return (
     <picture>
-      <source type="image/avif" srcSet={set('avif')} sizes={sizes} />
-      <source type="image/webp" srcSet={set('webp')} sizes={sizes} />
+      {alt2 && <source type="image/avif" media={alternativ.media} srcSet={set(alt2, 'avif')} sizes={sizes} />}
+      {alt2 && <source type="image/webp" media={alternativ.media} srcSet={set(alt2, 'webp')} sizes={sizes} />}
+      <source type="image/avif" srcSet={set(m, 'avif')} sizes={sizes} />
+      <source type="image/webp" srcSet={set(m, 'webp')} sizes={sizes} />
       <img src={`${m.basis}-${m.fallback}.jpg`} alt={alt} width={m.width} height={m.height}
            className={className} {...laden} {...rest} />
     </picture>

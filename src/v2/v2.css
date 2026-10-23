@@ -2061,108 +2061,6 @@ button.v2-link-inline {
 }
 @media (max-width: 820px) { .v2-vorschau { grid-template-columns: 1fr; } }
 
-/* ---------- Referenzen: versetzte Gruppen ---------- */
-/* Die Aufnahmen stehen in Vierergruppen, jede in einem versetzten Raster
-   aus vier unterschiedlichen Formaten. Das zeigt, dass ganze Objekte
-   produziert werden und nicht Einzelbilder. Bewusst wenige, dafür große
-   Kacheln; der Rest liegt hinter dem Button am Ende der Sektion. */
-.qb-refgruppen { list-style: none; margin: clamp(30px, 3.6vw, 48px) 0 0; padding: 0; }
-.qb-refgruppe + .qb-refgruppe { margin-top: clamp(40px, 4.6vw, 64px); }
-.qb-refgruppe > .titel {
-  display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 16px;
-  padding-bottom: 14px; border-bottom: 1px solid var(--line-dark);
-}
-.qb-refgruppe > .titel b, .qb-refgruppe > .titel h2 { margin: 0;
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
-}
-.qb-refgruppe > .titel span {
-  font-family: var(--font-body); font-size: 11.5px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra-soft);
-}
-.qb-versatz {
-  list-style: none; margin: 22px 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(12px, 1.4vw, 20px);
-}
-/* Vierertakt: breit, quadratisch, hochkant, breit. Das Muster wiederholt
-   sich, damit auch Gruppen mit mehr als vier Aufnahmen versetzt bleiben. */
-.qb-versatz > li:nth-child(4n + 1) { grid-column: span 7; }
-.qb-versatz > li:nth-child(4n + 2) { grid-column: span 5; align-self: end; }
-.qb-versatz > li:nth-child(4n + 3) { grid-column: span 5; }
-.qb-versatz > li:nth-child(4n + 4) { grid-column: span 7; align-self: start; }
-.qb-versatz > li:nth-child(4n + 1) .box, .qb-versatz > li:nth-child(4n + 4) .box { aspect-ratio: 3 / 2; }
-.qb-versatz > li:nth-child(4n + 2) .box { aspect-ratio: 1 / 1; }
-.qb-versatz > li:nth-child(4n + 3) .box { aspect-ratio: 4 / 5; }
-.qb-versatz figure { margin: 0; }
-.qb-versatz figcaption { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--text-inv-soft); }
-.qb-versatz .box {
-  display: block; width: 100%; padding: 0; border: 0;
-  background: var(--sage-deep); border-radius: 5px; overflow: clip; position: relative;
-}
-.qb-versatz button.box { cursor: pointer; }
-.qb-versatz img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  transition: transform 0.9s var(--ease-out), opacity 0.4s var(--ease-soft);
-}
-.qb-versatz button:hover img { transform: scale(1.04); opacity: 0.86; }
-.qb-versatz .lupe {
-  position: absolute; right: 14px; bottom: 14px;
-  width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center;
-  background: rgba(34, 30, 25, 0.62); color: var(--linen);
-  opacity: 0; transform: translateY(6px);
-  transition: opacity 0.35s var(--ease-soft), transform 0.35s var(--ease-out);
-}
-.qb-versatz button:hover .lupe, .qb-versatz button:focus-visible .lupe { opacity: 1; transform: none; }
-.qb-versatz button:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 4px; }
-@media (max-width: 760px) {
-  .qb-versatz > li { grid-column: span 12 !important; align-self: auto !important; }
-  .qb-versatz > li .box { aspect-ratio: 3 / 2 !important; }
-}
-
-.v2-mosaik-foot {
-  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;
-  margin-top: clamp(24px, 2.8vw, 34px); padding-top: 20px; border-top: 1px solid var(--line-dark);
-}
-.v2-mosaik-foot .v2-idx { color: rgba(243, 238, 229, 0.4); }
-
-/* ---------- Lightbox ---------- */
-.v2-lightbox {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(23, 20, 17, 0.94);
-  display: grid; place-items: center; padding: clamp(16px, 4vw, 56px);
-  animation: qb-fade 0.28s var(--ease-soft);
-}
-@keyframes qb-fade { from { opacity: 0; } to { opacity: 1; } }
-.v2-lightbox figure { margin: 0; max-width: min(1200px, 92vw); }
-.v2-lightbox img {
-  display: block; width: 100%; height: auto; max-height: 78vh; object-fit: contain;
-  border-radius: 4px;
-}
-.v2-lightbox figcaption {
-  margin-top: 14px; text-align: center;
-  font-family: var(--font-body); font-size: 13.5px; color: var(--text-inv-soft);
-}
-.v2-lightbox button {
-  position: absolute; width: 46px; height: 46px; border-radius: 999px; cursor: pointer;
-  background: rgba(243, 238, 229, 0.1); border: 1px solid var(--line-dark-2); color: var(--linen);
-  display: grid; place-items: center;
-  transition: background 0.3s var(--ease-soft), border-color 0.3s var(--ease-soft);
-}
-.v2-lightbox button:hover { background: rgba(243, 238, 229, 0.2); border-color: var(--linen); }
-.v2-lightbox button:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 3px; }
-.v2-lightbox .zu { top: clamp(14px, 3vw, 30px); right: clamp(14px, 3vw, 30px); }
-.v2-lightbox .vor { left: clamp(12px, 2.4vw, 28px); top: 50%; transform: translateY(-50%); }
-.v2-lightbox .zurueck { right: clamp(12px, 2.4vw, 28px); top: 50%; transform: translateY(-50%); }
-.v2-lightbox .zaehler {
-  position: absolute; bottom: clamp(14px, 3vw, 28px); left: 50%; transform: translateX(-50%);
-  font-family: var(--font-body); font-size: 12.5px; letter-spacing: 0.1em; color: var(--text-inv-soft);
-}
-@media (max-width: 620px) {
-  .v2-lightbox .vor { left: 12px; top: auto; bottom: 16px; transform: none; }
-  .v2-lightbox .zurueck { right: 12px; top: auto; bottom: 16px; transform: none; }
-  .v2-lightbox .zaehler { bottom: 30px; }
-}
-
 /* ---------- Preistabellen ---------- */
 .v2-preisbloecke {
   display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 3.4vw, 48px);
@@ -2209,8 +2107,6 @@ button.v2-link-inline {
   border-top: 1px solid var(--line);
   font-size: 14.5px; line-height: 1.75; color: var(--text-soft); max-width: 78ch;
 }
-
-.v2-mosaik-mehr { display: flex; justify-content: center; margin-top: clamp(20px, 2.4vw, 30px); }
 
 /* Zuständigkeitsmarke je Prozessschritt */
 .v2-flow-step .wer {
@@ -2530,12 +2426,7 @@ a:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visib
 
 /* ---------- Referenzen ---------- */
 .qb-ref-fuss { margin-top: clamp(28px, 3vw, 40px); }
-.v2-sec-head + .qb-refgruppe { margin-top: clamp(30px, 3.6vw, 48px); }
 .qb-ref-cta { margin: 22px 0 0; }
-.qb-refgruppe > .titel h2 {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
-}
 
 /* ---------- Vorteile als Liste ---------- */
 ul.v2-gruende { list-style: none; padding: 0; }
@@ -2772,12 +2663,6 @@ main section[tabindex="-1"]:focus { outline: none; }
 .qb-einstieg a.mehr { text-decoration: none; }
 .qb-mehr-link { margin: 18px 0 0; }
 
-/* Arbeitsproben: Gruppentitel als h3 */
-.qb-refgruppe > .titel h3 {
-  margin: 0; font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
-}
-.v2-mosaik-foot .v2-idx { color: rgba(243, 238, 229, 0.62); }
 
 /* Preise: Sonderobjekt-Titel als h3 */
 .qb-sonder h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--text); }
@@ -2791,22 +2676,6 @@ main section[tabindex="-1"]:focus { outline: none; }
 
 /* Porträtfläche: Beschriftung unten links wie die übrigen Bildbeschriftungen */
 .qb-portrait .cap { position: absolute; left: 0; bottom: 0; }
-
-/* Arbeitsproben auf der Startseite: kompaktes Mosaik, ein großes Bild
-   (2 × 2) und kleine Kacheln im Querformat. */
-.qb-versatz.qb-mosaik { margin-top: clamp(30px, 3.6vw, 48px); grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 1vw, 14px); }
-.qb-versatz.qb-mosaik > li { grid-column: auto; align-self: stretch; }
-.qb-versatz.qb-mosaik > li:first-child { grid-column: span 2; grid-row: span 2; }
-.qb-versatz.qb-mosaik > li .box { aspect-ratio: 3 / 2; }
-.qb-versatz.qb-mosaik > li:first-child figure, .qb-versatz.qb-mosaik > li:first-child .box { height: 100%; }
-.qb-versatz.qb-mosaik > li:first-child .box { aspect-ratio: auto; }
-.qb-versatz.qb-mosaik .lupe { right: 10px; bottom: 10px; width: 34px; height: 34px; }
-@media (max-width: 760px) {
-  .qb-versatz.qb-mosaik { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .qb-versatz.qb-mosaik > li { grid-column: auto !important; }
-  .qb-versatz.qb-mosaik > li:first-child { grid-column: span 2 !important; grid-row: auto; }
-  .qb-versatz.qb-mosaik > li:first-child .box { aspect-ratio: 3 / 2 !important; }
-}
 
 /* Preise: "netto" klein hinter dem Betrag */
 .qb-netto { font-size: 0.72em; font-weight: 500; }
@@ -2855,3 +2724,221 @@ main section[tabindex="-1"]:focus { outline: none; }
   .qb-signale .v2-stats-src { margin-top: 8px; font-size: 9px; letter-spacing: 0; }
 }
 @media (max-width: 360px) { .qb-signale { --band: 66px; } }
+
+/* ===================================================================
+   Referenzen: Beispiel-Inserate
+   Block A: das eine Hauptbeispiel groß (Titelbild + 2 × 2 Raster, alle
+   Bilder 3:2). Block B: weitere Projekte als Karten mit Titelbild, Klasse
+   und Festpreis. Beide öffnen dieselbe Galerie (.qb-galerie).
+   =================================================================== */
+#referenzen.v2-sec { padding: clamp(36px, 7vw, 112px) 0; }
+@media (max-width: 640px) {
+  #referenzen .v2-sec-head h2, #referenzen .v2-sec-head .v2-lead { margin-top: 12px; }
+}
+
+.qb-bsp {
+  --g: clamp(6px, 0.6vw, 10px);
+  container-type: inline-size;
+  margin-top: clamp(24px, 2.6vw, 34px); scroll-margin-top: 84px;
+}
+
+/* Zwei Hälften: links das Titelbild, rechts 2 × 2 Rasterbilder, alle 3:2 und
+   ohne feste Höhe. Die linke Spalte ist eine halbe Lücke breiter als die
+   rechte, damit das Titelbild genau so hoch ist wie zwei Rasterzeilen plus
+   Lücke (bei exakt gleichen Hälften fehlte ein Drittel der Lücke). */
+.qb-bsp .bilder {
+  display: grid; gap: var(--g); align-items: start;
+  grid-template-columns: minmax(0, calc(50% - var(--g) / 4)) minmax(0, 1fr);
+}
+.qb-bsp .raster { display: grid; gap: var(--g); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.qb-bsp .bilder button {
+  position: relative; display: block; width: 100%; aspect-ratio: 3 / 2; padding: 0; margin: 0; border: 0;
+  cursor: pointer; background: var(--ink-3); border-radius: 5px; overflow: clip;
+}
+.qb-bsp .bilder img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.9s var(--ease-out), opacity 0.4s var(--ease-soft);
+}
+.qb-bsp .bilder button:hover img { transform: scale(1.035); opacity: 0.9; }
+.qb-bsp .bilder button:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 3px; }
+/* Sobald die Rasterbilder schmaler als 200 px würden: untereinander,
+   Titelbild in voller Breite, darunter das 2 × 2 Raster. */
+@container (max-width: 839px) {
+  .qb-bsp .bilder { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Text in einer Zeile: links Klasse und Titel, rechts Bildanzahl, Festpreis, Button */
+.qb-bsp .text {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 28px;
+  margin-top: 14px;
+}
+.qb-bsp .kopf { min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.qb-bsp .fuss { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.qb-bsp .label, .qb-bsp-weitere .label, .qb-galerie .label {
+  display: inline-block; padding: 5px 11px; border: 1px solid var(--terra-soft); border-radius: 999px;
+  background: rgba(188, 107, 73, 0.12);
+  font-family: var(--font-body); font-weight: 700; font-size: 11.5px; line-height: 1.2; color: var(--terra-soft);
+}
+.qb-bsp h3 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.1rem, 1.5vw, 1.3rem); letter-spacing: -0.02em; line-height: 1.25; color: var(--linen);
+}
+.qb-bsp .unter { margin: 0; font-size: 13.5px; line-height: 1.4; color: var(--text-inv-soft); }
+.qb-bsp .preis { margin: 0; font-size: 13px; color: var(--text-inv-soft); white-space: nowrap; }
+.qb-bsp .preis b, .qb-bsp-weitere .preis b, .qb-galerie .klasse b {
+  font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; letter-spacing: -0.02em;
+  color: var(--linen); white-space: nowrap;
+}
+.qb-bsp-meta {
+  list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap;
+  font-size: 13px; line-height: 1.6; color: var(--text-inv-soft);
+}
+.qb-bsp-meta li + li::before { content: '\00B7'; margin: 0 8px; opacity: 0.7; }
+.qb-bsp .fuss .qb-bsp-meta { margin: 0; }
+.qb-bsp .fuss .v2-btn { min-height: 44px; padding-top: 11px; padding-bottom: 11px; }
+
+@media (max-width: 640px) {
+  .qb-bsp { margin-top: 18px; }
+  .qb-bsp .text { margin-top: 10px; gap: 6px; }
+  .qb-bsp .kopf { flex-wrap: nowrap; gap: 8px; }
+  .qb-bsp .kopf .unter { display: none; }
+  .qb-bsp .label { flex: none; padding: 3px 7px; font-size: 10.5px; }
+  .qb-bsp h3 { font-size: 0.98rem; }
+  .qb-bsp .fuss { width: 100%; justify-content: space-between; gap: 4px 12px; }
+  .qb-bsp .fuss .qb-bsp-meta { flex-basis: 100%; font-size: 12.5px; line-height: 1.4; }
+}
+
+/* Weitere Projekte: Karten, Desktop vier Spalten, ab 1024 px zwei */
+.qb-bsp-weitere { margin-top: clamp(32px, 4vw, 56px); }
+.qb-bsp-weitere h3 {
+  margin: 0 0 clamp(14px, 1.6vw, 20px); padding-bottom: 10px; border-bottom: 1px solid var(--line-dark);
+  font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem); letter-spacing: -0.02em; color: var(--linen);
+}
+.qb-bsp-weitere ul {
+  list-style: none; margin: 0; padding: 0; display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(22px, 2.2vw, 32px) clamp(12px, 1.6vw, 24px);
+}
+@media (max-width: 1024px) { .qb-bsp-weitere ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.qb-bsp-weitere li { position: relative; scroll-margin-top: 84px; }
+.qb-bsp-weitere .bild { display: block; aspect-ratio: 3 / 2; border-radius: 5px; overflow: clip; background: var(--ink-3); }
+.qb-bsp-weitere .bild img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.9s var(--ease-out), opacity 0.4s var(--ease-soft);
+}
+.qb-bsp-weitere li:hover .bild img { transform: scale(1.035); opacity: 0.9; }
+.qb-bsp-weitere h4 { margin: 10px 0 0; }
+.qb-bsp-weitere .titel {
+  appearance: none; background: none; border: 0; padding: 0; margin: 0; text-align: left; cursor: pointer;
+  font-family: var(--font-display); font-weight: 600; font-size: clamp(15px, 1.2vw, 17px);
+  letter-spacing: -0.01em; line-height: 1.3; color: var(--linen); transition: color 0.3s var(--ease-soft);
+}
+/* Die ganze Karte ist Klickfläche der Titel-Schaltfläche */
+.qb-bsp-weitere .am-stueck { white-space: nowrap; }
+.qb-bsp-weitere .titel::after { content: ''; position: absolute; inset: 0; border-radius: 5px; }
+.qb-bsp-weitere li:hover .titel { color: var(--terra-soft); }
+.qb-bsp-weitere .titel:focus-visible { outline: none; }
+.qb-bsp-weitere .titel:focus-visible::after { outline: 2px solid var(--terra-soft); outline-offset: 4px; }
+.qb-bsp-weitere .anzahl { margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-inv-soft); }
+.qb-bsp-weitere .klasse {
+  margin: 8px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  font-size: 13px; color: var(--text-inv-soft);
+}
+.qb-bsp-weitere .label { padding: 3px 8px; font-size: 10.5px; }
+.qb-bsp-weitere .preis b { font-size: 1rem; }
+@media (max-width: 640px) {
+  .qb-bsp-weitere .titel { font-size: 14.5px; }
+  .qb-bsp-weitere .anzahl, .qb-bsp-weitere .klasse { font-size: 12.5px; }
+}
+
+/* Preiskacheln: Link auf das Beispiel-Inserat der Klasse als vierte Zeile */
+@media (min-width: 901px) {
+  .qb-pakete { grid-template-rows: repeat(4, auto); }
+  .qb-paket { grid-row: span 4; }
+}
+.qb-paket .bsp {
+  align-self: start; justify-self: start; width: fit-content; display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px; font-size: 13px; font-weight: 700; color: #8E4A2F;
+  text-decoration: underline; text-decoration-color: rgba(142, 74, 47, 0.4); text-underline-offset: 4px;
+}
+.qb-paket .bsp:hover { text-decoration-color: currentColor; }
+.qb-paket .bsp:focus-visible { outline: 2px solid var(--terra); outline-offset: 3px; border-radius: 2px; }
+@media (max-width: 900px) { .qb-paket .bsp { display: flex; } }
+
+/* ---------- Galerie eines Beispiel-Inserats ---------- */
+.qb-galerie {
+  position: fixed; inset: 0; z-index: 200; height: 100vh; height: 100dvh;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: clamp(10px, 1.6vw, 18px);
+  padding: clamp(12px, 2.2vw, 26px) clamp(12px, 3vw, 40px) clamp(10px, 1.8vw, 20px);
+  background: #171411; color: var(--text-inv);
+  overscroll-behavior: contain; animation: qb-galerie-ein 0.28s var(--ease-soft);
+}
+@keyframes qb-galerie-ein { from { opacity: 0; } to { opacity: 1; } }
+.qb-galerie .kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.qb-galerie h2 {
+  margin: 0; font-family: var(--font-display); font-weight: 600;
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem); letter-spacing: -0.02em; line-height: 1.25; color: var(--linen);
+}
+.qb-galerie .klasse {
+  margin: 8px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  font-size: 13px; color: var(--text-inv-soft);
+}
+.qb-galerie .label { padding: 4px 10px; font-size: 11.5px; }
+.qb-galerie .klasse b { font-size: 1rem; }
+.qb-galerie .unter { margin: 4px 0 0; font-size: 13.5px; color: var(--text-inv-soft); }
+.qb-galerie .qb-bsp-meta { margin-top: 4px; font-size: 12.5px; }
+.qb-galerie .hinweis { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: rgba(243, 238, 229, 0.52); }
+
+.qb-galerie .rund {
+  flex: none; width: 46px; height: 46px; border-radius: 999px; cursor: pointer;
+  background: rgba(243, 238, 229, 0.1); border: 1px solid var(--line-dark-2); color: var(--linen);
+  display: grid; place-items: center;
+  transition: background 0.3s var(--ease-soft), border-color 0.3s var(--ease-soft);
+}
+.qb-galerie .rund:hover { background: rgba(243, 238, 229, 0.2); border-color: var(--linen); }
+.qb-galerie button:focus-visible { outline: 2px solid var(--terra-soft); outline-offset: 3px; }
+
+.qb-galerie .buehne { position: relative; min-height: 0; touch-action: pan-y pinch-zoom; }
+.qb-galerie .buehne figure { position: absolute; inset: 0; margin: 0; }
+.qb-galerie .buehne img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.qb-galerie .vorladen { position: absolute; inset: 0; opacity: 0; pointer-events: none; overflow: hidden; }
+.qb-galerie .vorladen img { width: 100%; height: 100%; }
+.qb-galerie .vor, .qb-galerie .nach { position: absolute; top: 50%; transform: translateY(-50%); }
+.qb-galerie .vor { left: 0; }
+.qb-galerie .nach { right: 0; }
+
+.qb-galerie .fuss { display: grid; gap: 10px; min-width: 0; }
+.qb-galerie .zaehler {
+  margin: 0; display: flex; justify-content: center; align-items: baseline; gap: 12px;
+  font-size: 12.5px; color: var(--text-inv-soft);
+}
+.qb-galerie .zaehler .zahl { letter-spacing: 0.1em; font-variant-numeric: tabular-nums; color: var(--linen); }
+.qb-galerie .leiste {
+  display: flex; gap: 8px; overflow-x: auto; padding: 3px 2px 6px;
+  scrollbar-width: thin; scrollbar-color: var(--line-dark-2) transparent;
+}
+.qb-galerie .leiste > :first-child { margin-left: auto; }
+.qb-galerie .leiste > :last-child { margin-right: auto; }
+.qb-galerie .leiste button {
+  flex: none; width: 92px; aspect-ratio: 3 / 2; padding: 0; cursor: pointer;
+  background: var(--ink-3); border: 2px solid transparent; border-radius: 4px; overflow: clip;
+  opacity: 0.5; transition: opacity 0.25s var(--ease-soft), border-color 0.25s var(--ease-soft);
+}
+.qb-galerie .leiste button:hover { opacity: 0.85; }
+.qb-galerie .leiste button.ist-aktiv { opacity: 1; border-color: var(--terra-soft); }
+.qb-galerie .leiste img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+@media (max-width: 760px) {
+  .qb-galerie { padding-left: 0; padding-right: 0; }
+  .qb-galerie .kopf, .qb-galerie .zaehler { padding: 0 16px; }
+  .qb-galerie .leiste { padding-left: 16px; padding-right: 16px; }
+  .qb-galerie .rund { width: 42px; height: 42px; }
+  .qb-galerie .vor, .qb-galerie .nach { background: rgba(23, 20, 17, 0.55); }
+  .qb-galerie .vor { left: 6px; }
+  .qb-galerie .nach { right: 6px; }
+  .qb-galerie .leiste button { width: 66px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qb-galerie { animation: none; }
+  .qb-bsp .bilder img, .qb-bsp .bilder button:hover img { transition: none; transform: none; }
+}

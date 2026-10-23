@@ -4,3 +4,8 @@ dist
 *.local
 .claude
 dist-ssr
+
+# Arbeitsmaterial der Beispiel-Inserate: Originalbilder und Manifest mit
+# Kunden- und Ordnernamen. Nie ins (öffentliche) Repository.
+referenzen-input/
+referenzen-manifest.json

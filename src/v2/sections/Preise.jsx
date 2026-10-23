@@ -3,6 +3,8 @@ import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { useSichtbarTracking } from '../tracking.js';
 import { fotoklassen, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
+import { beispielFuerPreisklasse, anker } from '../../content/beispiele.js';
+import { oeffneBeispiel } from './Referenzen.jsx';
 
 /**
  * Preissektion des Onepagers, Gestaltung wie im bisherigen Onepager:
@@ -10,6 +12,10 @@ import { fotoklassen, ergaenzungen, preis, brutto, preisNetto, preisBrutto } fro
  *
  * Preise netto mit kleinem "netto", darunter der Bruttopreis inkl. USt.
  * Der vollständige Hinweis zur Umsatzsteuer steht im Footer.
+ *
+ * Hat eine Klasse ein freigegebenes Hauptbeispiel, öffnet "Beispiel
+ * ansehen" direkt dessen Galerie. Klassen ohne Beispiel bekommen keinen
+ * Link, auch keinen deaktivierten.
  */
 
 export function Preise() {
@@ -43,6 +49,7 @@ export function Preise() {
                 <small>{preis(brutto(k.foto))} inkl. 19 % USt.</small>
               </p>
               <p className="menge">{k.bilder}</p>
+              <BeispielLink klasse={k} />
             </article>
           ))}
         </div>
@@ -88,5 +95,17 @@ export function Preise() {
 
       </div>
     </section>
+  );
+}
+
+function BeispielLink({ klasse }) {
+  const l = beispielFuerPreisklasse(klasse.key);
+  if (!l) return null;
+  const slug = l.slug;
+  return (
+    <a className="bsp" href={`#${anker(slug)}`} aria-haspopup="dialog"
+       onClick={(e) => { e.preventDefault(); oeffneBeispiel(slug, e.currentTarget, 'preis'); }}>
+      Beispiel ansehen<span className="qb-sr">: {klasse.name}</span> <Arrow size={14} />
+    </a>
   );
 }

@@ -25,8 +25,10 @@ export function Hero() {
   return (
     <section className="v2-hero" id="top" aria-labelledby="hero-titel">
       <div className="v2-hero-media">
+        {/* Querformat: Wohnbereich; Hochformat (Handy): Wohnhaus wie bisher */}
         <Bild src={images.hero} vorrang sizes="100vw" data-parallax="14"
-              alt="Wohnhaus mit heller Holzfassade und dunklem Sockel, Außenaufnahme" />
+              alternativ={{ src: images.heroHochformat, media: '(orientation: portrait)' }}
+              alt="Immobilienaufnahme von Quadratblick" />
       </div>
       <div className="v2-hero-scrim" />
       <div className="v2-hero-content">
@@ -48,7 +50,7 @@ export function Hero() {
           </Magnetic>
           <Magnetic>
             <a className="v2-btn ghost on-dark" href="#referenzen" data-event="referenzen_aufruf">
-              Arbeitsproben ansehen
+              Beispiel-Inserate ansehen
             </a>
           </Magnetic>
         </div>

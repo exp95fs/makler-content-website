@@ -23,3 +23,52 @@ The design medium is **HTML/CSS/JS** — these are prototypes, not production co
 - `README.md` — this file
 - `chats/` — conversation transcripts (read these!)
 - `project/` — the `Makler-Content Design System` project files (HTML prototypes, assets, components)
+
+---
+
+## Referenzen: Beispiel-Inserate
+
+Die Referenz-Sektion zeigt vollständige Beispiel-Inserate statt einzelner
+Aufnahmen. Je Preisklasse ein Hauptbeispiel in einer eigenen Zeile (Titelbild
+plus vier Bilder aus dem Manifest-Feld `vorschau`, Klasse und Festpreis aus
+`src/content/site.js`), darunter „Weitere Projekte“. Jedes Bild der Zeile
+öffnet die Galerie an genau diesem Bild. Die Reihenfolge der Zeilen folgt der
+Reihenfolge von `klassen` im Manifest. Die Preiskacheln
+verlinken auf das Hauptbeispiel ihrer Klasse, `#beispiel-<slug>` öffnet die
+Galerie eines Listings direkt (für Links aus der Akquise).
+
+Quelle der Wahrheit ist `referenzen-manifest.json` im Projekt-Root, die
+Originalbilder liegen unter `referenzen-input/<slug>/`. Beides ist bewusst
+**nicht im Repository** (`.gitignore`): das Repository ist öffentlich, und das
+Manifest enthält Kunden- und Ordnernamen.
+
+`scripts/referenzen.py` prüft das Manifest gegen die Bilder, verarbeitet nur
+Listings mit `"freigegeben": true` und schreibt
+
+- `public/images/beispiele/<slug>-<nr>-<breite>.(avif|webp|jpg)` und
+- `src/content/beispiele.json` (nur öffentliche Felder, keine Originalnamen).
+
+Dateien nicht (mehr) freigegebener Listings löscht der Lauf aus
+`public/images/beispiele/`. Fehlende oder mehrdeutige Dateien brechen ab,
+bevor etwas geschrieben wird. Benötigt Pillow mit AVIF (`pip install pillow`).
+
+### Listing nachträglich freischalten
+
+1. Originalbilder unter `referenzen-input/<slug>/` ablegen (Ordnername = Slug
+   aus dem Manifest) und im Manifest `"freigegeben": true` setzen. Bei einem
+   Platzhalter im Titel (z. B. `ORT_FEHLT`) vorher den Titel korrigieren,
+   sonst bricht der Lauf ab.
+   Optional `"vorschau": [4 Dateinamen aus "bilder", nicht das Titelbild]`
+   für das Raster neben dem Titelbild; ohne das Feld nimmt das Skript die
+   Galeriebilder 2–5 und warnt. `"auswahl_hinweis": false` blendet
+   „Auswahl aus X gelieferten Bildern“ aus (X wird dann nicht ausgeliefert).
+2. `python3 scripts/referenzen.py` ausführen. Groß gezeigt wird das eine
+   Listing mit `"hauptbeispiel": true` (genau eines, sonst Abbruch); alle
+   übrigen erscheinen als Karten unter „Weitere Projekte“. Welches Listing
+   der Link „Beispiel ansehen“ einer Preiskachel öffnet, steht in
+   `src/content/site.js` (`fotoklassen[].beispiel`).
+3. `npm run build` und die Vorschau prüfen.
+4. `public/images/beispiele/` und `src/content/beispiele.json` committen.
+
+Freigabe zurücknehmen: `"freigegeben": false` setzen und dieselben Schritte
+ausführen; die Bilder des Listings verschwinden dabei aus `public/`.

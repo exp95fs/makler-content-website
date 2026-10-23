@@ -1,0 +1,1592 @@
+{
+ "_hinweis": "Erzeugt von scripts/referenzen.py aus referenzen-manifest.json. Nicht von Hand bearbeiten.",
+ "hauptbeispiel": "wohnung-lauf",
+ "klassen": [
+  {
+   "key": "wohnung",
+   "label": "Wohnung"
+  },
+  {
+   "key": "mehrparteienhaus",
+   "label": "Mehrfamilienhaus"
+  },
+  {
+   "key": "einfamilienhaus",
+   "label": "Einfamilienhaus"
+  }
+ ],
+ "listings": [
+  {
+   "slug": "wohnung-lauf",
+   "klasse": "wohnung",
+   "titel": "Wohnung · Lauf (Bühl)",
+   "untertitel": null,
+   "bilder_geliefert": 24,
+   "hinweis_nebenraeume": true,
+   "extras": [],
+   "titelbild": 0,
+   "vorschau": [
+    5,
+    8,
+    10,
+    17
+   ],
+   "bilder": [
+    {
+     "basis": "/images/beispiele/wohnung-lauf-01",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-02",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1998
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-03",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-04",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-05",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-06",
+     "raum": "Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-07",
+     "raum": "Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-08",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-09",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2001
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-10",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-11",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-12",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-13",
+     "raum": "Flur (Wohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3500,
+     "height": 2333
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-14",
+     "raum": "Flur (Wohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-15",
+     "raum": "Flur (Wohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-16",
+     "raum": "Hausflur",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2001
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-17",
+     "raum": "Hausflur",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-18",
+     "raum": "Außenansicht",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/wohnung-lauf-19",
+     "raum": "Außenansicht mit Parkplatz",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    }
+   ]
+  },
+  {
+   "slug": "mehrparteienhaus-buehlertal",
+   "klasse": "mehrparteienhaus",
+   "titel": "Mehrfamilienhaus · Bühlertal",
+   "untertitel": "Haus mit Dachgeschoss & Einliegerwohnung",
+   "bilder_geliefert": 44,
+   "hinweis_nebenraeume": false,
+   "extras": [],
+   "titelbild": 12,
+   "vorschau": [
+    24,
+    6,
+    29,
+    0
+   ],
+   "bilder": [
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-01",
+     "raum": "Außenansicht",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-02",
+     "raum": "Außenansicht mit Haustür",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-03",
+     "raum": "Eingangsbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-04",
+     "raum": "Flur",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-05",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-06",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-07",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-08",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-09",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-10",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-11",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-12",
+     "raum": "Elternschlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-13",
+     "raum": "Gästezimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-14",
+     "raum": "Kinderzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-15",
+     "raum": "WC",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-16",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-17",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-18",
+     "raum": "Keller",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-19",
+     "raum": "Heizungskeller",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-20",
+     "raum": "Flur (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1998
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-21",
+     "raum": "Zimmer 1 (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-22",
+     "raum": "Zimmer 2 (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-23",
+     "raum": "Wohnbereich (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-24",
+     "raum": "Wohnbereich (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-25",
+     "raum": "Bad (Dachgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1998
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-26",
+     "raum": "Eingangsbereich (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-27",
+     "raum": "Flur (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-28",
+     "raum": "Flur (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-29",
+     "raum": "Küche (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1998
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-30",
+     "raum": "Zimmer 1 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-31",
+     "raum": "Zimmer 1 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2003
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-32",
+     "raum": "Terrasse (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-33",
+     "raum": "Terrasse mit Gartenhaus (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-34",
+     "raum": "Zimmer 2 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-35",
+     "raum": "Zimmer 3 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-36",
+     "raum": "Zimmer 4 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-37",
+     "raum": "Zimmer 5 (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-38",
+     "raum": "Bad (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-39",
+     "raum": "WC (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2004
+    },
+    {
+     "basis": "/images/beispiele/mehrparteienhaus-buehlertal-40",
+     "raum": "Kellerraum (Einliegerwohnung)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2001
+    }
+   ]
+  },
+  {
+   "slug": "wohnung-baden-baden",
+   "klasse": "wohnung",
+   "titel": "Wohnung · Baden-Baden",
+   "untertitel": null,
+   "bilder_geliefert": 14,
+   "hinweis_nebenraeume": false,
+   "extras": [],
+   "titelbild": 4,
+   "vorschau": [
+    1,
+    2,
+    3,
+    5
+   ],
+   "bilder": [
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-01",
+     "raum": "Flur",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-02",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-03",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-04",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-05",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-06",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-07",
+     "raum": "Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-08",
+     "raum": "Zimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-09",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2001
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-10",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-11",
+     "raum": "Loggia",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-12",
+     "raum": "Loggia",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-13",
+     "raum": "Ausblick aus dem Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    }
+   ]
+  },
+  {
+   "slug": "wohnung-baden-baden-dg",
+   "klasse": "wohnung",
+   "titel": "Dachgeschosswohnung · Baden-Baden",
+   "untertitel": null,
+   "bilder_geliefert": 14,
+   "hinweis_nebenraeume": true,
+   "extras": [],
+   "titelbild": 1,
+   "vorschau": [
+    2,
+    3,
+    4,
+    5
+   ],
+   "bilder": [
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-01",
+     "raum": "Flur",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-02",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-03",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-04",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-05",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-06",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-07",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-08",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-09",
+     "raum": "Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-10",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-11",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-12",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/wohnung-baden-baden-dg-13",
+     "raum": "Bad",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    }
+   ]
+  },
+  {
+   "slug": "einfamilienhaus-huegelsheim",
+   "klasse": "einfamilienhaus",
+   "titel": "Einfamilienhaus · Hügelsheim",
+   "untertitel": null,
+   "bilder_geliefert": null,
+   "hinweis_nebenraeume": false,
+   "extras": [],
+   "titelbild": 26,
+   "vorschau": [
+    21,
+    15,
+    12,
+    0
+   ],
+   "bilder": [
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-01",
+     "raum": "Außenansicht",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 6694,
+     "height": 4462
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-02",
+     "raum": "Außenansicht",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-03",
+     "raum": "Flur (Erdgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-04",
+     "raum": "Flur (Erdgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-05",
+     "raum": "Bad (Erdgeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-06",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-07",
+     "raum": "Küche",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-08",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7149,
+     "height": 4765
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-09",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-10",
+     "raum": "Essbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 6944,
+     "height": 4628
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-11",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-12",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-13",
+     "raum": "Wohnbereich",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7154,
+     "height": 4768
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-14",
+     "raum": "Garage",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 1999
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-15",
+     "raum": "Flur (Obergeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 6963,
+     "height": 4641
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-16",
+     "raum": "Bad (Obergeschoss)",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-17",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-18",
+     "raum": "Schlafzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-19",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-20",
+     "raum": "Balkon",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-21",
+     "raum": "Kinderzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7398,
+     "height": 4932
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-22",
+     "raum": "Kinderzimmer",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-23",
+     "raum": "Terrasse",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-24",
+     "raum": "Terrasse",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-25",
+     "raum": "Terrasse",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4692
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-26",
+     "raum": "Garten",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-27",
+     "raum": "Garten",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 7040,
+     "height": 4693
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-28",
+     "raum": "Garten",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 6925,
+     "height": 4616
+    },
+    {
+     "basis": "/images/beispiele/einfamilienhaus-huegelsheim-29",
+     "raum": "Baugrundstück",
+     "breiten": [
+      320,
+      640,
+      960,
+      1600
+     ],
+     "fallback": 960,
+     "width": 3000,
+     "height": 2000
+    }
+   ]
+  }
+ ]
+}

@@ -156,7 +156,7 @@ export function headHtml(key) {
     `<meta property="og:image" content="${OG_BILD}">`,
     `<meta property="og:image:width" content="1200">`,
     `<meta property="og:image:height" content="630">`,
-    `<meta property="og:image:alt" content="Wohnhaus mit Holzfassade, Immobilienaufnahme von Quadratblick">`,
+    `<meta property="og:image:alt" content="Heller Wohnbereich mit Sofa und Balkontür, Immobilienaufnahme von Quadratblick">`,
     `<meta name="twitter:card" content="summary_large_image">`,
     `<meta name="twitter:title" content="${esc(s.title)}">`,
     `<meta name="twitter:description" content="${esc(s.description)}">`,

@@ -25,7 +25,9 @@ export const SITE_URL = 'https://quadratblick.de';
  * ------------------------------------------------------------------ */
 export const images = {
   // 16:9, 2400 px. Außenaufnahme aus einer Objektproduktion.
-  hero: '/images/hero/hero.jpg',
+  hero: '/images/hero/hero-wohnbereich.jpg',
+  // Hero im Hochformat (Handy): die Innenaufnahme zeigt dort nur Decke und Vorhang
+  heroHochformat: '/images/hero/hero.jpg',
   // 4:5 Hochformat, min. 1200 px. PLATZHALTER: Porträt Fabian.
   portrait: '/images/portrait/portrait.jpg',
   // Logos regionaler Immobilienanbieter, für die Aufnahmen entstanden sind.
@@ -38,56 +40,20 @@ export const images = {
     { src: '/images/logos/kunde-04.png', alt: 'Arkade-Immobilien Baden-Baden' },
   ],
   // Bildstrecke im Leistungsversprechen: ein Hauptbild und zwei kleinere,
-  // versetzt darüber gelegt. Indizes in `referenzen`, von Fabian gewählt
-  // (Bild 1 groß, Bild 2 rechts, Bild 3 unten), alle aus Objekt 2.
+  // versetzt darüber gelegt, von Fabian gewählt (Bild 1 groß, Bild 2
+  // rechts, Bild 3 unten). 3:2, 1800 px.
   strecke: {
     label: 'Beispiel-Bildstrecke',
-    bilder: [22, 16, 15],
+    bilder: [
+      { src: '/images/referenzen/ref-23.jpg', alt: 'Essplatz mit Eckbank, Wurzelholzkonsole und Balkontür' },
+      { src: '/images/referenzen/ref-17.jpg', alt: 'Schlafzimmer mit Einbauschrank und Holzwand' },
+      { src: '/images/referenzen/ref-16.jpg', alt: 'Küche mit grünen Fronten und Holzverkleidung' },
+    ],
   },
-  // Referenzaufnahmen, 3:2, 1800 px. Auswahl und Reihenfolge der Startseite
-  // stehen in `referenzAuswahl`.
-  referenzen: [
-    { src: '/images/referenzen/ref-01.jpg', alt: 'Wohnküche mit Kochinsel und dunkler Küchenfront' },
-    { src: '/images/referenzen/ref-02.jpg', alt: 'Küchenzeile mit Barhockern und Blick in den Wohnbereich' },
-    { src: '/images/referenzen/ref-03.jpg', alt: 'Offener Wohn- und Essbereich mit angrenzender Küche' },
-    { src: '/images/referenzen/ref-04.jpg', alt: 'Küche im Obergeschoss mit Dachfenstern' },
-    { src: '/images/referenzen/ref-05.jpg', alt: 'Essbereich im Obergeschoss mit Holzbalkendecke' },
-    { src: '/images/referenzen/ref-06.jpg', alt: 'Leerer Wohnraum im Dachgeschoss mit offener Küchenzeile' },
-    { src: '/images/referenzen/ref-07.jpg', alt: 'Essplatz vor einer verglasten Zimmertür' },
-    { src: '/images/referenzen/ref-08.jpg', alt: 'Badezimmer mit Doppelwaschtisch und Badewanne' },
-    { src: '/images/referenzen/ref-09.jpg', alt: 'Küchenzeile in einem leeren Dachgeschossraum' },
-    { src: '/images/referenzen/ref-10.jpg', alt: 'Leerer Dachgeschossraum mit freigelegtem Dachstuhl' },
-    { src: '/images/referenzen/ref-11.jpg', alt: 'Dachgeschossraum mit Sprossenfenster und weißem Dachstuhl' },
-    { src: '/images/referenzen/ref-12.jpg', alt: 'Schlafzimmer mit Fenster, Gardinen und Schreibtisch' },
-    { src: '/images/referenzen/ref-13.jpg', alt: 'Badezimmer mit Badewanne und Dachfenster' },
-    { src: '/images/referenzen/ref-14.jpg', alt: 'Zimmer mit Bett, Essplatz und Dachschräge' },
-    { src: '/images/referenzen/ref-15.jpg', alt: 'Überdachte Terrasse mit Sitzbank und Blick ins Grüne' },
-    { src: '/images/referenzen/ref-16.jpg', alt: 'Küche mit grünen Fronten und Holzverkleidung' },
-    { src: '/images/referenzen/ref-17.jpg', alt: 'Schlafzimmer mit Einbauschrank und Holzwand' },
-    { src: '/images/referenzen/ref-18.jpg', alt: 'Wohnbereich mit Sofa, Essplatz und Terrassenzugang' },
-    { src: '/images/referenzen/ref-19.jpg', alt: 'Badezimmer mit Dusche, WC und dunklem Fliesenboden' },
-    { src: '/images/referenzen/ref-20.jpg', alt: 'Leerer Wohnraum mit Küchenblock und Fenster' },
-    { src: '/images/referenzen/ref-21.jpg', alt: 'Mehrfamilienhaus mit Carport und begrüntem Außenbereich' },
-    { src: '/images/referenzen/ref-22.jpg', alt: 'Wohn- und Essbereich in einem Holzhaus mit Galerie und Fensterfront' },
-    { src: '/images/referenzen/ref-23.jpg', alt: 'Essplatz mit Eckbank, Wurzelholzkonsole und Balkontür' },
-  ],
 };
 
-/**
- * Auswahl für die Arbeitsproben auf der Startseite: nicht nach Objekt
- * gruppiert, sondern abwechselnd aus verschiedenen Objekten, damit schon die
- * ersten Aufnahmen unterschiedliche Räume und Stile zeigen. Indizes in
- * `images.referenzen`; die erste Aufnahme steht im Mosaik groß.
- */
-export const referenzAuswahl = [
-  // Erste Ansicht, von Fabian gewählt: groß die Außenansicht, dazu vier klein
-  20, 11, 21, 6, 3,
-  17, 4, 10, 13,
-  15, 0, 12, 9,
-  2, 14, 22, 5,
-  16, 8, 1, 19,
-  18, 7,
-];
+// Die Beispiel-Inserate (Referenz-Sektion) kommen nicht von hier, sondern
+// aus src/content/beispiele.json, erzeugt von scripts/referenzen.py.
 
 /* ------------------------------------------------------------------ *
  * Kennzahlen unter dem Hero
@@ -125,6 +91,8 @@ export const fotoklassen = [
     bilder: 'ca. 15 bis 20 Bilder',
     foto: 350,
     stunden: 2,
+    // Listing, das "Beispiel ansehen" auf der Preiskachel öffnet
+    beispiel: 'wohnung-lauf',
   },
   {
     key: 'einfamilienhaus',
@@ -133,15 +101,19 @@ export const fotoklassen = [
     bilder: 'ca. 20 bis 30 Bilder',
     foto: 450,
     stunden: 3,
+    beispiel: 'einfamilienhaus-huegelsheim',
   },
   {
     key: 'mehrfamilienhaus',
+    // Schlüssel dieser Klasse im Referenz-Manifest (Beispiel-Inserate)
+    manifestKlasse: 'mehrparteienhaus',
     name: 'Mehrfamilienhaus',
     kurz: 'Mehrfamilienhaus',
     beschreibung: 'Typischerweise zwei bis drei Wohneinheiten mit Gemeinschafts- und Außenbereichen.',
     bilder: 'ca. 30 bis 45 Bilder',
     foto: 550,
     stunden: 4,
+    beispiel: 'mehrparteienhaus-buehlertal',
   },
 ];
 
@@ -161,7 +133,7 @@ export const ablauf = [
   { t: 'Anfrage', x: 'Sie nennen uns Objekt, Objektklasse und Ihren Wunschtermin. Wir bestätigen Umfang, Preis und Termin persönlich.' },
   { t: 'Terminabstimmung', x: 'Den Aufnahmetermin stimmen wir mit Ihnen ab. Optional übernehmen wir die Abstimmung direkt mit dem Eigentümer.' },
   { t: 'Checkliste zur Vorbereitung', x: 'Vorab erhalten Sie eine verständliche Anleitung, auf Wunsch auch für den Eigentümer. So hält vor Ort nichts auf.' },
-  { t: 'Aufnahmen vor Ort', x: 'Innen, außen und Nebenräume. Belichtungsreihen je Raum, abgestimmt auf Tageslicht, Raumtiefe und Fensterausblick.' },
+  { t: 'Aufnahmen vor Ort', x: 'Alle Räume inkl. Keller, Nebenräume und Außenanlagen. Belichtungsreihen je Raum, abgestimmt auf Licht und Ausblick.' },
   { t: 'High-End-Postproduktion', x: 'Manuelles Blending der Belichtungsreihen, Optimierung der Fensterausblicke, Farb- und Kontrastabstimmung je Bild.' },
   { t: 'Digitale Bereitstellung', x: 'Die fertigen Aufnahmen erhalten Sie zum vereinbarten Zeitpunkt, einsatzfertig für Exposé, Portale und Ihre Kanäle.' },
 ];
