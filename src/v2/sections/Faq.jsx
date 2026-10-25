@@ -46,7 +46,11 @@ export const FRAGEN_START = {
   },
   ergaenzen: {
     q: 'Was lässt sich ergänzen?',
-    a: `Im Buchungsprozess können Sie Drohnenaufnahmen für ${preisVoll(drohne.preis)} und ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)} direkt dazubuchen. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
+    a: `Zu jeder Objektklasse lassen sich Drohnenaufnahmen für ${preisVoll(drohne.preis)} und ein Objekt-Kurzvideo für ${preisVoll(kurzvideo.preis)} ergänzen. Was für ein Objekt sinnvoll ist, unterscheidet sich stark, deshalb stimmen wir das in einem kurzen Gespräch ab, statt es pauschal mitzuverkaufen.`,
+  },
+  social: {
+    q: 'Liefern Sie auch Inhalte für Social Media?',
+    a: 'Für bestehende Kunden auf Anfrage. Umfang und Kanäle stimmen wir dann individuell ab.',
   },
   rechte: {
     q: 'Wie dürfen die Bilder genutzt werden?',

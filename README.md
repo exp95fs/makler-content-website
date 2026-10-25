@@ -72,3 +72,40 @@ bevor etwas geschrieben wird. Benötigt Pillow mit AVIF (`pip install pillow`).
 
 Freigabe zurücknehmen: `"freigegeben": false` setzen und dieselben Schritte
 ausführen; die Bilder des Listings verschwinden dabei aus `public/`.
+
+---
+
+## Anfragewege
+
+- **Startseite, `#kontakt`** – Anfrageformular für Neukunden (Netlify-Formular
+  `kontakt`, verstecktes Feld `quelle=startseite`). Alle Anfrage-Buttons der
+  Startseite führen hierher. Links mit `data-klasse="wohnung|einfamilienhaus|mehrfamilienhaus"`
+  wählen die Objektklasse vor, `data-anliegen="regelmaessig"` das Anliegen
+  (ausgewertet in `src/v2/sections/Kontakt.jsx`). Der alte Anker `#booking`
+  landet ebenfalls hier.
+- **`/objekt-anfragen/`** – mehrstufiger Konfigurator für bestehende Kunden
+  (Netlify-Formular `terminanfrage`, `quelle=bestandskunden-seite`). Nicht in
+  Navigation und Sitemap, `noindex`, kein Canonical. Verlinkt nur aus der
+  Sektion „Regelmäßige Zusammenarbeit“.
+
+Die statischen Gegenstücke beider Formulare stehen in `index.html`; Feldnamen
+müssen exakt mit den React-Formularen übereinstimmen.
+
+## Tracking
+
+`track(name, props)` in `src/v2/tracking.js` spricht ein cookieloses
+Analyse-Tool mit Events an, sobald eines geladen ist (`window.plausible` oder
+`window.pirsch`), und tut sonst still nichts. Eingebunden ist derzeit nur
+Cloudflare Web Analytics (Seitenaufrufe, keine Events). Jedes Ereignis geht
+zusätzlich als DOM-Event `qb:track` raus (zum Prüfen im Browser). Props
+enthalten nie personenbezogene Daten oder Freitext.
+
+| Event | Auslöser | Props |
+|---|---|---|
+| `anfrage_gesendet` | Anfrageformular der Startseite, erst nach erfolgreicher Übertragung | `anliegen` (einzeln, regelmaessig, sonstiges), `objektklasse` (wohnung, einfamilienhaus, mehrfamilienhaus, besonders, unklar, keine), `rueckruf` (ja, nein) |
+| `bestandskunde_anfrage_gesendet` | Konfigurator auf `/objekt-anfragen/`, erst nach erfolgreicher Übertragung | `objektklasse` (wohnung, einfamilienhaus, mehrfamilienhaus), `ergaenzungen` (z. B. `drohne,kurzvideo` oder `keine`) |
+| `cta_klick` | Klick auf einen Anfrage-Button mit `data-cta` | `ort` (hero, navigation, preise, ablauf, zusammenarbeit) |
+| `preiskachel_anfrage` | Klick auf „Für dieses Objekt anfragen“ in einer Preiskachel | `klasse` (wohnung, einfamilienhaus, mehrfamilienhaus) |
+| `beispiel_geoeffnet` | Galerie eines Beispiel-Inserats geöffnet | `slug`, `quelle` (karte, preiskachel, deeplink) |
+| `telefon_klick` | Klick auf einen `tel:`-Link | – |
+| `email_klick` | Klick auf einen `mailto:`-Link | – |

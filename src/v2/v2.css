@@ -551,8 +551,9 @@ button.v2-link-inline {
 /* Für Hinweise, die über eine Zeile hinausgehen: gleiche Rolle, lesbarere Schrift. */
 .v2-fine.is-text { font-family: var(--font-body); font-size: 13px; letter-spacing: 0; opacity: 1; max-width: 74ch; }
 
-/* ---------- Markenbildung (Sage) ---------- */
+/* ---------- Regelmäßige Zusammenarbeit (Sage): drei Punkte ---------- */
 .v2-brand-grid {
+  list-style: none; padding: 0;
   display: grid; grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--line-dark);
   margin-top: clamp(48px, 6vw, 80px);
@@ -1067,7 +1068,7 @@ button.v2-link-inline {
 }
 
 /* ===================================================================
-   Mehrseiten-Ausbau: Nav-Erweiterung, Unterseiten-Hero, Marke & Social
+   Mehrseiten-Ausbau: Nav-Erweiterung, Unterseiten-Hero
    =================================================================== */
 
 /* ---------- Nav: aktive Links, helle Variante, Burger, Mobilmenü ---------- */
@@ -1150,83 +1151,6 @@ button.v2-link-inline {
   font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--terra-deep); border: 1px solid rgba(188, 107, 73, 0.5);
   border-radius: 999px; padding: 5px 12px; white-space: nowrap;
-}
-
-/* ---------- Marke & Social: Paketkarten ---------- */
-.v2-ms-cards {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: clamp(16px, 2vw, 26px); margin-top: clamp(28px, 4vw, 44px);
-  align-items: start;
-}
-.v2-ms-card {
-  position: relative; display: flex; flex-direction: column;
-  background: var(--linen); border: 1px solid var(--line); border-radius: 8px;
-  padding: clamp(24px, 2.8vw, 38px);
-  transition: transform 0.55s var(--ease-out), box-shadow 0.55s var(--ease-out), border-color 0.4s var(--ease-soft);
-}
-.v2-ms-card:hover { transform: translateY(-8px); box-shadow: 0 34px 70px -34px rgba(42, 42, 34, 0.35); border-color: var(--taupe); }
-.v2-ms-card.featured { background: var(--ink-2); border-color: var(--ink-2); color: var(--text-inv); }
-.v2-ms-card.featured:hover { box-shadow: 0 40px 80px -34px rgba(34, 30, 25, 0.6); }
-.v2-ms-card .flag {
-  position: absolute; top: -13px; left: clamp(24px, 2.8vw, 38px);
-  font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
-  background: var(--terra); color: var(--linen-2);
-  border-radius: 999px; padding: 6px 14px;
-}
-.v2-ms-card .tname {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(1.25rem, 1.8vw, 1.5rem); letter-spacing: -0.02em; color: var(--text);
-}
-.v2-ms-card.featured .tname { color: var(--linen); }
-.v2-ms-card .claim {
-  margin: 6px 0 0; font-family: var(--font-body); font-size: 11px;
-  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft);
-}
-.v2-ms-card.featured .claim { color: var(--terra-soft); }
-.v2-ms-card .price {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: clamp(2rem, 3vw, 2.7rem); letter-spacing: -0.03em; line-height: 1;
-  margin-top: 20px; color: var(--text);
-}
-.v2-ms-card.featured .price { color: var(--linen); }
-.v2-ms-card .price .net { font-family: var(--font-body); font-weight: 400; font-size: 13px; letter-spacing: 0; color: var(--text-soft); margin-left: 8px; }
-.v2-ms-card.featured .price .net { color: var(--text-inv-soft); }
-.v2-ms-card .cond {
-  margin: 10px 0 0; font-family: var(--font-body); font-size: 11px; letter-spacing: 0.03em;
-  color: var(--terra-deep);
-}
-.v2-ms-card.featured .cond { color: var(--terra-soft); }
-.v2-ms-card .promise { margin: 16px 0 0; font-size: 14.5px; line-height: 1.65; color: var(--text-soft); }
-.v2-ms-card.featured .promise { color: rgba(243, 238, 229, 0.8); }
-.v2-ms-card .lists { margin-top: 20px; flex: 1; display: grid; gap: 18px; }
-.v2-ms-card .glabel {
-  font-family: var(--font-body); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--text-soft); padding-bottom: 8px; border-bottom: 1px solid var(--line);
-}
-.v2-ms-card.featured .glabel { color: var(--text-inv-soft); border-color: var(--line-dark); }
-.v2-ms-card ul { list-style: none; margin: 0; padding: 0; }
-.v2-ms-card li {
-  display: flex; gap: 10px; align-items: baseline;
-  padding: 8px 0; font-size: 13.5px; line-height: 1.5;
-  border-bottom: 1px solid var(--line); color: var(--text);
-}
-.v2-ms-card.featured li { border-color: var(--line-dark); color: rgba(243, 238, 229, 0.85); }
-.v2-ms-card li .tick { font-family: var(--font-body); font-size: 10px; color: var(--terra); flex: none; }
-.v2-ms-card .more {
-  background: none; border: none; padding: 10px 0 0; cursor: pointer;
-  font-family: var(--font-body); font-weight: 700; font-size: 12.5px;
-  color: var(--terra-deep); text-decoration: underline; text-underline-offset: 3px;
-}
-.v2-ms-card.featured .more { color: var(--terra-soft); }
-.v2-ms-card .note {
-  margin: 16px 0 0; font-family: var(--font-body); font-size: 10.5px;
-  letter-spacing: 0.02em; line-height: 1.6; color: var(--text-soft);
-}
-.v2-ms-card.featured .note { color: var(--text-inv-soft); }
-.v2-ms-card .cta { margin-top: 22px; }
-@media (max-width: 1020px) {
-  .v2-ms-cards { grid-template-columns: 1fr; max-width: 640px; margin-left: auto; margin-right: auto; }
-  .v2-ms-card.featured { order: -1; }
 }
 
 /* ---------- Vergleichstabelle ---------- */
@@ -1324,11 +1248,19 @@ button.v2-link-inline {
 
 /* ---------- Kundenlogos ---------- */
 /* ---------- Kundenlogos als eigene Vertrauenssektion ---------- */
+/* Flex statt Grid: eine unvollständige letzte Reihe steht mittig. Fünf
+   Logos in einer Reihe, darunter drei bzw. zwei je Reihe. Die Umbrüche
+   halten jede Box höchstens ca. 260 px breit, damit die Logodateien auch
+   auf 2x-Displays nicht hochskaliert werden. */
 .qb-kunden {
+  --spalten: 5;
   list-style: none; margin: clamp(38px, 4.6vw, 62px) auto 0; padding: 0;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: flex; flex-wrap: wrap; justify-content: center;
   gap: clamp(14px, 1.8vw, 24px); max-width: 1160px;
 }
+.qb-kunden > li { flex: 0 0 calc((100% - (var(--spalten) - 1) * clamp(14px, 1.8vw, 24px)) / var(--spalten)); }
+@media (max-width: 899px) { .qb-kunden { --spalten: 3; } }
+@media (max-width: 599px) { .qb-kunden { --spalten: 2; } }
 /* Feste, gleich große Box je Logo. Die Logos selbst haben sehr
    unterschiedliche Seitenverhältnisse (1,36 bis 4,87), deshalb wird
    innerhalb der Box zentriert und eingepasst statt auf Höhe skaliert. */
@@ -1355,7 +1287,6 @@ button.v2-link-inline {
   margin: clamp(26px, 3vw, 36px) auto 0; max-width: 62ch; text-align: center;
   font-size: 14.5px; line-height: 1.7; color: var(--text-soft);
 }
-@media (max-width: 860px) { .qb-kunden { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- Leistungsstufen ---------- */
 .qb-stufen { list-style: none; margin: clamp(40px, 5vw, 68px) 0 0; padding: 0; display: grid; gap: clamp(18px, 2.4vw, 30px); }
@@ -1462,14 +1393,6 @@ button.v2-link-inline {
 .qb-hinweis .k { font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terra-deep); }
 .qb-hinweis p { margin: 11px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); }
 @media (max-width: 760px) { .qb-hinweise { grid-template-columns: 1fr; } }
-
-/* ---------- Marke & Social: Preisbegründung ---------- */
-.qb-marke-preis {
-  margin-top: clamp(36px, 4vw, 56px); border: 1px solid var(--line-dark-2); border-radius: 6px;
-  background: rgba(243, 238, 229, 0.06); padding: clamp(20px, 2.6vw, 30px);
-}
-.qb-marke-preis .k { font-family: var(--font-body); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--terra-soft); }
-.qb-marke-preis p { margin: 10px 0 0; font-size: 14.5px; line-height: 1.75; color: var(--text-inv-soft); max-width: 76ch; }
 
 /* ---------- Porträt im Über-Block ---------- */
 .v2-about-visual .frame.qb-portrait { display: block; }
@@ -1648,23 +1571,6 @@ button.v2-link-inline {
   color: var(--text); max-width: 68ch;
 }
 .qb-erw-note { margin: 14px 0 0; font-size: 14px; line-height: 1.7; color: var(--text-soft); max-width: 62ch; }
-
-/* ---------- Teaser-Stichpunkte (Auftritt des Büros) ---------- */
-.qb-teaser-punkte {
-  list-style: none; margin: clamp(32px, 4vw, 52px) 0 0; padding: 0;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
-  border-top: 1px solid var(--line-dark);
-}
-.qb-teaser-punkte li {
-  padding: clamp(20px, 2.4vw, 30px) clamp(18px, 2vw, 30px) clamp(20px, 2.4vw, 30px) 0;
-  border-bottom: 1px solid var(--line-dark);
-  font-family: var(--font-display); font-weight: 500;
-  font-size: clamp(0.98rem, 1.4vw, 1.12rem); line-height: 1.5; letter-spacing: -0.01em;
-  color: var(--linen);
-}
-@media (max-width: 760px) {
-  .qb-teaser-punkte { grid-template-columns: 1fr; }
-}
 
 /* ---------- Anfrage: Erweiterungen über die volle Formularbreite ---------- */
 .qb-extras {
@@ -2851,11 +2757,15 @@ main section[tabindex="-1"]:focus { outline: none; }
   .qb-bsp-weitere .anzahl, .qb-bsp-weitere .klasse { font-size: 12.5px; }
 }
 
-/* Preiskacheln: Link auf das Beispiel-Inserat der Klasse als vierte Zeile */
+/* Preiskacheln: Link auf das Beispiel-Inserat der Klasse als vierte Zeile,
+   "Für dieses Objekt anfragen" als fünfte (immer unten bündig). */
 @media (min-width: 901px) {
-  .qb-pakete { grid-template-rows: repeat(4, auto); }
-  .qb-paket { grid-row: span 4; }
+  .qb-pakete { grid-template-rows: repeat(5, auto); }
+  .qb-paket { grid-row: span 5; }
+  .qb-paket .anfrage { grid-row: 5; }
 }
+.qb-paket .anfrage { align-self: end; justify-self: start; margin-top: 18px; }
+@media (max-width: 900px) { .qb-paket .anfrage { display: inline-flex; } }
 .qb-paket .bsp {
   align-self: start; justify-self: start; width: fit-content; display: inline-flex; align-items: center; gap: 6px;
   margin-top: 14px; font-size: 13px; font-weight: 700; color: #8E4A2F;
@@ -2942,3 +2852,53 @@ main section[tabindex="-1"]:focus { outline: none; }
   .qb-galerie { animation: none; }
   .qb-bsp .bilder img, .qb-bsp .bilder button:hover img { transition: none; transform: none; }
 }
+
+/* ---------- Anfrageformular: Paare, Auswahl, Rückruf ---------- */
+.v2-form-pflicht { margin: 0 0 16px; font-size: 12px; color: var(--text-soft); }
+.v2-field-reihe { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+@media (max-width: 560px) { .v2-field-reihe { grid-template-columns: 1fr; } }
+.v2-field select { appearance: auto; cursor: pointer; transition: border-color 0.3s var(--ease-soft); }
+.v2-field select:focus { outline: none; border-color: var(--terra); }
+.v2-field select[aria-invalid="true"] { border-color: var(--terra-deep); }
+.v2-field input:focus-visible, .v2-field textarea:focus-visible, .v2-field select:focus-visible {
+  outline: 2px solid var(--terra-deep); outline-offset: 2px;
+}
+/* Checkbox und Optionen: native Elemente in Markenfarbe, volle Tastaturbedienung */
+.v2-check { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.v2-check input, .v2-wahl input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--terra-deep); cursor: pointer; }
+.v2-check label {
+  margin: 0; cursor: pointer;
+  font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--text);
+}
+.v2-wahl { border: 0; padding: 0; margin: 0 0 18px; min-width: 0; }
+.v2-wahl legend {
+  padding: 0; margin-bottom: 10px;
+  font-family: var(--font-body); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #57554A;
+}
+.v2-wahl .optionen { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.v2-wahl .optionen label {
+  display: inline-flex; align-items: center; gap: 9px; margin: 0; cursor: pointer;
+  font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--text);
+}
+.v2-check input:focus-visible, .v2-wahl input:focus-visible { outline: 2px solid var(--terra-deep); outline-offset: 2px; }
+
+/* Früherer Anker #booking am Anfang der Anfrage-Sektion */
+.qb-alt-anker { position: absolute; top: clamp(90px, 11vw, 170px); scroll-margin-top: 84px; }
+
+/* ---------- Regelmäßige Zusammenarbeit ---------- */
+.bg-sage .v2-brand-cell p { color: rgba(243, 238, 229, 0.88); }
+.qb-bestand-link {
+  font-size: 14.5px; font-weight: 600; color: var(--linen);
+  text-decoration: underline; text-decoration-color: rgba(243, 238, 229, 0.45); text-underline-offset: 4px;
+  transition: text-decoration-color 0.3s var(--ease-soft);
+}
+.qb-bestand-link:hover { text-decoration-color: currentColor; }
+.qb-bestand-link:focus-visible { outline: 2px solid var(--linen); outline-offset: 3px; border-radius: 2px; }
+
+/* ---------- Seite für bestehende Kunden ---------- */
+/* Der Kopf trägt die H1 der Seite und liegt unter der fixierten Navigation. */
+.qb-bestand { padding-top: clamp(128px, 14vw, 190px); }
+.qb-bestand h1 { margin: 22px 0 0; color: var(--linen); }
+.qb-bestand .v2-lead { margin-top: 20px; max-width: 62ch; }
+.qb-neu-hinweis { margin: 10px 0 22px; }
+.qb-cfg-sent .tipp { margin: -8px 0 22px; font-size: 14px; color: var(--linen); }

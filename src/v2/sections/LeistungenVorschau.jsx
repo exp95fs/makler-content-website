@@ -69,7 +69,7 @@ export function LeistungenVorschau() {
               <span className="c"><Bild src={drei.src} alt={drei.alt} sizes="(max-width: 900px) 58vw, 31vw" /></span>
               <figcaption>{images.strecke.label}</figcaption>
             </figure>
-            <a className="mehr" href="#referenzen" data-event="referenzen_aufruf">
+            <a className="mehr" href="#referenzen">
               Beispiel-Inserate ansehen <Arrow size={15} />
             </a>
           </div>

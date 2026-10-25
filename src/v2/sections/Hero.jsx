@@ -44,12 +44,12 @@ export function Hero() {
         </p>
         <div className="v2-hero-ctas">
           <Magnetic>
-            <a className="v2-btn" href="#booking" data-event="cta_primary">
-              Paket &amp; Termin anfragen <Arrow />
+            <a className="v2-btn" href="#kontakt" data-cta="hero">
+              Unverbindlich anfragen <Arrow />
             </a>
           </Magnetic>
           <Magnetic>
-            <a className="v2-btn ghost on-dark" href="#referenzen" data-event="referenzen_aufruf">
+            <a className="v2-btn ghost on-dark" href="#referenzen">
               Beispiel-Inserate ansehen
             </a>
           </Magnetic>

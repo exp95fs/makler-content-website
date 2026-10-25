@@ -17,7 +17,7 @@ export const ANKER = [
   { id: 'leistungen', label: 'Leistungen' },
   { id: 'referenzen', label: 'Referenzen' },
   { id: 'warum', label: 'Warum wir' },
-  { id: 'preise', label: 'Preise & Buchung' },
+  { id: 'preise', label: 'Preise' },
   { id: 'faq', label: 'FAQ' },
 ];
 
@@ -76,7 +76,7 @@ function Nav({ start }) {
   }, [open]);
 
   const logo = solid && !open ? logoBlack : logoWhite;
-  const cta = start ? '#preise' : '/#preise';
+  const cta = start ? '#kontakt' : '/#kontakt';
 
   return (
     <>
@@ -93,8 +93,8 @@ function Nav({ start }) {
           </nav>
           <div className="v2-nav-aktionen">
             <Magnetic strength={0.25}>
-              <a className="v2-btn sm v2-nav-cta" href={cta} data-event="cta_primary">
-                Termin anfragen <Arrow size={15} />
+              <a className="v2-btn sm v2-nav-cta" href={cta} data-cta="navigation">
+                Unverbindlich anfragen <Arrow size={15} />
               </a>
             </Magnetic>
             <button
@@ -121,8 +121,8 @@ function Nav({ start }) {
           ))}
         </nav>
         <div className="v2-menu-foot">
-          <a className="v2-btn" href={cta} data-event="cta_primary" onClick={() => setOpen(false)}>
-            Termin anfragen <Arrow />
+          <a className="v2-btn" href={cta} data-cta="navigation" onClick={() => setOpen(false)}>
+            Unverbindlich anfragen <Arrow />
           </a>
           <p>{REGION}</p>
         </div>
@@ -199,6 +199,10 @@ export function PageShell({ seite, children }) {
     };
     document.addEventListener('click', onClick);
 
+    // Alter Anker des früheren Konfigurators: #booking führt zur Anfrage.
+    if (window.location.hash === '#booking') {
+      window.history.replaceState(window.history.state, '', '#kontakt');
+    }
     const hash = window.location.hash.slice(1);
     const t = hash && document.getElementById(hash) ? setTimeout(() => scrollToId(hash), 350) : null;
     return () => { document.removeEventListener('click', onClick); if (t) clearTimeout(t); };

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Split } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
 import { track } from '../tracking.js';
 import { sendeFormular, emailGueltig } from '../formular.js';
@@ -27,7 +26,10 @@ import { fotoklassen, ergaenzungen, kontakt, preis, brutto, preisVoll } from '..
  * Unternehmer (auch Privatpersonen können anfragen). Zusatzleistungen:
  * Drohnenaufnahmen und Objekt-Kurzvideo (Daten in site.js).
  *
- * Sektion "Objekt anfragen" des Onepagers (id "booking").
+ * Steht auf der nicht beworbenen Seite /objekt-anfragen für bestehende
+ * Kunden (nicht in Navigation und Sitemap, noindex). Neukunden fragen über
+ * das Formular der Startseite an. Das versteckte Feld `quelle` kennzeichnet
+ * die Herkunft der Anfrage.
  */
 const SCHRITTE = ['Objekt', 'Ergänzung', 'Termin', 'Kontakt', 'Prüfen'];
 const WEITER = {
@@ -99,7 +101,6 @@ export function Booking() {
   const [status, setStatus] = useState('bereit'); // bereit | sendet | erfolg | fehler
   const [kandidaten, setKandidaten] = useState([]);
   const sendet = useRef(false);
-  const gestartet = useRef(false);
   const titel = useRef(null);
   const erfolg = useRef(null);
   const erstesSchrittRendern = useRef(true);
@@ -137,12 +138,6 @@ export function Booking() {
     if (status === 'erfolg') erfolg.current?.focus();
   }, [status]);
 
-  const starten = () => {
-    if (gestartet.current) return;
-    gestartet.current = true;
-    track('formular_start', { formular: 'terminanfrage' });
-  };
-
   const terminReset = () => { setSlot(null); setFallback(false); setOffenerTag(null); };
 
   const fehlerFeld = (feld) => {
@@ -162,7 +157,6 @@ export function Booking() {
   function geheZu(n) {
     setStep(n);
     setMaxStep((m) => Math.max(m, n));
-    track('formular_schritt', { formular: 'terminanfrage', schritt: n });
   }
 
   function weiter() {
@@ -196,6 +190,7 @@ export function Booking() {
     const ergebnis = await sendeFormular({
       'form-name': 'terminanfrage',
       'bot-field': e.target.elements['bot-field']?.value || '',
+      quelle: 'bestandskunden-seite',
       objektklasse: gewaehlt ? gewaehlt.name : '',
       zusatzleistung: gewaehlteZusatz.map((z) => z.name).join(', ') || 'keine',
       wunschtermin: slot ? slot.label : 'Individuelle Terminanfrage',
@@ -205,32 +200,33 @@ export function Booking() {
 
     sendet.current = false;
     if (ergebnis.ok) {
-      track('formular_erfolg', { formular: 'terminanfrage' });
+      track('bestandskunde_anfrage_gesendet', {
+        objektklasse: gewaehlt ? gewaehlt.key : 'keine',
+        ergaenzungen: gewaehlteZusatz.map((z) => z.key).join(',') || 'keine',
+      });
       setStatus('erfolg');
       // Erst jetzt zurücksetzen
       setKlasse(''); setAddons({}); terminReset(); setDaten(LEER);
       setVersucht({}); setStep(1); setMaxStep(1);
-      gestartet.current = false;
     } else {
-      track('formular_fehler', { formular: 'terminanfrage', grund: ergebnis.grund });
       setStatus('fehler');
     }
   }
 
-  const setFeld = (feld) => (e) => { starten(); setDaten((d) => ({ ...d, [feld]: e.target.value })); };
+  const setFeld = (feld) => (e) => { setDaten((d) => ({ ...d, [feld]: e.target.value })); };
 
+  // Kopf ohne Reveal-Animation: die H1 ist im vorgerenderten HTML sofort
+  // sichtbar (wie Hero und Seitenkopf).
   const huelle = (inhalt) => (
-    <section className="v2-sec bg-ink qb-wizard mit-kopf" id="booking" aria-labelledby="booking-titel">
+    <section className="v2-sec bg-ink qb-wizard mit-kopf qb-bestand" id="objekt-anfrage" aria-labelledby="seiten-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head">
-          <p className="v2-eyebrow on-dark" data-reveal>Objekt anfragen</p>
-          <Split as="h2" id="booking-titel" className="v2-h-display v2-h-lg">
-            In wenigen Schritten zum festen Termin.
-          </Split>
-          <p className="v2-lead on-dark" data-reveal>
-            Sie wählen die Objektklasse und einen Wunschtermin, wir kümmern uns um
-            Vorbereitung, Aufnahme und Bearbeitung. Die Anfrage ist unverbindlich,
-            verbindlich wird sie mit unserer Bestätigung.
+          <p className="v2-eyebrow on-dark">Für bestehende Kunden</p>
+          <h1 id="seiten-titel" className="v2-h-display v2-h-lg">Neues Objekt anfragen.</h1>
+          <p className="v2-lead on-dark">
+            Objektklasse, Ergänzungen und Wunschtermin in einem Durchgang. Wir bestätigen
+            Termin und Festpreis kurzfristig. Verbindlich wird die Anfrage mit unserer
+            Bestätigung.
           </p>
         </div>
         {inhalt}
@@ -247,6 +243,7 @@ export function Booking() {
           Vielen Dank. Wir prüfen Ihre Angaben und melden uns persönlich mit der Bestätigung
           von Termin, Leistungsumfang und Preis.
         </p>
+        <p className="tipp">Tipp: Speichern Sie sich diese Seite für Ihr nächstes Objekt.</p>
         <button type="button" className="v2-btn ghost on-dark sm" onClick={() => setStatus('bereit')}>
           Weiteres Objekt anfragen
         </button>
@@ -280,6 +277,7 @@ export function Booking() {
             <form className="qb-cfg-book-panel" name="terminanfrage" onSubmit={senden} noValidate
                   aria-busy={status === 'sendet'}>
               <input type="hidden" name="form-name" value="terminanfrage" />
+              <input type="hidden" name="quelle" value="bestandskunden-seite" />
               <p className="qb-hp" aria-hidden="true">
                 <label>Nicht ausfüllen <input type="text" name="bot-field" tabIndex={-1} autoComplete="off" /></label>
               </p>
@@ -296,7 +294,7 @@ export function Booking() {
                       <label key={k.key} className={`qb-cfg-choice line ${klasse === k.key ? 'is-on' : ''}`}>
                         <input type="radio" name="objektklasse-wahl" value={k.key} className="qb-sr"
                                checked={klasse === k.key}
-                               onChange={() => { starten(); setKlasse(k.key); terminReset(); }} />
+                               onChange={() => { setKlasse(k.key); terminReset(); }} />
                         <span className="t">{k.name}</span>
                         <span className="pr"><PreisNetto n={k.foto} brutto /></span>
                         <span className="p">{k.beschreibung}</span>
@@ -391,6 +389,10 @@ export function Booking() {
                   <legend className="qb-cfg-book-h" ref={titel} tabIndex={-1}>Ihre Kontaktdaten</legend>
                   <p className="qb-cfg-book-desc">
                     Damit wir Ihre Anfrage zuordnen und bestätigen können. Pflichtfelder sind mit * markiert.
+                  </p>
+                  <p className="qb-cfg-book-note qb-neu-hinweis">
+                    Sie sind neu bei uns? Dann schreiben Sie uns lieber zuerst über
+                    das <a href="/#kontakt">Anfrageformular</a>.
                   </p>
                   <div className="qb-cfg-book-grid">
                     <Feld id="vorname" label="Vorname *" wert={daten.vorname} onChange={setFeld('vorname')}

@@ -7,16 +7,18 @@ import { images } from '../../content/site.js';
  * Logo).
  *
  * Überschrift ohne "die mit uns arbeiten" bzw. "Setzen auf", weil eine
- * laufende Zusammenarbeit nicht für alle gezeigten Logos belegt ist.
+ * laufende Zusammenarbeit nicht für alle gezeigten Logos belegt ist, und
+ * ohne "Makler", weil nicht alle Kunden Makler sind. Die Logos sind nicht
+ * mit den (anonymen) Beispiel-Inseraten verknüpft.
  */
 export function LogoSektion() {
   return (
     <section className="v2-sec tight bg-linen-2" id="kunden" aria-labelledby="kunden-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head center">
-          <p className="v2-eyebrow" data-reveal>Referenzen aus der Region</p>
+          <p className="v2-eyebrow" data-reveal>Unsere Kunden</p>
           <Split as="h2" id="kunden-titel" className="v2-h-display v2-h-lg">
-            Aufnahmen für regionale Immobilien­anbieter.
+            Kunden aus der Region, für die wir fotografiert haben.
           </Split>
         </div>
 

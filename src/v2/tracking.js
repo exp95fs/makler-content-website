@@ -1,40 +1,51 @@
 /**
- * Providerneutrale Tracking-Abstraktion. Es ist keine Analytics-Plattform
- * angebunden: Ereignisse werden als DOM-Event `qb:track` ausgelöst und, falls
- * später ein `window.dataLayer` existiert, dort abgelegt.
+ * Zentrale Tracking-Funktion. Angebunden ist derzeit kein Tool, das
+ * Ereignisse empfängt (Cloudflare Web Analytics zählt nur Seitenaufrufe).
+ * `track()` spricht ein cookieloses Analyse-Tool an, sobald es geladen ist:
+ * Plausible (`window.plausible`) oder Pirsch (`window.pirsch`). Ist keines
+ * da, passiert still nichts. Zusätzlich geht jedes Ereignis als DOM-Event
+ * `qb:track` raus, damit es sich im Browser prüfen lässt.
  *
- * Grundsatz: niemals personenbezogene Formulardaten übergeben. Erlaubt sind
- * nur Ereignisname, Formularname, Schrittnummer und Zielseite.
+ * Grundsatz: niemals personenbezogene Daten in Props (keine Namen,
+ * E-Mail-Adressen, Telefonnummern, Freitexte). Nur feste Schlüssel.
  *
- * Ereignisse:
- *   cta_primary          Klick auf "Verfügbarkeit prüfen"
- *   referenzen_aufruf    Aufruf der Referenzen (Seite oder Großansicht)
- *   preisbereich         Preisbereich sichtbar
- *   formular_start       erste Interaktion mit einem Formular
- *   formular_schritt     Schrittwechsel im Wizard
- *   formular_erfolg      NUR nach bestätigter erfolgreicher Übertragung
- *   formular_fehler      Übertragung fehlgeschlagen
- *   telefon_klick        Klick auf tel:-Link
- *   email_klick          Klick auf mailto:-Link
- *   cta_zusammenarbeit   Klick auf "Regelmäßige Zusammenarbeit besprechen"
+ * Ereignisse (Liste mit Auslösern auch im README):
+ *   anfrage_gesendet               anliegen, objektklasse, rueckruf (ja/nein)
+ *   bestandskunde_anfrage_gesendet objektklasse, ergaenzungen
+ *   cta_klick                      ort (hero, navigation, preise, ablauf, zusammenarbeit)
+ *   preiskachel_anfrage            klasse
+ *   beispiel_geoeffnet             slug, quelle (karte, preiskachel, deeplink)
+ *   telefon_klick
+ *   email_klick
  */
 import { useEffect } from 'react';
 
-export function track(event, daten = {}) {
+export function track(name, props = {}) {
   if (typeof window === 'undefined') return;
-  const detail = { event, ...daten };
-  window.dispatchEvent(new CustomEvent('qb:track', { detail }));
-  if (Array.isArray(window.dataLayer)) window.dataLayer.push(detail);
+  try {
+    const hatProps = Object.keys(props).length > 0;
+    if (typeof window.plausible === 'function') {
+      window.plausible(name, hatProps ? { props } : undefined);
+    } else if (typeof window.pirsch === 'function') {
+      window.pirsch(name, hatProps ? { meta: props } : undefined);
+    }
+    window.dispatchEvent(new CustomEvent('qb:track', { detail: { name, props } }));
+  } catch {
+    // Tracking darf die Seite nie stören.
+  }
 }
 
-/** Einmal je Seite: wertet data-event-Attribute sowie tel:/mailto:-Links aus. */
+/**
+ * Einmal je Seite: wertet `data-cta` (cta_klick mit Ort) sowie
+ * tel:/mailto:-Links aus.
+ */
 export function useKlickTracking() {
   useEffect(() => {
     const onClick = (e) => {
       const el = e.target.closest('a, button');
       if (!el) return;
-      if (el.dataset.event) {
-        track(el.dataset.event, el.getAttribute('href') ? { ziel: el.getAttribute('href') } : {});
+      if (el.dataset.cta) {
+        track('cta_klick', { ort: el.dataset.cta });
         return;
       }
       const href = el.getAttribute('href') || '';
@@ -44,19 +55,4 @@ export function useKlickTracking() {
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
   }, []);
-}
-
-/** Einmaliges Ereignis, sobald ein Element sichtbar wird. */
-export function useSichtbarTracking(ref, event) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
-    const obs = new IntersectionObserver(([eintrag]) => {
-      if (!eintrag.isIntersecting) return;
-      obs.disconnect();
-      track(event);
-    }, { threshold: 0.35 });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [ref, event]);
 }

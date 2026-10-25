@@ -1,7 +1,6 @@
-import { useRef } from 'react';
 import { Split, Magnetic } from '../fx.jsx';
 import { Arrow, PreisNetto } from '../ui.jsx';
-import { useSichtbarTracking } from '../tracking.js';
+import { track } from '../tracking.js';
 import { fotoklassen, ergaenzungen, preis, brutto, preisNetto, preisBrutto } from '../../content/site.js';
 import { beispielFuerPreisklasse, anker } from '../../content/beispiele.js';
 import { oeffneBeispiel } from './Referenzen.jsx';
@@ -16,14 +15,14 @@ import { oeffneBeispiel } from './Referenzen.jsx';
  * Hat eine Klasse ein freigegebenes Hauptbeispiel, öffnet "Beispiel
  * ansehen" direkt dessen Galerie. Klassen ohne Beispiel bekommen keinen
  * Link, auch keinen deaktivierten.
+ *
+ * "Für dieses Objekt anfragen" führt zum Anfrageformular und wählt dort
+ * die Objektklasse vor (`data-klasse`, ausgewertet in Kontakt.jsx).
  */
 
 export function Preise() {
-  const ref = useRef(null);
-  useSichtbarTracking(ref, 'preisbereich');
-
   return (
-    <section className="v2-sec bg-linen" id="preise" ref={ref} aria-labelledby="preise-titel">
+    <section className="v2-sec bg-linen" id="preise" aria-labelledby="preise-titel">
       <div className="v2-wrap">
         <div className="v2-sec-head">
           <p className="v2-eyebrow" data-reveal>Pakete und Preise</p>
@@ -50,14 +49,18 @@ export function Preise() {
               </p>
               <p className="menge">{k.bilder}</p>
               <BeispielLink klasse={k} />
+              <a className="v2-btn ghost sm anfrage" href="#kontakt" data-klasse={k.key}
+                 onClick={() => track('preiskachel_anfrage', { klasse: k.key })}>
+                Für dieses Objekt anfragen<span className="qb-sr">: {k.name}</span>
+              </a>
             </article>
           ))}
         </div>
 
         <div className="qb-pakete-fuss" data-reveal>
           <Magnetic strength={0.18}>
-            <a className="v2-btn" href="#booking" data-event="cta_primary">
-              Objekt anfragen <Arrow size={16} />
+            <a className="v2-btn" href="#kontakt" data-cta="preise">
+              Unverbindlich anfragen <Arrow size={16} />
             </a>
           </Magnetic>
         </div>
@@ -68,17 +71,9 @@ export function Preise() {
             <h3>Was sich sinnvoll ergänzen lässt</h3>
             <p>
               Nicht jedes Objekt braucht dasselbe. Drohnenaufnahmen und ein Objekt-Kurzvideo
-              wählen Sie direkt im Buchungsprozess aus, alles Weitere stimmen wir in einem
-              kurzen Gespräch auf das Objekt ab.
+              lassen sich zu jeder Objektklasse ergänzen. Was für Ihr Objekt sinnvoll ist,
+              stimmen wir nach Ihrer Anfrage kurz mit Ihnen ab.
             </p>
-            <div className="ctas">
-              <a className="v2-btn ghost sm" href="#booking">
-                Im Buchungsprozess auswählen <Arrow size={15} />
-              </a>
-              <a className="v2-btn ghost sm" href="#kontakt">
-                Abstimmungstermin vereinbaren
-              </a>
-            </div>
           </div>
           <ul className="liste">
             {ergaenzungen.map((e) => (
@@ -104,7 +99,7 @@ function BeispielLink({ klasse }) {
   const slug = l.slug;
   return (
     <a className="bsp" href={`#${anker(slug)}`} aria-haspopup="dialog"
-       onClick={(e) => { e.preventDefault(); oeffneBeispiel(slug, e.currentTarget, 'preis'); }}>
+       onClick={(e) => { e.preventDefault(); oeffneBeispiel(slug, e.currentTarget, 'preiskachel'); }}>
       Beispiel ansehen<span className="qb-sr">: {klasse.name}</span> <Arrow size={14} />
     </a>
   );

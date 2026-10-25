@@ -30,14 +30,18 @@ export const images = {
   heroHochformat: '/images/hero/hero.jpg',
   // 4:5 Hochformat, min. 1200 px. PLATZHALTER: Porträt Fabian.
   portrait: '/images/portrait/portrait.jpg',
-  // Logos regionaler Immobilienanbieter, für die Aufnahmen entstanden sind.
-  // Alt-Texte entsprechen dem, was im Logo selbst steht. Alle vier Logos
-  // von Fabian zur Anzeige freigegeben.
+  // Logos von Kunden aus der Region, für die Aufnahmen entstanden sind.
+  // Alt-Texte entsprechen dem, was im Logo selbst steht. Alle Logos von
+  // Fabian zur Anzeige freigegeben. Gleicher 7:3-Canvas, gleiche sichtbare
+  // Fläche. kunde-05 liegt auf 553 x 237 statt 420 x 180, damit das
+  // Original (Header-PNG der Website, 474 px Logobreite) ohne Skalierung
+  // übernommen ist. Nicht mit den Beispiel-Inseraten verknüpfen.
   logos: [
     { src: '/images/logos/kunde-01.png', alt: 'Sparkasse Bühl ImmobilienCenter' },
     { src: '/images/logos/kunde-02.png', alt: 'Bemmann Immobilien' },
     { src: '/images/logos/kunde-03.png', alt: 'Kasper & Neininger Manufaktur-Haus' },
     { src: '/images/logos/kunde-04.png', alt: 'Arkade-Immobilien Baden-Baden' },
+    { src: '/images/logos/kunde-05.png', alt: 'Schwarzwaldschick' },
   ],
   // Bildstrecke im Leistungsversprechen: ein Hauptbild und zwei kleinere,
   // versetzt darüber gelegt, von Fabian gewählt (Bild 1 groß, Bild 2

@@ -39,7 +39,7 @@ const KARTE = '(max-width: 1024px) 46vw, (min-width: 1600px) 350px, 23vw';
  * Galerie eines Listings von außerhalb der Sektion öffnen, etwa aus den
  * Preiskacheln. `ausloeser` bekommt beim Schließen den Fokus zurück.
  */
-export function oeffneBeispiel(slug, ausloeser, quelle = 'preis') {
+export function oeffneBeispiel(slug, ausloeser, quelle = 'preiskachel') {
   window.dispatchEvent(new CustomEvent(OEFFNEN, { detail: { slug, ausloeser, quelle } }));
 }
 
@@ -76,7 +76,7 @@ export function Referenzen() {
       gepusht.current = true;
     }
     setOffen({ slug, start });
-    track('referenzen_aufruf', { ansicht: 'beispiel', beispiel: slug, quelle });
+    track('beispiel_geoeffnet', { slug, quelle });
   }, []);
 
   const schliessen = useCallback(() => {
@@ -99,7 +99,7 @@ export function Referenzen() {
       return slug;
     };
     const slug = ausAdresse();
-    if (slug) track('referenzen_aufruf', { ansicht: 'beispiel', beispiel: slug, quelle: 'link' });
+    if (slug) track('beispiel_geoeffnet', { slug, quelle: 'deeplink' });
     const vonAussen = (e) => oeffnen(e.detail.slug, e.detail.ausloeser, e.detail.quelle);
     window.addEventListener('popstate', ausAdresse);
     window.addEventListener('hashchange', ausAdresse);

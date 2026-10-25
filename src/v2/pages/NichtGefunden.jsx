@@ -7,7 +7,7 @@ const ZIELE = [
   ['/#leistungen', 'Leistungen'],
   ['/#referenzen', 'Referenzen'],
   ['/#preise', 'Preise'],
-  ['/#booking', 'Objekt anfragen'],
+  ['/#kontakt', 'Unverbindlich anfragen'],
 ];
 
 export function NichtGefunden() {

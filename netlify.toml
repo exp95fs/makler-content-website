@@ -9,8 +9,9 @@
 # führt Besucher aber direkt zum passenden Abschnitt. Netlify wertet die
 # Regeln unabhängig vom abschließenden Schrägstrich aus; `force` greift auch
 # dann, wenn noch eine alte Datei unter dem Pfad liegen sollte.
-# Kein Redirect für /marke-und-social/: der Pfad lieferte in Produktion
-# bereits 404 und hat keine passende Zielseite.
+# Kein Redirect für den früheren Pfad der Social-Unterseite: er lieferte in
+# Produktion bereits 404 und hat keine passende Zielseite.
+# /objekt-anfragen/ (Bestandskunden) ist eine echte, vorgerenderte Seite.
 
 # Frühere Unterseiten (Mehrseiten-Fassung). Die Website ist wieder ein
 # Onepager; jede Unterseite leitet dauerhaft auf den passenden Abschnitt.
@@ -34,7 +35,7 @@
 
 [[redirects]]
   from = "/projekt-anfragen"
-  to = "/#booking"
+  to = "/#kontakt"
   status = 301
   force = true
 

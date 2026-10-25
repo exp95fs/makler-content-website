@@ -22,10 +22,13 @@
   <!-- Statische Gegenstücke zu den JS-Formularen, damit Netlify sie beim
        Deploy erkennt. Formularnamen und Feldnamen müssen exakt mit den
        React-Formularen übereinstimmen (Booking.jsx, Kontakt.jsx), sonst
-       verwirft Netlify die abweichenden Felder. -->
+       verwirft Netlify die abweichenden Felder.
+       terminanfrage: Seite /objekt-anfragen (bestehende Kunden),
+       kontakt: Anfrageformular der Startseite. -->
   <form name="terminanfrage" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="terminanfrage" />
     <input type="text" name="bot-field" />
+    <input type="hidden" name="quelle" value="bestandskunden-seite" />
     <input type="text" name="objektklasse" />
     <input type="text" name="zusatzleistung" />
     <input type="text" name="wunschtermin" />
@@ -43,9 +46,15 @@
   <form name="kontakt" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="kontakt" />
     <input type="text" name="bot-field" />
-    <input type="text" name="anliegen" />
+    <input type="hidden" name="quelle" value="startseite" />
     <input type="text" name="name" />
+    <input type="text" name="firma" />
     <input type="email" name="email" />
+    <input type="tel" name="telefon" />
+    <input type="text" name="anliegen" />
+    <input type="text" name="objektklasse" />
+    <input type="text" name="rueckruf" />
+    <input type="text" name="erreichbarkeit" />
     <textarea name="nachricht"></textarea>
   </form>
 

@@ -21,7 +21,7 @@ export function Ablauf() {
               den fertigen Bildern.
             </p>
             <div className="ctas" data-reveal>
-              <a className="v2-btn ghost sm" href="#booking" data-event="cta_primary">Objekt anfragen</a>
+              <a className="v2-btn ghost sm" href="#kontakt" data-cta="ablauf">Unverbindlich anfragen</a>
               <a className="v2-btn ghost sm" href="#kontakt">Erst kurz sprechen</a>
             </div>
           </div>
